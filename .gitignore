@@ -1,0 +1,14 @@
+node_modules
+dist
+out
+.vite/
+
+.DS_Store
+.eslintcache
+*.log*
+
+.env
+.env.*
+
+.vscode/*
+!.vscode/extensions.json
