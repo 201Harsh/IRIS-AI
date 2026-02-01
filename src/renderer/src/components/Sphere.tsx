@@ -17,7 +17,7 @@ const CustomParticleSphere = ({ count = 5000 }) => {
 
       // Normalize to force them onto the sphere surface (radius = 2)
       const vector = new THREE.Vector3(x, y, z)
-      vector.normalize().multiplyScalar(1.2) // Radius is 2
+      vector.normalize().multiplyScalar(2) // Radius is 2
 
       temp[i * 3] = vector.x
       temp[i * 3 + 1] = vector.y
