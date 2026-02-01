@@ -17,7 +17,7 @@ import { GiPowerButton, GiTinker } from 'react-icons/gi'
 const IRIS = () => {
   const [isMicMuted, setIsMicMuted] = useState(false)
   const [isVideoOn, setIsVideoOn] = useState(false)
-  const [isSystemActive, setIsSystemActive] = useState(true)
+  const [isSystemActive, setIsSystemActive] = useState(false)
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
