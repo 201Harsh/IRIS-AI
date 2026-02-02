@@ -1,9 +1,9 @@
 {
   "name": "iris-ai",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "A local, real-time Agentic Voice Operating System (AVOS) powered by Vital Studio, featuring low-latency voice, vision, and reactive 3D visualization.",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "Harsh Pandey",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
