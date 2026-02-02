@@ -5,16 +5,16 @@ export class GeminiLiveService {
   public audioContext: AudioContext | null = null;
   public mediaStream: MediaStream | null = null;
   public workletNode: AudioWorkletNode | null = null;
-  public analyser: AnalyserNode | null = null; // 🎵 FOR SPHERE ANIMATION
+  public analyser: AnalyserNode | null = null;
   public apiKey: string;
   public isConnected: boolean = false;
-  private isMicMuted: boolean = false; // 🔇 MUTE STATE
+  private isMicMuted: boolean = false; 
   
   private nextStartTime: number = 0;
   public model: string = 'models/gemini-2.5-flash-native-audio-preview-12-2025'; 
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_IRIS_AI_API_KEY || '';
+    this.apiKey = import.meta.env.VITE_IRIS_AI_API_KEY || 'your-api-key-here';
   }
 
   setMute(muted: boolean) {
@@ -31,7 +31,6 @@ export class GeminiLiveService {
     this.analyser.fftSize = 256; // Fast reaction time
     this.analyser.smoothingTimeConstant = 0.5;
 
-    // ... (AudioWorklet setup same as before) ...
     const audioWorkletCode = `
       class PCMProcessor extends AudioWorkletProcessor {
         process(inputs, outputs, parameters) {
@@ -106,7 +105,6 @@ export class GeminiLiveService {
       this.workletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor');
       
       this.workletNode.port.onmessage = (event) => {
-        // 🔇 MUTE LOGIC: If muted, don't send data
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN || this.isMicMuted) return;
 
         const inputData = event.data;
@@ -136,7 +134,6 @@ export class GeminiLiveService {
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     
-    // 🎵 CONNECT TO ANALYSER (For Sphere Animation)
     source.connect(this.analyser);
     this.analyser.connect(this.audioContext.destination);
 

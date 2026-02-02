@@ -7,7 +7,6 @@ import { irisService } from '@renderer/services/Iris-voice-ai'
 const CustomParticleSphere = ({ count = 5000 }) => {
   const mesh = useRef<THREE.Points>(null)
   
-  // Audio Analysis Data
   const dataArray = useMemo(() => new Uint8Array(128), []);
 
   const particles = useMemo(() => {
@@ -28,7 +27,6 @@ const CustomParticleSphere = ({ count = 5000 }) => {
   useFrame((state, delta) => {
     if(!state.clock.running) return;
     if (mesh.current) {
-      // 1. Basic Rotation
       mesh.current.rotation.y += delta * 0.15 
       mesh.current.rotation.z += delta * 0.05 
 
@@ -48,7 +46,7 @@ const CustomParticleSphere = ({ count = 5000 }) => {
       // Smooth interpolation (Lerp) so it doesn't jitter
       mesh.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
       
-      // Change Color on Talk: Blue -> Bright White/Cyan
+      // Change Color on Talk: Blue -> Bright White/Green
       const color = new THREE.Color("#33db12").lerp(new THREE.Color("#FFFFFF"), volume);
       (mesh.current.material as THREE.PointsMaterial).color = color;
     }
@@ -68,7 +66,7 @@ const CustomParticleSphere = ({ count = 5000 }) => {
       </bufferGeometry>
       <pointsMaterial
         color="#00F0FF"
-        size={0.018} // Slightly thicker for visibility
+        size={0.015}
         transparent={true}
         opacity={0.8}
         sizeAttenuation={true}

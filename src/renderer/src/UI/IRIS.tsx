@@ -17,6 +17,7 @@ import {
 } from 'react-icons/ri'
 import { GiPowerButton, GiTinker } from 'react-icons/gi'
 import { irisService } from '@renderer/services/Iris-voice-ai'
+import { FiMic, FiMicOff } from 'react-icons/fi'
 
 const IRIS = () => {
   const [isMicMuted, setIsMicMuted] = useState<boolean>(false)
@@ -36,7 +37,6 @@ const IRIS = () => {
     irisService.setMute(isMicMuted)
   }, [isMicMuted])
 
-  // --- 🔌 CONNECT / DISCONNECT LOGIC ---
   const toggleSystem = async () => {
     if (!isSystemActive) {
       try {
@@ -58,7 +58,6 @@ const IRIS = () => {
     }
   }
 
-  // --- 📹 VIDEO STREAM LOGIC ---
   useEffect(() => {
     let intervalId: NodeJS.Timeout
     const startVideo = async () => {
@@ -71,7 +70,6 @@ const IRIS = () => {
           videoRef.current.play()
         }
 
-        // Send Frame every 500ms
         intervalId = setInterval(() => {
           if (videoRef.current && irisService.socket?.readyState === WebSocket.OPEN) {
             const canvas = document.createElement('canvas')
@@ -84,13 +82,13 @@ const IRIS = () => {
               irisService.sendVideoFrame(base64)
             }
           }
-        }, 500)
+        }, 200)
       } catch (err) {
         setIsVideoOn(false)
       }
     }
 
-    if (isVideoOn && isSystemActive) startVideo()
+    if (isVideoOn) startVideo()
     else if (videoRef.current?.srcObject) {
       ;(videoRef.current.srcObject as MediaStream).getTracks().forEach((t) => t.stop())
       videoRef.current.srcObject = null
@@ -104,14 +102,12 @@ const IRIS = () => {
 
   return (
     <div className="h-screen w-full bg-black flex items-center justify-center overflow-hidden font-mono text-emerald-500 selection:bg-emerald-500/30 select-none">
-      {/* --- CORNER BORDERS (Restored) --- */}
       <div className="absolute inset-0 border-2 border-emerald-500/5 pointer-events-none" />
       <div className="absolute top-0 left-0 w-[15vw] h-[15vw] max-w-48 max-h-48 border-t-2 border-l-2 border-emerald-500/40 rounded-tl-4xl md:rounded-tl-[4rem] m-4 md:m-6" />
       <div className="absolute bottom-0 right-0 w-[15vw] h-[15vw] max-w-48 max-h-48 border-b-2 border-r-2 border-emerald-500/40 rounded-br-4xl md:rounded-br-[4rem] m-4 md:m-6" />
       <div className="absolute top-0 right-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-t-2 border-r-2 border-emerald-500/20 rounded-tr-3xl m-4 md:m-6 opacity-50" />
       <div className="absolute bottom-0 left-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-b-2 border-l-2 border-emerald-500/20 rounded-bl-3xl m-4 md:m-6 opacity-50" />
 
-      {/* --- TOP CENTER IDENTITY --- */}
       <div className="absolute top-[5vh] flex flex-col items-center z-50 pointer-events-none w-full">
         <div className="flex items-center gap-4 mb-2">
           <div className="hidden sm:block w-16 h-px bg-linear-to-r from-transparent via-emerald-500 to-emerald-500" />
@@ -133,9 +129,7 @@ const IRIS = () => {
         </div>
       </div>
 
-      {/* --- LEFT SIDEBAR (Restored) --- */}
       <div className="absolute left-6 xl:left-12 flex-col gap-6 w-64 lg:w-80 h-[50%] justify-center hidden lg:flex">
-        {/* Biometrics */}
         <div
           className={`p-5 ${glassPanel} rounded-br-[3rem] border-l-4 border-l-emerald-500 relative`}
         >
@@ -157,7 +151,6 @@ const IRIS = () => {
           </div>
         </div>
 
-        {/* Sync Pulse */}
         <div className={`p-4 ${glassPanel} flex items-center gap-4 rounded-xl`}>
           <RiPulseLine
             className={`text-3xl ${isSystemActive ? 'animate-bounce text-emerald-400' : 'text-zinc-700'}`}
@@ -172,7 +165,6 @@ const IRIS = () => {
           </div>
         </div>
 
-        {/* Console */}
         <div
           className={`flex-1 p-5 ${glassPanel} text-[9px] space-y-2 rounded-xl relative overflow-hidden bg-black/40`}
         >
@@ -191,9 +183,7 @@ const IRIS = () => {
         </div>
       </div>
 
-      {/* --- RIGHT SIDEBAR (Restored + Video) --- */}
       <div className="absolute right-6 xl:right-12 flex-col gap-6 w-64 lg:w-80 h-[60%] justify-center hidden lg:flex items-end z-50">
-        {/* Radar & Connect Status */}
         <div
           className={`p-6 ${glassPanel} rounded-bl-[3rem] flex flex-col items-center w-full relative`}
         >
@@ -201,7 +191,6 @@ const IRIS = () => {
             Radar
           </div>
 
-          {/* 📡 NEW: CONNECTED ICON */}
           <div className="absolute top-4 left-4 flex flex-col items-center">
             {isSystemActive ? (
               <RiWifiLine className="text-emerald-400 animate-pulse" size={24} />
@@ -226,23 +215,35 @@ const IRIS = () => {
 
         {/* 📹 LIVE VIDEO PREVIEW (Visible) */}
         <div
-          className={`w-full aspect-video ${glassPanel} rounded-2xl p-1 relative overflow-hidden transition-all duration-500 ${isVideoOn ? 'opacity-100 border-emerald-400/50' : 'opacity-40 grayscale'}`}
+          className={`w-full h-full aspect-video ${glassPanel} rounded-2xl p-1 relative overflow-hidden transition-all duration-500 ${isVideoOn ? 'opacity-100 border-emerald-400/50' : 'opacity-40 grayscale'}`}
         >
           <div className="absolute inset-0 z-20 bg-[linear-gradient(rgba(0,255,127,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,127,0.03)_1px,transparent_1px)] bg-size-[20px_20px] pointer-events-none" />
 
           <div
-            className={`absolute top-2 left-2 z-30 flex items-center gap-2 px-2 py-1 rounded-md ${isVideoOn ? 'bg-red-500/20 border border-red-500/50' : 'bg-zinc-800'}`}
+            className={`absolute top-2 left-2 z-30 flex items-center gap-2 px-2 py-1 rounded-md backdrop-blur-2xl ${isVideoOn ? 'bg-red-500 border border-red-500/50' : 'bg-zinc-800'}`}
           >
             <RiRecordCircleLine
-              className={`${isVideoOn ? 'text-red-500 animate-pulse' : 'text-zinc-500'}`}
+              className={`${isVideoOn ? 'text-red-50 animate-pulse' : 'text-zinc-500'}`}
               size={10}
             />
             <span
-              className={`text-[8px] font-bold tracking-widest ${isVideoOn ? 'text-red-400' : 'text-zinc-500'}`}
+              className={`text-[8px] font-bold tracking-widest ${isVideoOn ? 'text-red-50' : 'text-zinc-500'}`}
             >
               {isVideoOn ? 'LIVE' : 'OFF'}
             </span>
           </div>
+
+          {isSystemActive && (
+            <div
+              className={`absolute bottom-2 left-1/2 -translate-1/2 z-30 flex items-center gap-2 px-2 py-1 rounded-md backdrop-blur-2xl ${isMicMuted ? 'bg-red-800/20 border border-red-500/50' : 'bg-emerald-500/20 border border-emerald-500/50'}`}
+            >
+              <span
+                className={`text-[8px] font-bold tracking-widest ${isMicMuted ? 'text-red-500' : 'text-emerald-500'}`}
+              >
+                {isMicMuted ? <FiMicOff /> : <FiMic />}
+              </span>
+            </div>
+          )}
 
           <video
             ref={videoRef}
@@ -253,7 +254,6 @@ const IRIS = () => {
           />
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 w-full">
           {[
             { icon: <RiCpuLine />, label: 'CPU', val: isSystemActive ? '12%' : '--' },
@@ -271,18 +271,15 @@ const IRIS = () => {
         </div>
       </div>
 
-      {/* --- CENTER: SPHERE --- */}
       <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
         <div
-          className={`w-[80vw] h-[80vw] sm:w-[60vh] sm:h-[60vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'drop-shadow-[0_0_80px_rgba(16,185,129,0.25)] opacity-100' : 'opacity-30 grayscale'}`}
+          className={`w-[80vw] h-[80vw] sm:w-[60vh] sm:h-[60vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'drop-shadow-[0_0_80px_rgba(16,185,129,0.25)] opacity-100' : 'opacity-35 drop-shadow-none'}`}
         >
           <Sphere />
         </div>
       </div>
 
-      {/* --- BOTTOM CONTROLS --- */}
       <div className="absolute bottom-[4vh] w-full flex flex-col items-center z-50 px-4 md:px-6">
-        {/* Audio Spectrum */}
         <div className="flex items-end gap-px md:gap-1 h-12 mb-6 opacity-30 px-10 max-w-4xl w-full overflow-hidden">
           {[...Array(60)].map((_, i) => (
             <div
@@ -293,13 +290,11 @@ const IRIS = () => {
           ))}
         </div>
 
-        {/* Control Buttons */}
         <div
           className={`flex items-center justify-around w-full max-w-[95vw] md:max-w-4xl h-20 md:h-28 ${glassPanel} rounded-2xl md:rounded-4xl px-4 md:px-16 relative overflow-hidden`}
         >
           <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-emerald-400 to-transparent animate-[scan_5s_linear_infinite] opacity-30" />
 
-          {/* Mic */}
           <button
             onClick={() => setIsMicMuted(!isMicMuted)}
             className={`cursor-pointer group flex flex-col items-center transition-all ${isMicMuted ? 'text-red-500' : neonText}`}
@@ -316,7 +311,6 @@ const IRIS = () => {
             </span>
           </button>
 
-          {/* Power */}
           <button onClick={toggleSystem} className="cursor-pointer relative group px-2">
             <div
               className={`absolute inset-0 rounded-full blur-3xl transition-all duration-1000 ${isSystemActive ? 'bg-emerald-400/40 scale-150 animate-pulse' : 'bg-red-950 scale-100'}`}
@@ -332,9 +326,8 @@ const IRIS = () => {
             </div>
           </button>
 
-          {/* Vision */}
           <button
-            onClick={() => isSystemActive && setIsVideoOn(!isVideoOn)}
+            onClick={() => setIsVideoOn(!isVideoOn)}
             className={`cursor-pointer group flex flex-col items-center transition-all ${!isSystemActive ? 'opacity-50 cursor-not-allowed' : ''} ${isVideoOn ? neonText : 'text-zinc-700'}`}
           >
             <div className="p-2 md:p-4 rounded-xl group-hover:bg-emerald-500/10 border border-transparent group-hover:border-emerald-500/20">
