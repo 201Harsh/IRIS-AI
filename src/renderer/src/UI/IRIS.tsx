@@ -83,7 +83,7 @@ const IRIS = () => {
               irisService.sendVideoFrame(base64)
             }
           }
-        }, 200)
+        }, 1200)
       } catch (err) {
         setIsVideoOn(false)
       }
