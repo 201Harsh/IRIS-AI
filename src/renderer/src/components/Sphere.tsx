@@ -1,4 +1,3 @@
-import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
@@ -81,7 +80,6 @@ const Sphere = () => {
     <Canvas camera={{ position: [0, 0, 4.5] }}>
       <ambientLight intensity={0.5} />
       <CustomParticleSphere />
-      <OrbitControls enableZoom={false} />
     </Canvas>
   )
 }
