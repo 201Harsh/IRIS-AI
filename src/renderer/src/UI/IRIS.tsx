@@ -49,6 +49,8 @@ const IRIS = () => {
     } else {
       irisService.disconnect()
       setIsSystemActive(false)
+      setIsMicMuted(true)
+      setIsVideoOn(false)
 
       // Kill Video Stream
       setIsVideoOn(false)
