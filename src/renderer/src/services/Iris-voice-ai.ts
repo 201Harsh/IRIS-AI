@@ -150,7 +150,6 @@ export class GeminiLiveService {
         const serverContent = data.serverContent
 
         if (serverContent) {
-          // A. HANDLE AUDIO (Play immediately)
           if (serverContent.modelTurn?.parts) {
             serverContent.modelTurn.parts.forEach((part: any) => {
               if (part.inlineData) {
@@ -159,13 +158,10 @@ export class GeminiLiveService {
             })
           }
 
-          // B. HANDLE IRIS TEXT (ACCUMULATE, DON'T SAVE YET)
           if (serverContent.outputTranscription?.text) {
-            // Append the new word to our buffer
             this.aiResponseBuffer += serverContent.outputTranscription.text
           }
 
-          // C. HANDLE USER TEXT (ACCUMULATE)
           if (serverContent.inputTranscription?.text) {
             this.userInputBuffer += serverContent.inputTranscription.text
           }

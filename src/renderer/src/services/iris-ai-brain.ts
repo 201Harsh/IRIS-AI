@@ -4,7 +4,7 @@ export interface Message {
 }
 
 export const saveMessage = async (role: 'user' | 'iris', text: string) => {
-  if (!text || text.trim() === "") return; // Don't save empty noise
+  if (!text || text.trim() === "") return; 
 
   try {
     await window.electron.ipcRenderer.invoke('add-message', {
