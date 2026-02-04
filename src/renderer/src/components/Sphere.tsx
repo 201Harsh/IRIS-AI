@@ -29,7 +29,6 @@ const CustomParticleSphere = ({ count = 5000 }) => {
       mesh.current.rotation.y += delta * 0.15 
       mesh.current.rotation.z += delta * 0.05 
 
-      // 2. 🎵 GET VOLUME FROM AI SERVICE 🎵
       let volume = 0;
       if (irisService.analyser) {
           irisService.analyser.getByteFrequencyData(dataArray);
@@ -38,11 +37,8 @@ const CustomParticleSphere = ({ count = 5000 }) => {
           volume = avg / 128; // Normalize 0-1
       }
 
-      // 3. REACT TO VOICE
-      // Base scale 1 + Volume Pulse * Intensity
       const targetScale = 1 + (volume * 0.3); 
       
-      // Smooth interpolation (Lerp) so it doesn't jitter
       mesh.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
       
       // Change Color on Talk: Blue -> Bright White/Green
