@@ -5,7 +5,6 @@ import icon from '../../resources/icon.png?asset'
 import fs from 'fs'
 import path from 'path'
 
-// Define the path globally so it's consistent
 const CHAT_DIR = path.resolve(app.getPath('userData'), 'Chat')
 const FILE_PATH = path.join(CHAT_DIR, 'iris_memory.json')
 
