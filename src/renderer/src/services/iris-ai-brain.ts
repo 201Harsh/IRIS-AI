@@ -1,25 +1,31 @@
-export interface Message {
-  role: 'user' | 'iris';
-  parts: [{ text: string }];
+export interface ChatMessage {
+  role: 'user' | 'model'
+  parts: [{ text: string }]
 }
 
-export const saveMessage = async (role: 'user' | 'iris', text: string) => {
-  if (!text || text.trim() === "") return; 
-
+export const saveMessage = async (role: 'user' | 'model' | 'iris', text: string) => {
   try {
+    if (!text) return
+
+    // Normalize 'iris' to 'model' for API consistency
+    const safeRole = role === 'iris' ? 'model' : role
+
+    // Call the 'add-message' handler we just fixed
     await window.electron.ipcRenderer.invoke('add-message', {
-      role: role,
+      role: safeRole,
       parts: [{ text: text }]
-    });
+    })
   } catch (err) {
-    console.error("Failed to send message to backend:", err);
+    console.error('Memory Save Failed:', err)
   }
 }
 
-export const getHistory = async (): Promise<Message[]> => {
+export const getHistory = async (): Promise<ChatMessage[]> => {
   try {
-    return await window.electron.ipcRenderer.invoke('get-history');
+    const history = await window.electron.ipcRenderer.invoke('get-history')
+    return history || []
   } catch (e) {
-    return [];
+    console.error('Memory Load Failed:', e)
+    return []
   }
 }
