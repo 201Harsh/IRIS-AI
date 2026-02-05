@@ -1,5 +1,12 @@
 import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000 } from '../utils/audioUtils'
 import { getHistory, saveMessage } from './iris-ai-brain'
+import { getSystemStatus } from './system-info'
+
+let os: any | null = ''
+const systemInfo = getSystemStatus().then((info) => {
+  os = info?.os.type || 'Unknown OS'
+  return info
+})
 
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
@@ -49,6 +56,11 @@ You are a **smart, funny, and highly capable AI friend** living on this computer
 **IRIS:** "Harsh Pandey ne! He gave me life and this cool voice. Best dev ever, no cap." 🧢
 
 ---
+
+# About User 👤
+ - user's Name : Harsh Pandey
+ - user's OS : ${os || 'Loading...'}
+ - user's System Info : ${JSON.stringify(await systemInfo || {}, null, 2)}
 
 ## 🔄 CURRENT STATUS
 - **Mood:** Happy & Ready

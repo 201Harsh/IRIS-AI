@@ -321,7 +321,9 @@ const IRIS = () => {
               className={`${glassPanel} p-3 flex flex-col items-center justify-center rounded-2xl`}
             >
               <span className="text-xl mb-1">{m.icon}</span>
-              <span className="text-[12px] opacity-80 uppercase tracking-tighter font-bold">{m.label}</span>
+              <span className="text-[12px] opacity-80 uppercase tracking-tighter font-bold">
+                {m.label}
+              </span>
               <span className="text-xs font-semibold mt-1 tracking-widest">{m.val}</span>
             </div>
           ))}
