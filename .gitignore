@@ -10,5 +10,7 @@ out
 .env
 .env.*
 
+.idea/
+
 .vscode/*
 !.vscode/extensions.json

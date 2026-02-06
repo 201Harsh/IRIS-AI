@@ -210,14 +210,12 @@ export class GeminiLiveService {
           }
 
           if (serverContent.turnComplete || serverContent.interrupted) {
-            // 1. Save User's accumulated speech (if any)
             if (this.userInputBuffer.trim()) {
               await saveMessage('user', this.userInputBuffer.trim())
               console.log('📝 Saved User:', this.userInputBuffer)
               this.userInputBuffer = ''
             }
 
-            // 2. Save IRIS's accumulated speech (if any)
             if (this.aiResponseBuffer.trim()) {
               await saveMessage('iris', this.aiResponseBuffer.trim())
               console.log('📝 Saved IRIS:', this.aiResponseBuffer)
