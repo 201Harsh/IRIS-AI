@@ -8,11 +8,9 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
   const CHAT_DIR = path.resolve(app.getPath('userData'), 'Chat')
   const FILE_PATH = path.join(CHAT_DIR, 'iris_memory.json')
 
-  // 1. Remove old handlers to prevent conflicts
   ipcMain.removeHandler('add-message')
   ipcMain.removeHandler('get-history')
 
-  // 2. REGISTER 'add-message' (Matches your Frontend!)
   ipcMain.handle('add-message', async (_event, msg) => {
     try {
       if (!fs.existsSync(CHAT_DIR)) fs.mkdirSync(CHAT_DIR, { recursive: true })
@@ -23,7 +21,6 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
         history = data ? JSON.parse(data) : []
       }
 
-      // Append new message
       const newEntry: { role: string; content: string; timestamp: string } = {
         role: msg.role,
         content: msg.parts[0].text,
@@ -31,7 +28,6 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
       }
       history.push(newEntry)
 
-      // Keep last 20
       if (history.length > 20) history = history.slice(-20)
 
       fs.writeFileSync(FILE_PATH, JSON.stringify(history, null, 2))
@@ -42,13 +38,11 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
     }
   })
 
-  // 3. REGISTER 'get-history'
   ipcMain.handle('get-history', async () => {
     try {
       if (fs.existsSync(FILE_PATH)) {
         const data = fs.readFileSync(FILE_PATH, 'utf-8')
         const raw = JSON.parse(data)
-        // Convert to Gemini format
         return raw.map((m: any) => ({
           role: m.role === 'iris' ? 'model' : m.role,
           parts: [{ text: m.content }]
