@@ -34,14 +34,13 @@ const CustomParticleSphere = ({ count = 5000 }) => {
           irisService.analyser.getByteFrequencyData(dataArray);
           // Calculate average loudness
           const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          volume = avg / 128; // Normalize 0-1
+          volume = avg / 128;
       }
 
       const targetScale = 1 + (volume * 0.3); 
       
       mesh.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
       
-      // Change Color on Talk: Blue -> Bright White/Green
       const color = new THREE.Color("#33db12").lerp(new THREE.Color("#FFFFFF"), volume);
       (mesh.current.material as THREE.PointsMaterial).color = color;
     }
