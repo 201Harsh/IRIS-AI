@@ -1,4 +1,3 @@
-// 1. Convert Float32 (Browser) to Int16 (Gemini)
 export function floatTo16BitPCM(float32Array: Float32Array): ArrayBuffer {
   const buffer = new ArrayBuffer(float32Array.length * 2);
   const view = new DataView(buffer);
@@ -10,7 +9,6 @@ export function floatTo16BitPCM(float32Array: Float32Array): ArrayBuffer {
   return buffer;
 }
 
-// 2. Convert Base64 (Gemini) to Float32 (Speaker)
 export function base64ToFloat32(base64String: string): Float32Array {
   const binaryString = atob(base64String);
   const bytes = new Uint8Array(binaryString.length);
@@ -25,7 +23,6 @@ export function base64ToFloat32(base64String: string): Float32Array {
   return float32Array;
 }
 
-// 3. Downsample (e.g. 48kHz -> 16kHz)
 export function downsampleTo16000(float32Array: Float32Array, inputSampleRate: number): Float32Array {
   if (inputSampleRate === 16000) return float32Array;
   
@@ -37,7 +34,6 @@ export function downsampleTo16000(float32Array: Float32Array, inputSampleRate: n
   let inputIndex = 0;
 
   while (index < length) {
-    // Simple decimation (fastest for real-time)
     result[index] = float32Array[Math.floor(inputIndex)];
     inputIndex += compression;
     index++;
