@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, desktopCapturer } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -55,6 +55,14 @@ app.whenReady().then(() => {
   registerAppLauncher(ipcMain)
   registerSystemHandlers(ipcMain)
   registerIpcHandlers({ ipcMain, app })
+
+  ipcMain.handle('get-screen-source', async () => {
+    const sources = await desktopCapturer.getSources({ types: ['screen'] })
+    // Return the first screen (Primary Display)
+    return sources[0]?.id
+  })
+
+
   createWindow()
 
   app.on('activate', function () {
