@@ -7,19 +7,17 @@ export default function registerFileOps(ipcMain: IpcMain) {
 
     try {
       switch (operation) {
-        case 'copy': // "Copy -> Paste"
+        case 'copy':
           if (!destPath) return 'Error: Destination path required for copy.'
-          // recursive: true allows copying directories too if needed (Node 16+)
           await fs.cp(sourcePath, destPath, { recursive: true })
           return `Success: Copied to ${destPath}`
 
-        case 'move': // "Cut -> Paste"
+        case 'move':
           if (!destPath) return 'Error: Destination path required for move.'
           await fs.rename(sourcePath, destPath)
           return `Success: Moved to ${destPath}`
 
         case 'delete':
-          // recursive: true allows deleting folders. force: true ignores if file missing.
           await fs.rm(sourcePath, { recursive: true, force: true })
           return `Success: Deleted ${sourcePath}`
 

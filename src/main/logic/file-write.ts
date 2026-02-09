@@ -5,7 +5,6 @@ import path from 'path'
 export default function registerFileWrite(ipcMain: IpcMain) {
   ipcMain.handle('write-file', async (_event, { fileName, content }) => {
     try {
-      // Default to Desktop if no path
       const targetPath = fileName.includes('/') || fileName.includes('\\') 
         ? fileName 
         : path.join(app.getPath('desktop'), fileName)
