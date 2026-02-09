@@ -3,6 +3,43 @@ import { getRunningApps } from './get-apps'
 import { getHistory, saveMessage } from './iris-ai-brain'
 import { getSystemStatus } from './system-info'
 
+// 🛠️ ELECTRON IPC HELPERS
+const searchFiles = async (fileName: string, searchPath?: string) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('search-files', { fileName, searchPath })
+  } catch (err) {
+    return `Error: ${err}`
+  }
+}
+
+const readFile = async (filePath: string) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('read-file', filePath)
+  } catch (err) {
+    return `Error: ${err}`
+  }
+}
+
+const writeFile = async (fileName: string, content: string) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('write-file', { fileName, content })
+  } catch (err) {
+    return `Error: ${err}`
+  }
+}
+
+const manageFile = async (
+  operation: 'copy' | 'move' | 'delete',
+  sourcePath: string,
+  destPath?: string
+) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('file-ops', { operation, sourcePath, destPath })
+  } catch (err) {
+    return `Error: ${err}`
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -172,6 +209,70 @@ export class GeminiLiveService {
           system_instruction: {
             parts: [{ text: finalSystemInstruction }]
           },
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: 'search_files',
+                  description: 'Search for a file path in the system.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_name: { type: 'STRING', description: 'Name of the file.' },
+                      location: { type: 'STRING', description: 'Specific folder (optional).' }
+                    },
+                    required: ['file_name']
+                  }
+                },
+                {
+                  name: 'read_file',
+                  description: 'Read the text content of a file.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_path: { type: 'STRING', description: 'The absolute path to the file.' }
+                    },
+                    required: ['file_path']
+                  }
+                },
+                {
+                  name: 'write_file',
+                  description: 'Write text to a file (creates or overwrites).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_name: {
+                        type: 'STRING',
+                        description: 'File name (e.g. notes.txt) or full path.'
+                      },
+                      content: { type: 'STRING', description: 'The text content to write.' }
+                    },
+                    required: ['file_name', 'content']
+                  }
+                },
+                {
+                  name: 'manage_file',
+                  description: 'Manage files: Copy, Move (Cut/Paste), or Delete them.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      operation: {
+                        type: 'STRING',
+                        enum: ['copy', 'move', 'delete'],
+                        description: 'The action to perform.'
+                      },
+                      source_path: { type: 'STRING', description: 'The file to act on.' },
+                      dest_path: {
+                        type: 'STRING',
+                        description: 'Destination path (Required for copy/move, ignore for delete).'
+                      }
+                    },
+                    required: ['operation', 'source_path']
+                  }
+                }
+              ]
+            }
+          ],
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: {
@@ -191,6 +292,47 @@ export class GeminiLiveService {
       try {
         const data = JSON.parse(event.data instanceof Blob ? await event.data.text() : event.data)
         const serverContent = data.serverContent
+
+        // 🛠️ HANDLE TOOL CALLS
+        if (data.toolCall) {
+          const functionCalls = data.toolCall.functionCalls
+          const functionResponses: any[] = []
+
+          for (const call of functionCalls) {
+            console.log(`🤖 Tool Called: ${call.name}`, call.args)
+            let result
+
+            if (call.name === 'search_files') {
+              result = await searchFiles(call.args.file_name, call.args.location)
+            } else if (call.name === 'read_file') {
+              result = await readFile(call.args.file_path)
+            } else if (call.name === 'write_file') {
+              result = await writeFile(call.args.file_name, call.args.content)
+            } else if (call.name === 'manage_file') {
+              result = await manageFile(
+                call.args.operation,
+                call.args.source_path,
+                call.args.dest_path
+              )
+            } else {
+              result = 'Error: Tool not found.'
+            }
+
+            functionResponses.push({
+              id: call.id,
+              name: call.name,
+              response: { result: { output: result } }
+            })
+          }
+
+          // SEND RESULT BACK TO GEMINI
+          const responseMsg = {
+            toolResponse: {
+              functionResponses: functionResponses
+            }
+          }
+          this.socket?.send(JSON.stringify(responseMsg))
+        }
 
         if (serverContent) {
           if (serverContent.modelTurn?.parts) {
@@ -227,6 +369,7 @@ export class GeminiLiveService {
     }
 
     this.socket.onclose = (event) => {
+      console.log(event)
       console.log(`🔴 IRIS Disconnected. Code: ${event.code}`)
       this.disconnect()
     }
