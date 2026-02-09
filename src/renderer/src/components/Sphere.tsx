@@ -57,7 +57,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
       const iy = i * 3 + 1
       const iz = i * 3 + 2
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.36
+      const expansion = 1 + volume * spreadFactors[i] * 0.30
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion
@@ -81,9 +81,9 @@ const CustomParticleSphere = ({ count = 6000 }) => {
       </bufferGeometry>
       <pointsMaterial
         color="#00F0FF"
-        size={0.018}
+        size={0.011}
         transparent={true}
-        opacity={0.9}
+        opacity={0.8}
         sizeAttenuation={true}
         blending={THREE.AdditiveBlending}
       />
