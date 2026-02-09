@@ -5,6 +5,10 @@ import icon from '../../resources/icon.png?asset'
 import registerIpcHandlers from './logic/iris-memory-save'
 import registerSystemHandlers from './logic/get-system-info'
 import registerAppLauncher from './logic/app-launcher'
+import registerFileSearch from './logic/file-search'
+import registerFileOps from './logic/file-ops'
+import registerFileWrite from './logic/file-write'
+import registerFileRead from './logic/file-read'
 
 function createWindow(): void {
   // Create the browser window.
@@ -52,6 +56,10 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerFileSearch(ipcMain)
+  registerFileRead(ipcMain)
+  registerFileWrite(ipcMain)
+  registerFileOps(ipcMain)
   registerAppLauncher(ipcMain)
   registerSystemHandlers(ipcMain)
   registerIpcHandlers({ ipcMain, app })
@@ -60,7 +68,6 @@ app.whenReady().then(() => {
     const sources = await desktopCapturer.getSources({ types: ['screen'] })
     return sources[0]?.id
   })
-
 
   createWindow()
 
