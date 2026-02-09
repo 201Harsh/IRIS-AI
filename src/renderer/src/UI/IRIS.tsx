@@ -10,12 +10,11 @@ import {
   RiRadarLine,
   RiRecordCircleLine,
   RiWifiLine,
-  RiWifiOffLine,
   RiComputerLine,
   RiCameraLine,
   RiTerminalBoxLine,
-  RiPulseLine,
-  RiShieldFlashLine
+  RiShieldFlashLine,
+  RiSwapBoxLine
 } from 'react-icons/ri'
 import { GiPowerButton, GiTinker } from 'react-icons/gi'
 import { irisService } from '@renderer/services/Iris-voice-ai'
@@ -102,16 +101,12 @@ const IRIS = () => {
         })
       } else {
         const sourceId = await getScreenSourceId()
-
-        if (!sourceId) {
-          console.error('No Screen Source Found')
-          return null
-        }
+        if (!sourceId) return null
 
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
-            // @ts-ignore: Mandatory is an Electron property
+            // @ts-ignore
             mandatory: {
               chromeMediaSource: 'desktop',
               chromeMediaSourceId: sourceId,
@@ -129,6 +124,25 @@ const IRIS = () => {
       return null
     }
   }
+
+  const switchVideoSource = async () => {
+    const newMode = visionMode === 'camera' ? 'screen' : 'camera'
+    setVisionMode(newMode)
+    if (isVideoOn) {
+      const stream = await getStream(newMode)
+      if (stream) {
+        activeStreamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          try {
+            await videoRef.current.play()
+          } catch (e) {}
+        }
+        stream.getVideoTracks()[0].onended = () => turnOffVision()
+      }
+    }
+  }
+
   const handleVisionBtnClick = () => {
     if (isVideoOn) {
       turnOffVision()
@@ -226,12 +240,11 @@ const IRIS = () => {
       {showSourceModal && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
           <div
-            className={`${glassPanel} w-150 p-6 rounded-3xl border border-emerald-500/40 flex flex-col gap-6 shadow-[0_0_100px_rgba(16,185,129,0.2)]`}
+            className={`${glassPanel} w-[90vw] max-w-lg p-6 rounded-3xl border border-emerald-500/40 flex flex-col gap-6 shadow-[0_0_100px_rgba(16,185,129,0.2)]`}
           >
             <h2 className={`text-3xl font-black italic tracking-tighter text-center ${neonText}`}>
               VISION LINK
             </h2>
-
             <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-emerald-500/10">
               <button
                 onClick={() => setVisionMode('camera')}
@@ -246,7 +259,6 @@ const IRIS = () => {
                 <RiComputerLine size={24} /> SCREEN
               </button>
             </div>
-
             <div className="aspect-video bg-black rounded-xl overflow-hidden border border-emerald-500/20 relative group">
               <video
                 ref={previewRef}
@@ -256,7 +268,6 @@ const IRIS = () => {
                 className={`w-full h-full object-contain ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
               />
             </div>
-
             <div className="flex gap-4">
               <button
                 onClick={turnOffVision}
@@ -281,18 +292,18 @@ const IRIS = () => {
       <div className="absolute top-0 right-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-t-2 border-r-2 border-emerald-500/20 rounded-tr-3xl m-4 md:m-6 opacity-50" />
       <div className="absolute bottom-0 left-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-b-2 border-l-2 border-emerald-500/20 rounded-bl-3xl m-4 md:m-6 opacity-50" />
 
-      <div className="absolute top-[5vh] flex flex-col items-center z-50 pointer-events-none w-full">
-        <div className="flex items-center gap-4 mb-2">
-          <div className="hidden sm:block w-16 h-px bg-linear-to-r from-transparent via-emerald-500 to-emerald-500" />
-          <RiShieldFlashLine className={`text-xl md:text-2xl ${neonText} animate-pulse`} />
-          <div className="hidden sm:block w-16 h-px bg-linear-to-l from-transparent via-emerald-500 to-emerald-500" />
+      <div className="absolute top-6 left-6 md:top-12 md:left-14 xl:top-[5vh] xl:left-0 xl:w-full flex flex-col items-start xl:items-center z-50 pointer-events-none transition-all duration-700">
+        <div className="flex items-center gap-3 mb-1">
+          <RiShieldFlashLine
+            className={`text-4xl md:text-5xl xl:text-4xl ${neonText} animate-pulse`}
+          />
+          <h1
+            className={`text-5xl md:text-6xl xl:text-9xl font-black italic tracking-tighter leading-none ${neonText}`}
+          >
+            IRIS
+          </h1>
         </div>
-        <h1
-          className={`text-6xl md:text-8xl lg:text-9xl font-black italic tracking-tighter leading-none ${neonText}`}
-        >
-          IRIS
-        </h1>
-        <div className="flex gap-4 md:gap-8 mt-4 text-[9px] md:text-[11px] tracking-[0.4em] md:tracking-[0.6em] font-bold opacity-80 bg-emerald-950/30 px-4 py-1 rounded-full border border-emerald-500/20">
+        <div className="flex gap-4 mt-2 xl:mt-4 text-[10px] md:text-[11px] tracking-[0.2em] xl:tracking-[0.6em] font-bold opacity-80 bg-emerald-950/30 px-3 py-1 rounded-full border border-emerald-500/20">
           <span
             className={`animate-pulse underline decoration-emerald-500/50 ${isSystemActive ? 'text-emerald-400' : 'text-red-500'}`}
           >
@@ -302,7 +313,20 @@ const IRIS = () => {
         </div>
       </div>
 
-      <div className="absolute left-6 xl:left-12 flex-col gap-6 w-64 lg:w-80 h-[50%] justify-center hidden lg:flex">
+      <div className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 flex flex-col gap-4 xl:hidden z-40">
+        {systemMetrics.map((m, i) => (
+          <div
+            key={i}
+            className={`${glassPanel} w-14 h-14 p-1 flex flex-col items-center justify-center rounded-xl border border-emerald-500/20 backdrop-blur-md`}
+          >
+            <span className="text-lg mb-0.5 text-emerald-400">{m.icon}</span>
+            <span className="text-[7px] opacity-60 font-bold tracking-tighter">{m.label}</span>
+            <span className="text-[9px] font-bold text-emerald-100">{m.val}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="absolute left-12 flex-col gap-6 w-80 h-[50%] justify-center hidden xl:flex z-40 pointer-events-none">
         <div
           className={`p-5 ${glassPanel} rounded-br-[3rem] border-l-4 border-l-emerald-500 relative`}
         >
@@ -323,19 +347,6 @@ const IRIS = () => {
             ))}
           </div>
         </div>
-        <div className={`p-4 ${glassPanel} flex items-center gap-4 rounded-xl`}>
-          <RiPulseLine
-            className={`text-3xl ${isSystemActive ? 'animate-bounce text-emerald-400' : 'text-zinc-700'}`}
-          />
-          <div>
-            <div className="text-[8px] opacity-40 uppercase tracking-tighter">Sync_Pulse</div>
-            <div
-              className={`text-xl font-black ${isSystemActive ? 'text-emerald-300' : 'text-zinc-600'}`}
-            >
-              {isSystemActive ? 'STABLE' : 'NULL'}
-            </div>
-          </div>
-        </div>
         <div
           className={`flex-1 p-5 ${glassPanel} text-[9px] space-y-2 rounded-xl relative overflow-hidden bg-black/40`}
         >
@@ -354,26 +365,17 @@ const IRIS = () => {
         </div>
       </div>
 
-      <div className="absolute right-6 xl:right-12 flex-col gap-6 w-64 lg:w-80 h-[60%] justify-center hidden lg:flex items-end z-50">
+      <div className="absolute right-4 top-4 xl:right-12 xl:top-auto xl:h-[60%] xl:w-96 flex flex-col gap-4 justify-start xl:justify-center items-end z-50">
         <div
-          className={`p-6 ${glassPanel} rounded-bl-[3rem] flex flex-col items-center w-full relative`}
+          className={`p-6 ${glassPanel} rounded-bl-[3rem] flex-col items-center w-full relative hidden xl:flex`}
         >
           <div className="absolute -top-3 -right-3 text-[8px] bg-emerald-500 text-black px-2 font-bold uppercase">
             Radar
           </div>
-          <div className="absolute top-4 left-4 flex flex-col items-center">
-            {isSystemActive ? (
-              <RiWifiLine className="text-emerald-400 animate-pulse" size={24} />
-            ) : (
-              <RiWifiOffLine className="text-red-500 opacity-50" size={24} />
-            )}
-          </div>
+          <RiWifiLine className="absolute top-4 left-4 text-emerald-400 animate-pulse" size={24} />
           <div className="relative w-32 h-32">
             <div
               className={`absolute inset-0 border border-emerald-500/10 rounded-full ${isSystemActive ? 'animate-[ping_4s_infinite]' : ''}`}
-            />
-            <div
-              className={`absolute inset-0 border-t-2 border-emerald-400 rounded-full ${isSystemActive ? 'animate-[spin_3s_linear_infinite]' : ''}`}
             />
             <RiRadarLine
               size={40}
@@ -383,32 +385,43 @@ const IRIS = () => {
         </div>
 
         <div
-          className={`w-full h-full aspect-video ${glassPanel} rounded-2xl p-1 relative overflow-hidden transition-all duration-500 ${isVideoOn ? 'opacity-100 border-emerald-400/50' : 'opacity-40 grayscale'}`}
+          className={`w-40 md:w-60 xl:w-full aspect-video ${glassPanel} rounded-xl xl:rounded-2xl p-1 relative overflow-hidden transition-all duration-500 ${isVideoOn ? 'opacity-100 border-emerald-400/50' : 'opacity-50 grayscale'}`}
         >
-          <div className="absolute inset-0 z-20 bg-[linear-gradient(rgba(0,255,127,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,127,0.03)_1px,transparent_1px)] bg-size-[20px_20px] pointer-events-none" />
+          <div className="absolute inset-0 z-20 pointer-events-none" />
           <div
             className={`absolute top-2 left-2 z-30 flex items-center gap-2 px-2 py-1 rounded-md backdrop-blur-2xl ${isVideoOn ? 'bg-red-500 border border-red-500/50' : 'bg-zinc-800'}`}
           >
             <RiRecordCircleLine
               className={`${isVideoOn ? 'text-red-50 animate-pulse' : 'text-zinc-500'}`}
-              size={10}
+              size={8}
             />
             <span
               className={`text-[8px] font-bold tracking-widest ${isVideoOn ? 'text-red-50' : 'text-zinc-500'}`}
             >
-              {isVideoOn ? (visionMode === 'screen' ? 'SCREEN' : 'LIVE') : 'OFF'}
+              {isVideoOn ? (visionMode === 'screen' ? 'SCR' : 'LIVE') : 'OFF'}
             </span>
           </div>
+
+          {isVideoOn && (
+            <button
+              onClick={switchVideoSource}
+              className="absolute bottom-2 right-2 z-30 p-1.5 rounded-lg bg-black/60 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black transition-all"
+              title="Switch Source"
+            >
+              <RiSwapBoxLine size={14} />
+            </button>
+          )}
+
           <video
             ref={videoRef}
-            className={`w-full h-full object-cover rounded-xl bg-black ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
+            className={`w-full h-full object-cover rounded-lg xl:rounded-xl bg-black ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
             autoPlay
             playsInline
             muted
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 w-full">
+        <div className="grid-cols-2 gap-3 w-full hidden xl:grid">
           {systemMetrics.map((m, i) => (
             <div
               key={i}
@@ -426,24 +439,25 @@ const IRIS = () => {
 
       <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
         <div
-          className={`w-[80vw] h-[80vw] sm:w-[60vh] sm:h-[60vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'drop-shadow-[0_0_80px_rgba(16,185,129,0.25)] opacity-100' : 'opacity-65 grayscale-50'}`}
+          className={`w-[80vw] h-[80vw] sm:w-[75vh] sm:h-[75vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'drop-shadow-[0_0_80px_rgba(16,185,129,0.25)] opacity-100' : 'opacity-85 grayscale-65'}`}
         >
           <Sphere />
         </div>
       </div>
 
-      <div className="absolute bottom-[4vh] w-full flex flex-col items-center z-50 px-4 md:px-6">
+      <div className="absolute bottom-[4vh] w-full flex flex-col items-center z-50 px-4 md:px-6 pb-4">
         <div className="flex items-end gap-px md:gap-1 h-12 mb-6 opacity-30 px-10 max-w-4xl w-full overflow-hidden">
           {[...Array(60)].map((_, i) => (
             <div
               key={i}
               className={`flex-1 rounded-t-sm transition-all duration-300 ${isSystemActive ? 'bg-emerald-500' : 'bg-zinc-800'}`}
-              style={{ height: `${isSystemActive ? 10 + Math.random() * 90 : 5}%` }}
+              style={{ height: `${isSystemActive ? 20 + Math.random() * 90 : 5}%` }}
             />
           ))}
         </div>
+
         <div
-          className={`flex items-center justify-around w-full max-w-[95vw] md:max-w-4xl h-20 md:h-28 ${glassPanel} rounded-2xl md:rounded-4xl px-4 md:px-16 relative overflow-hidden`}
+          className={`flex items-center justify-around w-full max-w-[95vw] md:max-w-4xl h-20 md:h-28 ${glassPanel} rounded-2xl md:rounded-4xl px-4 md:px-16 relative overflow-hidden transition-transform duration-500 scale-75 origin-bottom xl:scale-100`}
         >
           <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-emerald-400 to-transparent animate-[scan_5s_linear_infinite] opacity-30" />
 
