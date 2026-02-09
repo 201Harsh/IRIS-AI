@@ -14,7 +14,6 @@ export const saveMessage = async (role: 'user' | 'model' | 'iris', text: string)
       parts: [{ text: text }]
     })
   } catch (err) {
-    console.error('Memory Save Failed:', err)
   }
 }
 
@@ -23,7 +22,6 @@ export const getHistory = async (): Promise<ChatMessage[]> => {
     const history = await window.electron.ipcRenderer.invoke('get-history')
     return history || []
   } catch (e) {
-    console.error('Memory Load Failed:', e)
     return []
   }
 }

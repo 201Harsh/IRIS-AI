@@ -24,7 +24,7 @@ export default function registerAppScanner(ipcMain: IpcMain) {
           .split(/\r?\n/)
           .map((a) => a.trim())
           .filter((a) => a)
-        return [...new Set(apps)] // Remove duplicates
+        return [...new Set(apps)]
       }
 
       if (os.platform() === 'darwin') {
@@ -33,7 +33,7 @@ export default function registerAppScanner(ipcMain: IpcMain) {
         return output.split(', ').map((s) => s.trim())
       }
 
-      return [] // Linux or other OS not supported yet
+      return [] 
     } catch (e) {
       console.error('App Scan Error:', e)
       return []

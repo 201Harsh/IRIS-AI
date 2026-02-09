@@ -16,7 +16,6 @@ export const getSystemStatus = async (): Promise<SystemStats | null> => {
   try {
     return await window.electron.ipcRenderer.invoke('get-system-stats')
   } catch (error) {
-    console.warn('IPC connection pending...')
     return null
   }
 }

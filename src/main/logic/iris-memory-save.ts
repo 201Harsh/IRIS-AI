@@ -3,7 +3,6 @@ import path from 'path'
 import { IpcMain, App } from 'electron'
 
 export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain; app: App }) {
-  console.log('🔵 [Main] Registering Memory Handlers...')
 
   const CHAT_DIR = path.resolve(app.getPath('userData'), 'Chat')
   const FILE_PATH = path.join(CHAT_DIR, 'iris_memory.json')
@@ -33,7 +32,6 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
       fs.writeFileSync(FILE_PATH, JSON.stringify(history, null, 2))
       return true
     } catch (err) {
-      console.error('🔴 Save Error:', err)
       return false
     }
   })
@@ -49,7 +47,6 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
         }))
       }
     } catch (err) {
-      console.error('🔴 Read Error:', err)
     }
     return []
   })
