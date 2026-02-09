@@ -446,16 +446,6 @@ const IRIS = () => {
       </div>
 
       <div className="absolute bottom-[4vh] w-full flex flex-col items-center z-50 px-4 md:px-6 pb-4">
-        <div className="flex items-end gap-px md:gap-1 h-12 mb-6 opacity-30 px-10 max-w-4xl w-full overflow-hidden">
-          {[...Array(60)].map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 rounded-t-sm transition-all duration-300 ${isSystemActive ? 'bg-emerald-500' : 'bg-zinc-800'}`}
-              style={{ height: `${isSystemActive ? 20 + Math.random() * 90 : 5}%` }}
-            />
-          ))}
-        </div>
-
         <div
           className={`flex items-center justify-around w-full max-w-[95vw] md:max-w-4xl h-20 md:h-28 ${glassPanel} rounded-2xl md:rounded-4xl px-4 md:px-16 relative overflow-hidden transition-transform duration-500 scale-75 origin-bottom xl:scale-100`}
         >
