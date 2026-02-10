@@ -52,7 +52,6 @@ const TitleBar = () => {
         </div>
       )}
 
-      {/* --- CENTER TITLE (Absolute Center) --- */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 opacity-60 pointer-events-none">
         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
         <div className="text-[11px] font-bold text-zinc-300 tracking-[0.3em]">
@@ -60,7 +59,6 @@ const TitleBar = () => {
         </div>
       </div>
 
-      {/* --- WINDOWS RIGHT CONTROLS (Standard) --- */}
       {!isMac && (
         <div className="flex h-full no-drag ml-auto -mr-4 z-50">
           <button

@@ -12,26 +12,22 @@ import { irisService } from '@renderer/services/Iris-voice-ai'
 import { getScreenSourceId } from '@renderer/hooks/CaptureDesktop'
 
 const MiniOverlay = () => {
-  // State synchronized with Service
   const [isSystemActive, setIsSystemActive] = useState(irisService.isConnected)
-  const [isMuted, setIsMuted] = useState(true) // Default mute until connected
+  const [isMuted, setIsMuted] = useState(true) 
   const [isVideoOn, setIsVideoOn] = useState(false)
   const [isTalking, setIsTalking] = useState(false)
 
   const analyzerRef = useRef<AnalyserNode | null>(null)
   const dataArrayRef = useRef<Uint8Array | any | null>(null)
-  const videoRef = useRef<HTMLVideoElement>(document.createElement('video')) // Invisible video element for processing
+  const videoRef = useRef<HTMLVideoElement>(document.createElement('video')) 
   const activeStreamRef = useRef<MediaStream | null>(null)
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 1. SYNC STATE ON MOUNT
   useEffect(() => {
     setIsSystemActive(irisService.isConnected)
-    // If already connected, assume mic is active (or check service state if you added a getter)
     if (irisService.isConnected) setIsMuted(false)
   }, [])
 
-  // 2. AUDIO VISUALIZER (The Green Dot)
   useEffect(() => {
     if (isSystemActive && irisService.analyser) {
       analyzerRef.current = irisService.analyser
@@ -51,7 +47,6 @@ const MiniOverlay = () => {
     }
   }, [isSystemActive])
 
-  // 3. POWER LOGIC (Start/End System)
   const toggleSystem = async () => {
     if (!isSystemActive) {
       try {
@@ -63,28 +58,25 @@ const MiniOverlay = () => {
         setIsSystemActive(false)
       }
     } else {
-      turnOffVision() // Kill video if running
+      turnOffVision() 
       irisService.disconnect()
       setIsSystemActive(false)
       setIsMicMuted(true)
     }
   }
 
-  // 4. MIC LOGIC
   const setIsMicMuted = (muted: boolean) => {
     setIsMuted(muted)
     irisService.setMute(muted)
   }
 
-  // 5. VISION LOGIC (Auto-Select Screen in Overlay Mode)
   const toggleVision = async () => {
     if (isVideoOn) {
       turnOffVision()
     } else {
-      if (!isSystemActive) return // Can't see if brain is off
+      if (!isSystemActive) return 
 
       try {
-        // Auto-select screen for overlay convenience
         const sourceId = await getScreenSourceId()
         if (!sourceId) return
 
@@ -153,7 +145,6 @@ const MiniOverlay = () => {
 
   return (
     <div className="w-full h-full flex items-center justify-between px-4 bg-zinc-950/90 backdrop-blur-xl rounded-full border border-emerald-500/30 shadow-[0_4px_30px_rgba(16,185,129,0.2)] drag-region overflow-hidden">
-      {/* 1. STATUS DOT (Animated) */}
       <div className="flex items-center gap-3 no-drag">
         <div
           className={`
@@ -175,9 +166,7 @@ const MiniOverlay = () => {
         </div>
       </div>
 
-      {/* 2. CONTROLS (Center) */}
       <div className="flex items-center gap-2 no-drag">
-        {/* MIC TOGGLE */}
         <button
           onClick={() => setIsMicMuted(!isMuted)}
           disabled={!isSystemActive}
