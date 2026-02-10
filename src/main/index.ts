@@ -1,4 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain, desktopCapturer } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  desktopCapturer,
+  globalShortcut,
+  screen
+} from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -10,22 +18,36 @@ import registerFileOps from './logic/file-ops'
 import registerFileWrite from './logic/file-write'
 import registerFileRead from './logic/file-read'
 
+// 1. GLOBAL VARIABLES
+let mainWindow: BrowserWindow | null = null
+let isOverlayMode = false
+
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    frame: false, // ⚡ REQUIRED: No OS Title Bar (We build our own)
+    transparent: true, // ⚡ REQUIRED: For the Pill Shape
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      backgroundThrottling: false
     }
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    if (mainWindow) mainWindow.show()
+  })
+
+  // --- WINDOW CONTROLS (Min/Close/Max) ---
+  ipcMain.on('window-min', () => mainWindow?.minimize())
+  ipcMain.on('window-close', () => mainWindow?.close())
+  ipcMain.on('window-max', () => {
+    if (mainWindow?.isMaximized()) mainWindow.unmaximize()
+    else mainWindow?.maximize()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -33,8 +55,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -42,20 +62,45 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// 2. TOGGLE LOGIC
+function toggleOverlayMode() {
+  if (!mainWindow) return
+
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
+  if (isOverlayMode) {
+    // 🖥️ DASHBOARD MODE
+    mainWindow.setResizable(true)
+    mainWindow.setAlwaysOnTop(false)
+    mainWindow.setBounds({ width: 900, height: 670 })
+    mainWindow.center()
+    mainWindow.webContents.send('overlay-mode', false)
+  } else {
+    // 💊 OVERLAY MODE (Small Pill)
+    const w = 280
+    const h = 70
+    mainWindow.setBounds({
+      width: w,
+      height: h,
+      x: Math.floor(width / 2 - w / 2),
+      y: height - h - 50 // Bottom Center
+    })
+    mainWindow.setAlwaysOnTop(true, 'screen-saver')
+    mainWindow.setResizable(false)
+    mainWindow.webContents.send('overlay-mode', true)
+  }
+  isOverlayMode = !isOverlayMode
+}
+
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // --- KEEPING YOUR LOGIC ---
   registerFileSearch(ipcMain)
   registerFileRead(ipcMain)
   registerFileWrite(ipcMain)
@@ -71,21 +116,21 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  // 3. SHORTCUT & HANDLER
+  globalShortcut.register('CommandOrControl+Shift+I', () => toggleOverlayMode())
+  ipcMain.on('toggle-overlay', () => toggleOverlayMode())
+
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
