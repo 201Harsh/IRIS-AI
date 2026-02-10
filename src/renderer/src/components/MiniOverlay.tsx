@@ -181,7 +181,6 @@ const MiniOverlay = () => {
           {isMuted ? <RiMicOffLine size={18} /> : <RiMicLine size={18} />}
         </button>
 
-        {/* POWER BUTTON (Centerpiece) */}
         <button
           onClick={toggleSystem}
           className={`p-3 rounded-full border transition-all duration-500 shadow-lg ${
@@ -193,7 +192,6 @@ const MiniOverlay = () => {
           <GiPowerButton size={20} className={isSystemActive ? 'animate-pulse' : ''} />
         </button>
 
-        {/* SCREEN TOGGLE */}
         <button
           onClick={toggleVision}
           disabled={!isSystemActive}
@@ -209,7 +207,6 @@ const MiniOverlay = () => {
         </button>
       </div>
 
-      {/* 3. EXPAND / DRAG */}
       <div className="pl-3 border-l border-emerald-500/20 no-drag flex items-center gap-2">
         <button
           onClick={expand}
