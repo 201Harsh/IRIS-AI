@@ -4,7 +4,6 @@ import {
   RiMicLine,
   RiMicOffLine,
   RiVideoChatLine,
-  RiShutDownLine,
   RiVideoChatFill,
   RiCpuLine,
   RiRadarLine,
@@ -14,203 +13,66 @@ import {
   RiCameraLine,
   RiTerminalBoxLine,
   RiShieldFlashLine,
-  RiSwapBoxLine
+  RiSwapBoxLine,
+  RiShutDownLine
 } from 'react-icons/ri'
 import { GiPowerButton, GiTinker } from 'react-icons/gi'
-import { irisService } from '@renderer/services/Iris-voice-ai'
 import { FaMemory } from 'react-icons/fa6'
 import { getSystemStatus } from '@renderer/services/system-info'
 import { HiComputerDesktop } from 'react-icons/hi2'
-import { getScreenSourceId } from '@renderer/hooks/CaptureDesktop'
+import { VisionMode } from '@renderer/App'
 
-const IRIS = () => {
-  const [isMicMuted, setIsMicMuted] = useState<boolean>(true)
-  const [isVideoOn, setIsVideoOn] = useState<boolean>(false)
-  const [isSystemActive, setIsSystemActive] = useState<boolean>(false)
+interface IrisProps {
+  isSystemActive: boolean
+  toggleSystem: () => void
+  isMicMuted: boolean
+  toggleMic: () => void
+  isVideoOn: boolean
+  visionMode: VisionMode
+  startVision: (mode: 'camera' | 'screen') => void
+  stopVision: () => void
+  activeStream: MediaStream | null 
+}
 
+const IRIS = ({
+  isSystemActive,
+  toggleSystem,
+  isMicMuted,
+  toggleMic,
+  isVideoOn,
+  visionMode,
+  startVision,
+  stopVision,
+  activeStream
+}: IrisProps) => {
   const [showSourceModal, setShowSourceModal] = useState<boolean>(false)
-  const [visionMode, setVisionMode] = useState<'camera' | 'screen'>('camera')
-
   const [stats, setStats] = useState<any>(null)
   const [time, setTime] = useState<Date>(new Date())
 
   const videoRef = useRef<HTMLVideoElement>(null)
-  const previewRef = useRef<HTMLVideoElement>(null)
-  const activeStreamRef = useRef<MediaStream | null>(null)
-  const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (videoRef.current && activeStream && isVideoOn) {
+      videoRef.current.srcObject = activeStream
+      videoRef.current.play().catch((e) => console.log('Playback error', e))
+    }
+  }, [activeStream, isVideoOn])
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date())
-      if (isSystemActive && !irisService.isConnected) {
-        setIsSystemActive(false)
-        setIsMicMuted(true)
-        turnOffVision()
-      }
+      getSystemStatus().then(setStats)
     }, 1000)
     return () => clearInterval(timer)
-  }, [isSystemActive])
-
-  useEffect(() => {
-    irisService.setMute(isMicMuted)
-  }, [isMicMuted])
-
-  const toggleSystem = async () => {
-    if (!isSystemActive) {
-      try {
-        await irisService.connect()
-        setIsSystemActive(true)
-        setIsMicMuted(false)
-      } catch (err) {
-        setIsSystemActive(false)
-        turnOffVision()
-      }
-    } else {
-      irisService.disconnect()
-      setIsSystemActive(false)
-      setIsMicMuted(true)
-      turnOffVision()
-    }
-  }
-
-  const turnOffVision = () => {
-    setIsVideoOn(false)
-    setShowSourceModal(false)
-    if (activeStreamRef.current) {
-      activeStreamRef.current.getTracks().forEach((t) => t.stop())
-      activeStreamRef.current = null
-    }
-    if (videoRef.current) videoRef.current.srcObject = null
-    if (aiIntervalRef.current) {
-      clearInterval(aiIntervalRef.current)
-      aiIntervalRef.current = null
-    }
-  }
-
-  const getStream = async (mode: 'camera' | 'screen') => {
-    if (activeStreamRef.current) {
-      activeStreamRef.current.getTracks().forEach((t) => t.stop())
-    }
-
-    try {
-      let stream: MediaStream
-
-      if (mode === 'camera') {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480 }
-        })
-      } else {
-        const sourceId = await getScreenSourceId()
-        if (!sourceId) return null
-
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            // @ts-ignore
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sourceId,
-              minWidth: 1280,
-              maxWidth: 1920,
-              minHeight: 720,
-              maxHeight: 1080
-            }
-          }
-        })
-      }
-      return stream
-    } catch (err) {
-      console.error('Stream Error:', err)
-      return null
-    }
-  }
-
-  const switchVideoSource = async () => {
-    const newMode = visionMode === 'camera' ? 'screen' : 'camera'
-    setVisionMode(newMode)
-    if (isVideoOn) {
-      const stream = await getStream(newMode)
-      if (stream) {
-        activeStreamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          try {
-            await videoRef.current.play()
-          } catch (e) {}
-        }
-        stream.getVideoTracks()[0].onended = () => turnOffVision()
-      }
-    }
-  }
+  }, [])
 
   const handleVisionBtnClick = () => {
     if (isVideoOn) {
-      turnOffVision()
+      stopVision()
     } else {
-      setVisionMode('camera')
       setShowSourceModal(true)
     }
   }
-
-  useEffect(() => {
-    if (showSourceModal) {
-      ;(async () => {
-        const stream = await getStream(visionMode)
-        if (stream) {
-          activeStreamRef.current = stream
-          if (previewRef.current) {
-            previewRef.current.srcObject = stream
-            try {
-              await previewRef.current.play()
-            } catch (e) {}
-          }
-          stream.getVideoTracks()[0].onended = () => turnOffVision()
-        }
-      })()
-    }
-  }, [showSourceModal, visionMode])
-
-  const confirmSource = async () => {
-    if (activeStreamRef.current) {
-      if (videoRef.current) {
-        videoRef.current.srcObject = activeStreamRef.current
-        try {
-          await videoRef.current.play()
-        } catch (e) {}
-      }
-      startAIProcessing()
-      setIsVideoOn(true)
-      setShowSourceModal(false)
-    }
-  }
-
-  const startAIProcessing = () => {
-    if (aiIntervalRef.current) clearInterval(aiIntervalRef.current)
-    aiIntervalRef.current = setInterval(() => {
-      if (
-        videoRef.current &&
-        videoRef.current.readyState === 4 &&
-        irisService.socket?.readyState === WebSocket.OPEN
-      ) {
-        const canvas = document.createElement('canvas')
-        canvas.width = visionMode === 'screen' ? 800 : 480
-        canvas.height = visionMode === 'screen' ? 450 : 360
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
-          const quality = visionMode === 'screen' ? 0.6 : 0.5
-          const base64 = canvas.toDataURL('image/jpeg', quality).split(',')[1]
-          irisService.sendVideoFrame(base64)
-        }
-      }
-    }, 2000)
-  }
-
-  useEffect(() => {
-    getSystemStatus().then(setStats)
-    const interval = setInterval(() => getSystemStatus().then(setStats), 7000)
-    return () => clearInterval(interval)
-  }, [])
 
   const systemMetrics = [
     { icon: <RiCpuLine />, label: 'CPU', val: isSystemActive && stats ? `${stats.cpu}%` : '--' },
@@ -247,50 +109,35 @@ const IRIS = () => {
             </h2>
             <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-emerald-500/10">
               <button
-                onClick={() => setVisionMode('camera')}
-                className={`flex-1 py-4 rounded-lg flex items-center justify-center gap-3 transition-all ${visionMode === 'camera' ? 'bg-emerald-500 text-black font-black' : 'hover:bg-white/5 text-zinc-500'}`}
+                onClick={() => {
+                  startVision('camera')
+                  setShowSourceModal(false)
+                }}
+                className="flex-1 py-4 rounded-lg flex items-center justify-center gap-3 bg-zinc-900 hover:bg-emerald-500 hover:text-black transition-all"
               >
                 <RiCameraLine size={24} /> WEBCAM
               </button>
               <button
-                onClick={() => setVisionMode('screen')}
-                className={`flex-1 py-4 rounded-lg flex items-center justify-center gap-3 transition-all ${visionMode === 'screen' ? 'bg-emerald-500 text-black font-black' : 'hover:bg-white/5 text-zinc-500'}`}
+                onClick={() => {
+                  startVision('screen')
+                  setShowSourceModal(false)
+                }}
+                className="flex-1 py-4 rounded-lg flex items-center justify-center gap-3 bg-zinc-900 hover:bg-emerald-500 hover:text-black transition-all"
               >
                 <RiComputerLine size={24} /> SCREEN
               </button>
             </div>
-            <div className="aspect-video bg-black rounded-xl overflow-hidden border border-emerald-500/20 relative group">
-              <video
-                ref={previewRef}
-                autoPlay
-                muted
-                playsInline
-                className={`w-full h-full object-contain ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
-              />
-            </div>
             <div className="flex gap-4">
               <button
-                onClick={turnOffVision}
+                onClick={() => setShowSourceModal(false)}
                 className="flex-1 py-4 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold tracking-widest text-sm"
               >
                 ABORT
-              </button>
-              <button
-                onClick={confirmSource}
-                className="flex-2 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black tracking-widest text-sm shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-              >
-                ESTABLISH UPLINK
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <div className="absolute inset-0 border-2 border-emerald-500/5 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-[15vw] h-[15vw] max-w-48 max-h-48 border-t-2 border-l-2 border-emerald-500/40 rounded-tl-4xl md:rounded-tl-[4rem] m-4 md:m-6" />
-      <div className="absolute bottom-0 right-0 w-[15vw] h-[15vw] max-w-48 max-h-48 border-b-2 border-r-2 border-emerald-500/40 rounded-br-4xl md:rounded-br-[4rem] m-4 md:m-6" />
-      <div className="absolute top-0 right-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-t-2 border-r-2 border-emerald-500/20 rounded-tr-3xl m-4 md:m-6 opacity-50" />
-      <div className="absolute bottom-0 left-0 w-[8vw] h-[8vw] max-w-24 max-h-24 border-b-2 border-l-2 border-emerald-500/20 rounded-bl-3xl m-4 md:m-6 opacity-50" />
 
       <div className="absolute top-6 left-6 md:top-12 md:left-14 xl:top-[5vh] xl:left-0 xl:w-full flex flex-col items-start xl:items-center z-50 pointer-events-none transition-all duration-700">
         <div className="flex items-center gap-3 mb-1">
@@ -404,9 +251,8 @@ const IRIS = () => {
 
           {isVideoOn && (
             <button
-              onClick={switchVideoSource}
+              onClick={() => startVision(visionMode === 'camera' ? 'screen' : 'camera')}
               className="absolute bottom-2 right-2 z-30 p-1.5 rounded-lg bg-black/60 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black transition-all"
-              title="Switch Source"
             >
               <RiSwapBoxLine size={14} />
             </button>
@@ -421,7 +267,7 @@ const IRIS = () => {
           />
         </div>
 
-        <div className="grid-cols-2 gap-3 w-full hidden xl:grid">
+        <div className="hidden grid-cols-2 gap-3 w-full xl:grid">
           {systemMetrics.map((m, i) => (
             <div
               key={i}
@@ -437,6 +283,7 @@ const IRIS = () => {
         </div>
       </div>
 
+      {/* CENTER SPHERE */}
       <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
         <div
           className={`w-[80vw] h-[80vw] sm:w-[75vh] sm:h-[75vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'drop-shadow-[0_0_80px_rgba(16,185,129,0.25)] opacity-100' : 'opacity-85 grayscale-65'}`}
@@ -452,7 +299,7 @@ const IRIS = () => {
           <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-transparent via-emerald-400 to-transparent animate-[scan_5s_linear_infinite] opacity-30" />
 
           <button
-            onClick={() => setIsMicMuted(!isMicMuted)}
+            onClick={toggleMic}
             className={`cursor-pointer group flex flex-col items-center transition-all ${isMicMuted ? 'text-red-500' : neonText}`}
           >
             <div className="p-2 md:p-4 rounded-xl group-hover:bg-emerald-500/10 border border-transparent group-hover:border-emerald-500/20">

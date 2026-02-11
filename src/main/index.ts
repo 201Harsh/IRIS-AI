@@ -23,7 +23,7 @@ let isOverlayMode = false
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: 950,
     height: 670,
     show: false,
     autoHideMenuBar: true,
@@ -69,11 +69,11 @@ function toggleOverlayMode() {
   if (isOverlayMode) {
     mainWindow.setResizable(true)
     mainWindow.setAlwaysOnTop(false)
-    mainWindow.setBounds({ width: 900, height: 670 })
+    mainWindow.setBounds({ width: 950, height: 670 })
     mainWindow.center()
     mainWindow.webContents.send('overlay-mode', false)
   } else {
-    const w = 290
+    const w = 340
     const h = 70
     mainWindow.setBounds({
       width: w,
