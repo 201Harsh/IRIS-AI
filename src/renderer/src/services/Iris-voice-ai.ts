@@ -40,6 +40,16 @@ const manageFile = async (
   }
 }
 
+const openFile = async (filePath: string) => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('file:open', filePath)
+    if (result.success) return 'File opened successfully.'
+    return `Error opening file: ${result.error}`
+  } catch (err) {
+    return `System Error: ${err}`
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -269,6 +279,18 @@ export class GeminiLiveService {
                     },
                     required: ['operation', 'source_path']
                   }
+                },
+                {
+                  name: 'open_file',
+                  description:
+                    'Open a file in its default system application (e.g., VS Code for code, Media Player for video). Use this after creating a file or when the user asks to see something.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_path: { type: 'STRING', description: 'The absolute path to the file.' }
+                    },
+                    required: ['file_path']
+                  }
                 }
               ]
             }
@@ -314,6 +336,8 @@ export class GeminiLiveService {
                 call.args.source_path,
                 call.args.dest_path
               )
+            } else if (call.name === 'open_file') {
+              result = await openFile(call.args.file_path)
             } else {
               result = 'Error: Tool not found.'
             }

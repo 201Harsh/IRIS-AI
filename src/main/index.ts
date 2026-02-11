@@ -17,6 +17,7 @@ import registerFileSearch from './logic/file-search'
 import registerFileOps from './logic/file-ops'
 import registerFileWrite from './logic/file-write'
 import registerFileRead from './logic/file-read'
+import registerFileOpen from './logic/file-open'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -27,7 +28,7 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
-    frame: false, 
+    frame: false,
     transparent: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -79,7 +80,7 @@ function toggleOverlayMode() {
       width: w,
       height: h,
       x: Math.floor(width / 2 - w / 2),
-      y: height - h - 50 
+      y: height - h - 50
     })
     mainWindow.setAlwaysOnTop(true, 'screen-saver')
     mainWindow.setResizable(false)
@@ -95,6 +96,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerFileOpen(ipcMain)
   registerFileSearch(ipcMain)
   registerFileRead(ipcMain)
   registerFileWrite(ipcMain)
