@@ -32,12 +32,11 @@ const App = () => {
   useEffect(() => {
     const watchdog = setInterval(() => {
       if (isSystemActive && !irisService.isConnected) {
-        console.warn('⚠️ Disconnect detected')
         setIsSystemActive(false)
         setIsMicMuted(true)
         stopVision()
       }
-    }, 500)
+    }, 1000)
     return () => clearInterval(watchdog)
   }, [isSystemActive])
 

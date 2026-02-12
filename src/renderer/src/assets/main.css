@@ -26,3 +26,8 @@ body {
 button {
   -webkit-app-region: no-drag;
 }
+
+.scrollbar-small {
+  scrollbar-color: #9b9b9b transparent;
+  scrollbar-width: auto;
+}
