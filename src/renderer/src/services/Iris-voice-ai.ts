@@ -3,7 +3,6 @@ import { getRunningApps } from './get-apps'
 import { getHistory, saveMessage } from './iris-ai-brain'
 import { getSystemStatus } from './system-info'
 
-// 🛠️ ELECTRON IPC HELPERS
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
     return await window.electron.ipcRenderer.invoke('search-files', { fileName, searchPath })
@@ -45,6 +44,15 @@ const openFile = async (filePath: string) => {
     const result = await window.electron.ipcRenderer.invoke('file:open', filePath)
     if (result.success) return 'File opened successfully.'
     return `Error opening file: ${result.error}`
+  } catch (err) {
+    return `System Error: ${err}`
+  }
+}
+
+const readDirectory = async (dirPath: string) => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('read-directory', dirPath)
+    return result
   } catch (err) {
     return `System Error: ${err}`
   }
@@ -291,6 +299,21 @@ export class GeminiLiveService {
                     },
                     required: ['file_path']
                   }
+                },
+                {
+                  name: 'read_directory',
+                  description:
+                    'Scan a directory (folder) to see what files are inside. Use this to check contents of "Desktop", "Downloads", etc. Returns a list of files with metadata (name, type, size).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      directory_path: {
+                        type: 'STRING',
+                        description: 'The folder path (e.g. "Desktop", "Documents", "C:/Projects").'
+                      }
+                    },
+                    required: ['directory_path']
+                  }
                 }
               ]
             }
@@ -338,6 +361,8 @@ export class GeminiLiveService {
               )
             } else if (call.name === 'open_file') {
               result = await openFile(call.args.file_path)
+            } else if (call.name === 'read_directory') {
+              result = await readDirectory(call.args.directory_path)
             } else {
               result = 'Error: Tool not found.'
             }
@@ -378,13 +403,11 @@ export class GeminiLiveService {
           if (serverContent.turnComplete || serverContent.interrupted) {
             if (this.userInputBuffer.trim()) {
               await saveMessage('user', this.userInputBuffer.trim())
-              console.log('📝 Saved User:', this.userInputBuffer)
               this.userInputBuffer = ''
             }
 
             if (this.aiResponseBuffer.trim()) {
               await saveMessage('iris', this.aiResponseBuffer.trim())
-              console.log('📝 Saved IRIS:', this.aiResponseBuffer)
               this.aiResponseBuffer = ''
             }
           }

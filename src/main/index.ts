@@ -18,6 +18,7 @@ import registerFileOps from './logic/file-ops'
 import registerFileWrite from './logic/file-write'
 import registerFileRead from './logic/file-read'
 import registerFileOpen from './logic/file-open'
+import registerDirLoader from './logic/dir-load'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -96,6 +97,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerDirLoader(ipcMain)
   registerFileOpen(ipcMain)
   registerFileSearch(ipcMain)
   registerFileRead(ipcMain)
