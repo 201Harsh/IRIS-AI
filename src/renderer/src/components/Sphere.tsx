@@ -37,7 +37,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
   useFrame((state, delta) => {
     if (!state.clock.running || !mesh.current) return
 
-    mesh.current.rotation.y += delta * 0.15
+    mesh.current.rotation.y += delta * 0.08
     mesh.current.rotation.z += delta * 0.05
 
     let volume = 0
@@ -57,7 +57,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
       const iy = i * 3 + 1
       const iz = i * 3 + 2
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.30
+      const expansion = 1 + volume * spreadFactors[i] * 0.40
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion
