@@ -141,7 +141,7 @@ export default function registerDirLoader(ipcMain: IpcMain) {
           if (!a.isDirectory && b.isDirectory) return 1
           return b.mtime - a.mtime // Newest first
         })
-        .slice(0, 30) // Limit to 30 items to save context
+        .slice(0, 150) // Limit to 30 items to save context
 
       // 7. FORMAT OUTPUT FOR AI
       const results = sortedItems.map((item) => {
