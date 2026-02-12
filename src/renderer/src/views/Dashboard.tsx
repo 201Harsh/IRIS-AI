@@ -133,8 +133,8 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
             className={`w-full h-full rounded-xl overflow-hidden bg-black relative border border-white/5 transition-all ${isVideoOn ? 'opacity-100' : 'opacity-30'}`}
           >
             <video
-              key={visionMode} 
-              ref={setVideoRef} 
+              key={visionMode}
+              ref={setVideoRef}
               className={`w-full h-full object-cover ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
               autoPlay
               playsInline
