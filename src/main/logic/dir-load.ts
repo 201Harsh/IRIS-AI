@@ -3,9 +3,8 @@ import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
 
-// Helper to determine file category
 const getFileType = (name: string, isDirectory: boolean) => {
-  if (isDirectory) return 'directory' // ⚡ Explicitly mark folders
+  if (isDirectory) return 'directory'
 
   const ext = path.extname(name).toLowerCase()
   const textExts = [
@@ -41,13 +40,11 @@ const getFileType = (name: string, isDirectory: boolean) => {
   return 'unknown'
 }
 
-// 🛡️ Safe Path Getter (Fixes the "Failed to get path" error)
 const getSystemPath = (name: any) => {
   try {
     return app.getPath(name)
   } catch (e) {
     console.warn(`⚠️ Electron failed to resolve '${name}'. Using fallback.`)
-    // Manual fallback for Windows/Mac/Linux standard paths
     const home = os.homedir()
     switch (name) {
       case 'desktop':
@@ -75,13 +72,10 @@ export default function registerDirLoader(ipcMain: IpcMain) {
       let targetPath = rawInput
       const platform = os.platform()
 
-      // 1. 🛡️ ROBUST PATH RESOLUTION
-      // A. Windows Drive Logic (e.g., "D", "d:", "E")
       if (platform === 'win32' && /^[a-zA-Z]:?$/.test(rawInput)) {
         const driveLetter = rawInput.charAt(0).toUpperCase()
         targetPath = `${driveLetter}:\\`
       }
-      // B. System Aliases (Safe Fallback Wrapper)
       else if (
         ['desktop', 'documents', 'downloads', 'music', 'pictures', 'videos'].includes(
           rawInput.toLowerCase()
@@ -91,14 +85,12 @@ export default function registerDirLoader(ipcMain: IpcMain) {
       } else if (rawInput.toLowerCase() === 'home' || rawInput === '~') {
         targetPath = os.homedir()
       }
-      // C. Relative Path Fallback
       else if (!path.isAbsolute(targetPath)) {
         targetPath = path.join(os.homedir(), rawInput)
       }
 
       console.log(`📂 IRIS Scanning: '${targetPath}'`)
 
-      // 2. 🛡️ VERIFY PATH EXISTS
       try {
         const stats = await fs.stat(targetPath)
         if (!stats.isDirectory()) {
@@ -108,12 +100,10 @@ export default function registerDirLoader(ipcMain: IpcMain) {
         return `Error: Directory not found at '${targetPath}'.`
       }
 
-      // 3. READ DIRECTORY (With Types)
       const dirents = await fs.readdir(targetPath, { withFileTypes: true })
 
-      // 4. FILTER & MAP
       const items = dirents
-        .filter((d) => !d.name.startsWith('.')) // Hide dotfiles (.git, .env)
+        .filter((d) => !d.name.startsWith('.'))
         .map((d) => ({
           name: d.name,
           path: path.join(targetPath, d.name),
@@ -121,7 +111,6 @@ export default function registerDirLoader(ipcMain: IpcMain) {
           ext: path.extname(d.name).toLowerCase()
         }))
 
-      // 5. GET METADATA (Sort by Recent)
       const itemsWithStats = await Promise.all(
         items.map(async (item) => {
           try {
@@ -133,17 +122,14 @@ export default function registerDirLoader(ipcMain: IpcMain) {
         })
       )
 
-      // 6. SORT & LIMIT
-      // Prioritize Folders at the top, then recent files
       const sortedItems = itemsWithStats
         .sort((a, b) => {
           if (a.isDirectory && !b.isDirectory) return -1
           if (!a.isDirectory && b.isDirectory) return 1
-          return b.mtime - a.mtime // Newest first
+          return b.mtime - a.mtime 
         })
-        .slice(0, 150) // Limit to 30 items to save context
+        .slice(0, 150)
 
-      // 7. FORMAT OUTPUT FOR AI
       const results = sortedItems.map((item) => {
         const type = getFileType(item.name, item.isDirectory)
         let infoString = ''
