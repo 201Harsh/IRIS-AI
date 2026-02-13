@@ -54,10 +54,10 @@ const IRIS = (props: IrisProps) => {
   useEffect(() => {
     const fetchHistory = async () => {
       const history = await getHistory()
-      if (Array.isArray(history)) setChatHistory(history.slice(-15))
+      if (Array.isArray(history)) setChatHistory(history.slice(-20))
     }
     fetchHistory()
-    const interval = setInterval(fetchHistory, 500)
+    const interval = setInterval(fetchHistory, 3500)
     return () => clearInterval(interval)
   }, [])
 
@@ -127,7 +127,7 @@ const IRIS = (props: IrisProps) => {
               onVisionClick={handleVisionClick}
             />
           )}
-          {activeTab === 'APPS' && <AppsView glassPanel={glassPanel} />}
+          {activeTab === 'APPS' && <AppsView />}
           {activeTab === 'NOTES' && <NotesView glassPanel={glassPanel} />}
           {activeTab === 'PHONE' && <PhoneView glassPanel={glassPanel} />}
           {activeTab === 'CONNECT' && <SettingsView glassPanel={glassPanel} />}

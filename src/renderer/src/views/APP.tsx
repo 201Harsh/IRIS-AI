@@ -10,9 +10,7 @@ import {
 } from 'react-icons/ri'
 import { getAllApps, AppItem } from '@renderer/services/system-info'
 
-// 🎨 SMART ICON COMPONENT (Crash Proof)
 const SmartIcon = ({ name }: { name: string }) => {
-  // 🛡️ Safety: If name is undefined/null, render generic
   if (!name) return <div className="w-10 h-10 bg-zinc-800 rounded-lg border border-white/5" />
 
   const lower = name.toLowerCase()
@@ -131,10 +129,9 @@ const AppsView = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 pb-4 scrollbar-small min-h-0">
+      <div className="flex-1 overflow-y-auto pr-4 pb-4 scrollbar-small min-h-0">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {visibleApps.map((app, index) => {
-            // 🛡️ UNIQUE KEY FIX: Use ID + Index to guarantee uniqueness
             const safeKey = `${app.id}-${index}`
 
             if (visibleApps.length === index + 1) {

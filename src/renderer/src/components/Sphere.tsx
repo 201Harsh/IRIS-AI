@@ -37,7 +37,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
   useFrame((state, delta) => {
     if (!state.clock.running || !mesh.current) return
 
-    mesh.current.rotation.y += delta * 0.08
+    mesh.current.rotation.y += delta * 0.05
     mesh.current.rotation.z += delta * 0.05
 
     let volume = 0
@@ -57,7 +57,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
       const iy = i * 3 + 1
       const iz = i * 3 + 2
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.40
+      const expansion = 1 + volume * spreadFactors[i] * 0.36
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion
@@ -81,9 +81,9 @@ const CustomParticleSphere = ({ count = 6000 }) => {
       </bufferGeometry>
       <pointsMaterial
         color="#00F0FF"
-        size={0.011}
+        size={0.015}
         transparent={true}
-        opacity={0.8}
+        opacity={0.9}
         sizeAttenuation={true}
         blending={THREE.AdditiveBlending}
       />
@@ -94,7 +94,7 @@ const CustomParticleSphere = ({ count = 6000 }) => {
 const Sphere = () => {
   return (
     <Canvas camera={{ position: [0, 0, 4.5] }}>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.6} />
       <CustomParticleSphere />
     </Canvas>
   )
