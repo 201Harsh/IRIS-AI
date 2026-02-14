@@ -189,20 +189,20 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
           >
             <button
               onClick={onVisionClick}
-              className={`p-3 rounded-full transition-all ${isVideoOn ? 'bg-red-500/20 text-red-400' : 'hover:bg-white/10 text-zinc-400'}`}
+              className={`cursor-pointer p-3 rounded-full transition-all ${isVideoOn ? 'bg-red-500/20 text-red-400' : 'hover:bg-white/10 text-zinc-400'}`}
             >
               {isVideoOn ? <RiSwapBoxLine size={20} /> : <RiCameraLine size={20} />}
             </button>
             <button onClick={toggleSystem} className="relative group mx-2">
               <div
-                className={`p-4 rounded-full border-2 transition-all duration-500 ${isSystemActive ? 'bg-emerald-500 border-emerald-400 text-black shadow-[0_0_20px_#10b981]' : 'bg-red-500/10 border-red-500/50 text-red-500'}`}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all duration-500 ${isSystemActive ? 'bg-emerald-500 border-emerald-400 text-black shadow-[0_0_20px_#10b981]' : 'bg-red-500/10 border-red-500/50 text-red-500'}`}
               >
                 <RiPhoneFill size={24} className={isSystemActive ? 'animate-pulse' : ''} />
               </div>
             </button>
             <button
               onClick={toggleMic}
-              className={`p-3 rounded-full transition-all ${isMicMuted ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}
+              className={`cursor-pointer p-3 rounded-full transition-all ${isMicMuted ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}
             >
               {isMicMuted ? <RiMicOffLine size={20} /> : <RiMicLine size={20} />}
             </button>

@@ -57,7 +57,7 @@ const IRIS = (props: IrisProps) => {
       if (Array.isArray(history)) setChatHistory(history.slice(-20))
     }
     fetchHistory()
-    const interval = setInterval(fetchHistory, 3500)
+    const interval = setInterval(fetchHistory, 500)
     return () => clearInterval(interval)
   }, [])
 
@@ -93,7 +93,7 @@ const IRIS = (props: IrisProps) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-1.5 text-[9px] font-bold tracking-widest rounded-md transition-all duration-300 flex items-center gap-2 ${
+              className={`cursor-pointer px-5 py-1.5 text-[9px] font-bold tracking-widest rounded-md transition-all duration-300 flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
@@ -143,7 +143,7 @@ const IRIS = (props: IrisProps) => {
               </span>
               <button
                 onClick={() => setShowSourceModal(false)}
-                className="text-zinc-500 hover:text-white"
+                className="cursor-pointer text-zinc-500 hover:text-white"
               >
                 <RiCloseLine size={18} />
               </button>
@@ -155,7 +155,7 @@ const IRIS = (props: IrisProps) => {
                   props.startVision('camera')
                   setShowSourceModal(false)
                 }}
-                className="group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
               >
                 <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-emerald-500 text-zinc-400 group-hover:text-black transition-colors">
                   <RiCameraLine size={28} />
@@ -170,7 +170,7 @@ const IRIS = (props: IrisProps) => {
                   props.startVision('screen')
                   setShowSourceModal(false)
                 }}
-                className="group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-3 p-6 rounded-xl bg-black/40 border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
               >
                 <div className="p-3 rounded-full bg-zinc-900 group-hover:bg-emerald-500 text-zinc-400 group-hover:text-black transition-colors">
                   <RiComputerLine size={28} />

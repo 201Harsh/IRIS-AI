@@ -3,7 +3,7 @@ import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { irisService } from '@renderer/services/Iris-voice-ai'
 
-const CustomParticleSphere = ({ count = 6000 }) => {
+const CustomParticleSphere = ({ count = 8000 }) => {
   const mesh = useRef<THREE.Points>(null)
 
   const dataArray = useMemo(() => new Uint8Array(128), [])
@@ -55,9 +55,9 @@ const CustomParticleSphere = ({ count = 6000 }) => {
     for (let i = 0; i < count; i++) {
       const ix = i * 3
       const iy = i * 3 + 1
-      const iz = i * 3 + 2
+      const iz = i * 3 + 2 
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.36
+      const expansion = 1 + volume * spreadFactors[i] * 0.30
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion
@@ -76,12 +76,12 @@ const CustomParticleSphere = ({ count = 6000 }) => {
           count={positions.length / 3}
           array={positions}
           itemSize={3}
-          args={[positions, 3]}
+          args={[positions, 30]}
         />
       </bufferGeometry>
       <pointsMaterial
         color="#00F0FF"
-        size={0.015}
+        size={0.011}
         transparent={true}
         opacity={0.9}
         sizeAttenuation={true}
