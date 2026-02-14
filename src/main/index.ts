@@ -20,6 +20,7 @@ import registerFileOpen from './logic/file-open'
 import registerDirLoader from './logic/dir-load'
 import registerFileScanner from './logic/file-launcher'
 import registerAppLauncher from './logic/app-launcher'
+import registerNotesHandlers from './logic/notes-manager'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -98,6 +99,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerNotesHandlers(ipcMain)
   registerAppLauncher(ipcMain)
   registerDirLoader(ipcMain)
   registerFileOpen(ipcMain)

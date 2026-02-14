@@ -68,6 +68,16 @@ const openApp = async (appName: string) => {
   }
 }
 
+const saveNote = async (title: string, content: string) => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('save-note', { title, content })
+    if (result.success) return `Note saved successfully as ${title}.`
+    return `Failed to save note: ${result.error}`
+  } catch (e) {
+    return 'System Error saving note.'
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -342,6 +352,27 @@ export class GeminiLiveService {
                     },
                     required: ['app_name']
                   }
+                },
+                {
+                  name: 'save_note',
+                  description:
+                    'Save a plan, idea, or code snippet into the system notes. Use this when the user says "Remember this", "Save this plan", or "Create a note".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      title: {
+                        type: 'STRING',
+                        description:
+                          'A short, descriptive title for the note (e.g., "Project_Iris_Plan").'
+                      },
+                      content: {
+                        type: 'STRING',
+                        description:
+                          'The full content of the note in Markdown format. Use headers, bullet points, and code blocks.'
+                      }
+                    },
+                    required: ['title', 'content']
+                  }
                 }
               ]
             }
@@ -393,6 +424,8 @@ export class GeminiLiveService {
               result = await openFile(call.args.file_path)
             } else if (call.name === 'read_directory') {
               result = await readDirectory(call.args.directory_path)
+            } else if (call.name === 'save_note') {
+              result = await saveNote(call.args.title, call.args.content)
             } else {
               result = 'Error: Tool not found.'
             }
