@@ -3,7 +3,7 @@ import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { irisService } from '@renderer/services/Iris-voice-ai'
 
-const CustomParticleSphere = ({ count = 8000 }) => {
+const CustomParticleSphere = ({ count = 5000 }) => {
   const mesh = useRef<THREE.Points>(null)
 
   const dataArray = useMemo(() => new Uint8Array(128), [])
