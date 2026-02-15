@@ -210,7 +210,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
         </div>
       </div>
 
-      <div className="hidden lg:flex col-span-3 flex-col overflow-auto h-full z-40">
+      <div className="hidden lg:flex col-span-3 flex-col overflow-hidden h-full z-40">
         <div className={`${glassPanel} h-full p-4 flex flex-col`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-2">
             <span className="text-[10px] font-bold tracking-widest text-zinc-400">
