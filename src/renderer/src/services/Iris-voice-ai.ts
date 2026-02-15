@@ -78,6 +78,20 @@ const saveNote = async (title: string, content: string) => {
   }
 }
 
+const readSystemNotes = async () => {
+  try {
+    const notes: any[] = await window.electron.ipcRenderer.invoke('get-notes')
+    if (!notes || notes.length === 0) return 'Memory Bank is empty. No notes found.'
+
+    return notes
+      .slice(0, 10)
+      .map((n) => `📄 [NOTE: ${n.title}]\n${n.content}`)
+      .join('\n\n')
+  } catch (e) {
+    return 'System Error: Could not access Memory Bank.'
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -373,6 +387,12 @@ export class GeminiLiveService {
                     },
                     required: ['title', 'content']
                   }
+                },
+                {
+                  name: 'read_notes',
+                  description:
+                    'Load and read previously saved notes from the system memory. Use this when the user asks to "remember notes", "load notes", or "what was the plan?".',
+                  parameters: { type: 'OBJECT', properties: {}, required: [] }
                 }
               ]
             }
@@ -426,6 +446,8 @@ export class GeminiLiveService {
               result = await readDirectory(call.args.directory_path)
             } else if (call.name === 'save_note') {
               result = await saveNote(call.args.title, call.args.content)
+            } else if (call.name === 'read_notes') {
+              result = await readSystemNotes()
             } else {
               result = 'Error: Tool not found.'
             }
