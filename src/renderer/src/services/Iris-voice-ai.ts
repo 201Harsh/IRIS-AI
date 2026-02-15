@@ -97,7 +97,6 @@ const performWebSearch = async (query: string) => {
   return `Opening Google Search for: ${query}`
 }
 
-// 💀 CLOSE APP HELPER
 const closeApp = async (appName: string) => {
   try {
     const result: any = await window.electron.ipcRenderer.invoke('close-app', appName)
@@ -108,21 +107,54 @@ const closeApp = async (appName: string) => {
   }
 }
 
-// 👻 GHOST CONTROLLER HELPERS
-const executeGhostSequence = async (actions: any[]) => {
+const ghostType = async (text: string) => {
   try {
-    // Send the complex sequence to the backend
+    const actions = [{ type: 'type', text: text }]
+    await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
+    return '✅ Typing complete.'
+  } catch (error) {
+    return '❌ Failed to type.'
+  }
+}
+
+const executeGhostSequence = async (jsonString: string) => {
+  try {
+    const actions = JSON.parse(jsonString)
     await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
     return '✅ Sequence executed successfully.'
   } catch (error) {
-    return '❌ Failed to execute sequence.'
+    return '❌ Failed to execute sequence. Invalid JSON.'
+  }
+}
+
+const sendWhatsAppMessage = async (name: string, message: string) => {
+  try {
+    // 1. Focus WhatsApp
+    await window.electron.ipcRenderer.invoke('open-app', 'whatsapp')
+
+    const actions = [
+      { type: 'wait', ms: 5000 }, // Wait for app load
+      { type: 'press', key: 'f', modifiers: ['control'] }, // Focus Search
+      { type: 'wait', ms: 1000 },
+      { type: 'type', text: name },
+      { type: 'wait', ms: 2000 }, // Wait for list to filter
+      { type: 'press', key: 'enter' }, // Select person
+      { type: 'wait', ms: 1500 }, // Wait for chat window
+      { type: 'type', text: message },
+      { type: 'wait', ms: 500 },
+      { type: 'press', key: 'enter' } // Final Send
+    ]
+
+    await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
+    return `✅ WhatsApp message automation finished for ${name}.`
+  } catch (error) {
+    return '❌ WhatsApp automation failed.'
   }
 }
 
 const setVolume = async (level: number) => {
   try {
-    const result = await window.electron.ipcRenderer.invoke('set-volume', level)
-    return result
+    return await window.electron.ipcRenderer.invoke('set-volume', level)
   } catch (error) {
     return '❌ Failed to set volume.'
   }
@@ -130,8 +162,7 @@ const setVolume = async (level: number) => {
 
 const takeScreenshot = async () => {
   try {
-    const result = await window.electron.ipcRenderer.invoke('take-screenshot')
-    return result
+    return await window.electron.ipcRenderer.invoke('take-screenshot')
   } catch (error) {
     return '❌ Failed to capture screen.'
   }
@@ -467,42 +498,64 @@ export class GeminiLiveService {
                     required: ['app_name']
                   }
                 },
+                // --- GHOST / NUT.JS TOOLS (NEW) ---
+                {
+                  name: 'ghost_type',
+                  description:
+                    'Type text using the keyboard. Use this for simple typing requests like "Type hello".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: { text: { type: 'STRING' } },
+                    required: ['text']
+                  }
+                },
                 {
                   name: 'execute_sequence',
                   description:
-                    'Perform a multi-step sequence of actions. You must provide the steps as a JSON STRING. Example string: "[{\\"type\\":\\"wait\\",\\"ms\\":1000}, {\\"type\\":\\"type\\",\\"text\\":\\"Hello\\"}]".',
+                    'Run complex automation. Requires a JSON string array of actions (wait, type, press).',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
-                      json_actions: {
-                        type: 'STRING',
-                        description: 'A valid JSON string array containing the actions.'
-                      }
+                      json_actions: { type: 'STRING' }
                     },
                     required: ['json_actions']
                   }
                 },
                 {
-                  name: 'set_volume',
-                  description: 'Set the computer system volume level (0-100).',
+                  name: 'send_whatsapp',
+                  description:
+                    'Send a WhatsApp message automatically. Opens WhatsApp, searches contact, types message.',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
-                      level: {
-                        type: 'NUMBER',
-                        description: 'The target volume percentage (0-100).'
-                      }
+                      name: { type: 'STRING', description: 'Contact Name' },
+                      message: { type: 'STRING', description: 'Message Text' }
                     },
+                    required: ['name', 'message']
+                  }
+                },
+                {
+                  name: 'set_volume',
+                  description: 'Set system volume (0-100).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: { level: { type: 'NUMBER' } },
                     required: ['level']
                   }
                 },
                 {
                   name: 'take_screenshot',
-                  description: 'Take a screenshot of the current screen and save it.',
+                  description: 'Take a screenshot.',
+                  parameters: { type: 'OBJECT', properties: {}, required: [] }
+                },
+                // --- OTHER TOOLS ---
+                {
+                  name: 'google_search',
+                  description: 'Search Google.',
                   parameters: {
                     type: 'OBJECT',
-                    properties: {},
-                    required: []
+                    properties: { query: { type: 'STRING' } },
+                    required: ['query']
                   }
                 }
               ]
@@ -537,6 +590,7 @@ export class GeminiLiveService {
             console.log(`🤖 Tool Called: ${call.name}`, call.args)
             let result
 
+            // File & App Tools
             if (call.name === 'search_files') {
               result = await searchFiles(call.args.file_name, call.args.location)
             } else if (call.name === 'read_file') {
@@ -545,6 +599,8 @@ export class GeminiLiveService {
               result = await writeFile(call.args.file_name, call.args.content)
             } else if (call.name === 'open_app') {
               result = await openApp(call.args.app_name)
+            } else if (call.name === 'close_app') {
+              result = await closeApp(call.args.app_name)
             } else if (call.name === 'manage_file') {
               result = await manageFile(
                 call.args.operation,
@@ -561,21 +617,14 @@ export class GeminiLiveService {
               result = await readSystemNotes()
             } else if (call.name === 'google_search') {
               result = await performWebSearch(call.args.query)
-            } else if (call.name === 'close_app') {
-              result = await closeApp(call.args.app_name)
-            } else if (call.name === 'open_app') {
-              result = await openApp(call.args.app_name)
-            } else if (call.name === 'close_app') {
-              result = await closeApp(call.args.app_name)
-            } else if (call.name === 'google_search') {
-              result = await performWebSearch(call.args.query)
+
+              // 👻 GHOST / NUT.JS TOOLS HANDLERS
+            } else if (call.name === 'ghost_type') {
+              result = await ghostType(call.args.text)
             } else if (call.name === 'execute_sequence') {
-              try {
-                const actions = JSON.parse(call.args.json_actions)
-                result = await executeGhostSequence(actions)
-              } catch (e) {
-                result = 'Error: Invalid JSON sequence provided.'
-              }
+              result = await executeGhostSequence(call.args.json_actions)
+            } else if (call.name === 'send_whatsapp') {
+              result = await sendWhatsAppMessage(call.args.name, call.args.message)
             } else if (call.name === 'set_volume') {
               result = await setVolume(call.args.level)
             } else if (call.name === 'take_screenshot') {
@@ -586,7 +635,7 @@ export class GeminiLiveService {
 
             functionResponses.push({
               id: call.id,
-              name: call.name,  
+              name: call.name,
               response: { result: { output: result } }
             })
           }
