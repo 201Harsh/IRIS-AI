@@ -108,6 +108,35 @@ const closeApp = async (appName: string) => {
   }
 }
 
+// 👻 GHOST CONTROLLER HELPERS
+const executeGhostSequence = async (actions: any[]) => {
+  try {
+    // Send the complex sequence to the backend
+    await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
+    return '✅ Sequence executed successfully.'
+  } catch (error) {
+    return '❌ Failed to execute sequence.'
+  }
+}
+
+const setVolume = async (level: number) => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('set-volume', level)
+    return result
+  } catch (error) {
+    return '❌ Failed to set volume.'
+  }
+}
+
+const takeScreenshot = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('take-screenshot')
+    return result
+  } catch (error) {
+    return '❌ Failed to capture screen.'
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -437,6 +466,44 @@ export class GeminiLiveService {
                     },
                     required: ['app_name']
                   }
+                },
+                {
+                  name: 'execute_sequence',
+                  description:
+                    'Perform a multi-step sequence of actions. You must provide the steps as a JSON STRING. Example string: "[{\\"type\\":\\"wait\\",\\"ms\\":1000}, {\\"type\\":\\"type\\",\\"text\\":\\"Hello\\"}]".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      json_actions: {
+                        type: 'STRING',
+                        description: 'A valid JSON string array containing the actions.'
+                      }
+                    },
+                    required: ['json_actions']
+                  }
+                },
+                {
+                  name: 'set_volume',
+                  description: 'Set the computer system volume level (0-100).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      level: {
+                        type: 'NUMBER',
+                        description: 'The target volume percentage (0-100).'
+                      }
+                    },
+                    required: ['level']
+                  }
+                },
+                {
+                  name: 'take_screenshot',
+                  description: 'Take a screenshot of the current screen and save it.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
+                  }
                 }
               ]
             }
@@ -496,13 +563,30 @@ export class GeminiLiveService {
               result = await performWebSearch(call.args.query)
             } else if (call.name === 'close_app') {
               result = await closeApp(call.args.app_name)
+            } else if (call.name === 'open_app') {
+              result = await openApp(call.args.app_name)
+            } else if (call.name === 'close_app') {
+              result = await closeApp(call.args.app_name)
+            } else if (call.name === 'google_search') {
+              result = await performWebSearch(call.args.query)
+            } else if (call.name === 'execute_sequence') {
+              try {
+                const actions = JSON.parse(call.args.json_actions)
+                result = await executeGhostSequence(actions)
+              } catch (e) {
+                result = 'Error: Invalid JSON sequence provided.'
+              }
+            } else if (call.name === 'set_volume') {
+              result = await setVolume(call.args.level)
+            } else if (call.name === 'take_screenshot') {
+              result = await takeScreenshot()
             } else {
               result = 'Error: Tool not found.'
             }
 
             functionResponses.push({
               id: call.id,
-              name: call.name,
+              name: call.name,  
               response: { result: { output: result } }
             })
           }
@@ -556,7 +640,6 @@ export class GeminiLiveService {
   }
 
   startAppWatcher() {
-    console.log('👁️ Silent Watcher Started')
     this.appWatcherInterval = setInterval(async () => {
       if (!this.isConnected || !this.socket) return
 

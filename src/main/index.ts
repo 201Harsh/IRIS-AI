@@ -22,6 +22,7 @@ import registerFileScanner from './logic/file-launcher'
 import registerAppLauncher from './logic/app-launcher'
 import registerNotesHandlers from './logic/notes-manager'
 import registerWebAgent from './logic/web-agent'
+import registerGhostControl from './logic/ghost-control'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -100,6 +101,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerGhostControl(ipcMain)
   registerWebAgent(ipcMain)
   registerNotesHandlers(ipcMain)
   registerAppLauncher(ipcMain)
