@@ -92,6 +92,13 @@ const readSystemNotes = async () => {
   }
 }
 
+const performWebSearch = async (query: string) => {
+  // Trigger the browser open
+  await window.electron.ipcRenderer.invoke('google-search', query)
+  // Return a confirmation message for the AI to speak
+  return `Opening Google Search for: ${query}`
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION
 
@@ -393,6 +400,18 @@ export class GeminiLiveService {
                   description:
                     'Load and read previously saved notes from the system memory. Use this when the user asks to "remember notes", "load notes", or "what was the plan?".',
                   parameters: { type: 'OBJECT', properties: {}, required: [] }
+                },
+                {
+                  name: 'google_search',
+                  description:
+                    'Open a Google Search in the user\'s browser. Use this when the user asks to "search for", "Google", or find information online.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      query: { type: 'STRING', description: 'The search query.' }
+                    },
+                    required: ['query']
+                  }
                 }
               ]
             }
@@ -448,6 +467,8 @@ export class GeminiLiveService {
               result = await saveNote(call.args.title, call.args.content)
             } else if (call.name === 'read_notes') {
               result = await readSystemNotes()
+            } else if (call.name === 'google_search') {
+              result = await performWebSearch(call.args.query)
             } else {
               result = 'Error: Tool not found.'
             }
