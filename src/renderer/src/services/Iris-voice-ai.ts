@@ -93,10 +93,19 @@ const readSystemNotes = async () => {
 }
 
 const performWebSearch = async (query: string) => {
-  // Trigger the browser open
   await window.electron.ipcRenderer.invoke('google-search', query)
-  // Return a confirmation message for the AI to speak
   return `Opening Google Search for: ${query}`
+}
+
+// 💀 CLOSE APP HELPER
+const closeApp = async (appName: string) => {
+  try {
+    const result: any = await window.electron.ipcRenderer.invoke('close-app', appName)
+    if (result && result.success) return `✅ Terminated ${appName}.`
+    return `⚠️ Failed to close ${appName}. It might not be running or the name is incorrect.`
+  } catch (err) {
+    return 'System Error: Termination failed.'
+  }
 }
 
 const IRIS_SYSTEM_INSTRUCTION = `
@@ -412,6 +421,22 @@ export class GeminiLiveService {
                     },
                     required: ['query']
                   }
+                },
+                {
+                  name: 'close_app',
+                  description:
+                    'Force close or terminate a running application. Use this when the user says "Close [App]", "Kill [App]", or "Stop [App]".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      app_name: {
+                        type: 'STRING',
+                        description:
+                          'The name of the application to close (e.g., "Chrome", "Notepad").'
+                      }
+                    },
+                    required: ['app_name']
+                  }
                 }
               ]
             }
@@ -469,6 +494,8 @@ export class GeminiLiveService {
               result = await readSystemNotes()
             } else if (call.name === 'google_search') {
               result = await performWebSearch(call.args.query)
+            } else if (call.name === 'close_app') {
+              result = await closeApp(call.args.app_name)
             } else {
               result = 'Error: Tool not found.'
             }
