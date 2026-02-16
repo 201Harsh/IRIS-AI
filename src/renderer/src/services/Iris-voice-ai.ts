@@ -141,7 +141,7 @@ const sendWhatsAppMessage = async (name: string, message: string) => {
       { type: 'press', key: 'enter' },
       { type: 'wait', ms: 500 },
       { type: 'type', text: message },
-      { type: 'wait', ms: 200 },
+      { type: 'wait', ms: 500 },
       { type: 'press', key: 'enter' }
     ]
 
