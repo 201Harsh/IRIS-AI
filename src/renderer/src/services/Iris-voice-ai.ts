@@ -129,20 +129,20 @@ const executeGhostSequence = async (jsonString: string) => {
 
 const sendWhatsAppMessage = async (name: string, message: string) => {
   try {
-    // 1. Focus WhatsApp
+
     await window.electron.ipcRenderer.invoke('open-app', 'whatsapp')
 
     const actions = [
-      { type: 'wait', ms: 5000 }, // Wait for app load
-      { type: 'press', key: 'f', modifiers: ['control'] }, // Focus Search
-      { type: 'wait', ms: 1000 },
-      { type: 'type', text: name },
-      { type: 'wait', ms: 2000 }, // Wait for list to filter
-      { type: 'press', key: 'enter' }, // Select person
-      { type: 'wait', ms: 1500 }, // Wait for chat window
-      { type: 'type', text: message },
+      { type: 'wait', ms: 1500 },
+      { type: 'press', key: 'f', modifiers: ['control'] },
       { type: 'wait', ms: 500 },
-      { type: 'press', key: 'enter' } // Final Send
+      { type: 'type', text: name },
+      { type: 'wait', ms: 800 },
+      { type: 'press', key: 'enter' },
+      { type: 'wait', ms: 500 },
+      { type: 'type', text: message },
+      { type: 'wait', ms: 200 },
+      { type: 'press', key: 'enter' }
     ]
 
     await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
@@ -498,7 +498,6 @@ export class GeminiLiveService {
                     required: ['app_name']
                   }
                 },
-                // --- GHOST / NUT.JS TOOLS (NEW) ---
                 {
                   name: 'ghost_type',
                   description:
@@ -548,7 +547,6 @@ export class GeminiLiveService {
                   description: 'Take a screenshot.',
                   parameters: { type: 'OBJECT', properties: {}, required: [] }
                 },
-                // --- OTHER TOOLS ---
                 {
                   name: 'google_search',
                   description: 'Search Google.',
