@@ -127,30 +127,26 @@ const executeGhostSequence = async (jsonString: string) => {
   }
 }
 
-// 🟢 ROBUST WHATSAPP SENDER
 const sendWhatsAppMessage = async (name: string, message: string, filePath?: string) => {
   try {
     console.log(`🚀 Sending to ${name}`)
 
-    // 1. IF SENDING A FILE: Load it into clipboard first
     if (filePath) {
       await window.electron.ipcRenderer.invoke('copy-file-to-clipboard', filePath)
     }
 
-    // 2. Open App
     await window.electron.ipcRenderer.invoke('open-app', 'whatsapp')
 
-    // 3. NAVIGATE TO CHAT (The Search Sequence)
     const navActions = [
-      { type: 'wait', ms: 2000 }, // Wait for WhatsApp to load
+      { type: 'wait', ms: 1500 }, // Wait for WhatsApp to load
       { type: 'click' }, // Click to focus window
       { type: 'press', key: 'n', modifiers: ['control'] }, // Ctrl+F (Search)
-      { type: 'wait', ms: 800 },
+      { type: 'wait', ms: 500 },
       // Clear previous search junk
       { type: 'press', key: 'a', modifiers: ['control'] },
       { type: 'press', key: 'backspace' },
       { type: 'type', text: name }, // Type Name
-      { type: 'wait', ms: 800 }, // Wait for results
+      { type: 'wait', ms: 500 }, // Wait for results
       { type: 'press', key: 'down' }, // Select first result
       { type: 'press', key: 'enter' }, // Enter Chat
       { type: 'wait', ms: 500 }, // Wait for chat history to load
@@ -158,9 +154,7 @@ const sendWhatsAppMessage = async (name: string, message: string, filePath?: str
     ]
     await window.electron.ipcRenderer.invoke('ghost-sequence', navActions)
 
-    // 4. SEND CONTENT
     if (filePath) {
-      // --- FILE MODE ---
       await window.electron.ipcRenderer.invoke('ghost-sequence', [
         { type: 'press', key: 'v', modifiers: ['control'] }, // Paste File (Ctrl+V)
         { type: 'wait', ms: 2500 }, // Wait for Image Preview
@@ -168,8 +162,6 @@ const sendWhatsAppMessage = async (name: string, message: string, filePath?: str
         { type: 'press', key: 'enter' } // Send
       ])
     } else {
-      // --- TEXT MODE ---
-      // We use 'paste' action here which triggers Ctrl+V internally
       await window.electron.ipcRenderer.invoke('ghost-sequence', [
         { type: 'paste', text: message }, // Paste Message (Instant)
         { type: 'wait', ms: 500 },
@@ -183,7 +175,6 @@ const sendWhatsAppMessage = async (name: string, message: string, filePath?: str
   }
 }
 
-// 🟢 SCHEDULED MESSAGE TOOL
 const scheduleWhatsAppMessage = async (
   name: string,
   message: string,
@@ -201,10 +192,8 @@ const scheduleWhatsAppMessage = async (
   setTimeout(
     () => {
       console.log(`⏰ Executing scheduled message for ${name}`)
-      // Wake up the system (jiggle the mouse/keyboard slightly) to ensure focus works
       window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'type', text: '' }])
 
-      // Send the message
       sendWhatsAppMessage(name, message, filePath)
     },
     delayMinutes * 60 * 1000
