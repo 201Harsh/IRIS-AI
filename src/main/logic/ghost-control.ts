@@ -1,11 +1,12 @@
-import { IpcMain, app, shell } from 'electron'
+import { IpcMain, app, shell, clipboard } from 'electron'
 import { keyboard, Key, mouse } from '@nut-tree-fork/nut-js'
 import screenshot from 'screenshot-desktop'
 import loudness from 'loudness'
 import path from 'path'
+import { exec } from 'child_process' // ⚡ REQUIRED FOR FILES
 
 // ⚡ Speed configuration
-keyboard.config.autoDelayMs = 20 // Slightly increased for better stability
+keyboard.config.autoDelayMs = 20
 
 const KEY_MAP: Record<string, Key> = {
   enter: Key.Enter,
@@ -38,51 +39,65 @@ const KEY_MAP: Record<string, Key> = {
 export default function registerGhostControl(ipcMain: IpcMain) {
   console.log('👻 [Main] Registering Enhanced Master Ghost Controller...')
 
+  // ⚡ 1. HANDLE FILE COPYING (POWERSHELL TRICK)
+  ipcMain.handle('copy-file-to-clipboard', async (_event, filePath: string) => {
+    return new Promise((resolve) => {
+      const cmd = `powershell -command "Set-Clipboard -Path '${filePath}'"`
+      exec(cmd, (error) => {
+        if (error) {
+          console.error('File copy failed:', error)
+          resolve(false)
+        } else {
+          resolve(true)
+        }
+      })
+    })
+  })
+
+  // ⚡ 2. THE SEQUENCER
   ipcMain.handle('ghost-sequence', async (_event, actions: any[]) => {
     try {
-      console.log(`🚀 IRIS Sequence: ${actions.length} actions starting...`)
+      console.log(`🚀 Sequence: ${actions.length} steps`)
 
       for (const action of actions) {
+        // --- 📋 PASTE (THE FIX FOR SENDING) ---
+        if (action.type === 'paste') {
+          // Put text in clipboard
+          clipboard.writeText(action.text)
+          await new Promise((r) => setTimeout(r, 300)) // Wait for clipboard sync
+
+          // Press Ctrl+V manually
+          await keyboard.pressKey(Key.LeftControl)
+          await keyboard.pressKey(Key.V)
+          await keyboard.releaseKey(Key.V)
+          await keyboard.releaseKey(Key.LeftControl)
+        }
+
         // --- ⏳ WAIT ---
-        if (action.type === 'wait') {
+        else if (action.type === 'wait') {
           const ms = action.ms || 1000
           await new Promise((r) => setTimeout(r, ms))
         }
 
         // --- ⌨️ TYPE ---
         else if (action.type === 'type') {
-          console.log(`   > Typing: "${action.text}"`)
           await keyboard.type(action.text)
         }
 
-        // --- 🔘 PRESS (Enhanced Multi-Key Support) ---
+        // --- 🔘 PRESS ---
         else if (action.type === 'press') {
           const keyName = action.key.toLowerCase()
           const k = KEY_MAP[keyName]
-
           if (k !== undefined) {
             if (action.modifiers && Array.isArray(action.modifiers)) {
               const mods = action.modifiers
-                .map((m: string) => KEY_MAP[m.toLowerCase()])
-                .filter((m) => m !== undefined)
-
-              console.log(`   > Pressing Combo: ${action.modifiers.join('+')} + ${keyName}`)
-
-              // 1. Hold down all modifiers
-              for (const mod of mods) {
-                await keyboard.pressKey(mod)
-              }
-
-              // 2. Press and release the target key
+                .map((m: any) => KEY_MAP[m.toLowerCase()])
+                .filter((m: any) => m !== undefined)
+              for (const mod of mods) await keyboard.pressKey(mod)
               await keyboard.pressKey(k)
               await keyboard.releaseKey(k)
-
-              // 3. Release all modifiers in reverse
-              for (const mod of mods.reverse()) {
-                await keyboard.releaseKey(mod)
-              }
+              for (const mod of mods.reverse()) await keyboard.releaseKey(mod)
             } else {
-              console.log(`   > Pressing Key: ${keyName}`)
               await keyboard.pressKey(k)
               await keyboard.releaseKey(k)
             }
@@ -91,37 +106,34 @@ export default function registerGhostControl(ipcMain: IpcMain) {
 
         // --- 🖱️ CLICK ---
         else if (action.type === 'click') {
-          console.log(`   > Mouse Left Click`)
           await mouse.leftClick()
         }
       }
       return true
     } catch (e) {
-      console.error('❌ IRIS Ghost Sequence Failed:', e)
       return false
     }
   })
 
-  // --- 🔊 VOLUME ---
+  // --- VOLUME & SCREENSHOT ---
   ipcMain.handle('set-volume', async (_event, level: number) => {
     try {
       await loudness.setVolume(level)
-      return `✅ Volume set to ${level}%`
+      return `Volume set to ${level}%`
     } catch (e) {
-      return '❌ Failed to set volume.'
+      return 'Error'
     }
   })
 
-  // --- 📸 SCREENSHOT ---
   ipcMain.handle('take-screenshot', async () => {
     try {
       const filename = `IRIS_Capture_${Date.now()}.png`
       const savePath = path.join(app.getPath('pictures'), filename)
       await screenshot({ filename: savePath })
       shell.showItemInFolder(savePath)
-      return `✅ Screenshot saved to Pictures folder.`
+      return `Screenshot saved.`
     } catch (e) {
-      return '❌ Failed to take screenshot.'
+      return 'Error'
     }
   })
 }

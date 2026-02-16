@@ -127,34 +127,90 @@ const executeGhostSequence = async (jsonString: string) => {
   }
 }
 
-const sendWhatsAppMessage = async (name: string, message: string) => {
+// 🟢 ROBUST WHATSAPP SENDER
+const sendWhatsAppMessage = async (name: string, message: string, filePath?: string) => {
   try {
+    console.log(`🚀 Sending to ${name}`)
+
+    // 1. IF SENDING A FILE: Load it into clipboard first
+    if (filePath) {
+      await window.electron.ipcRenderer.invoke('copy-file-to-clipboard', filePath)
+    }
+
+    // 2. Open App
     await window.electron.ipcRenderer.invoke('open-app', 'whatsapp')
 
-    const actions = [
-      { type: 'wait', ms: 2000 },
-      { type: 'press', key: 'f', modifiers: ['control'] },
-      { type: 'wait', ms: 1000 },
+    // 3. NAVIGATE TO CHAT (The Search Sequence)
+    const navActions = [
+      { type: 'wait', ms: 2000 }, // Wait for WhatsApp to load
+      { type: 'click' }, // Click to focus window
+      { type: 'press', key: 'n', modifiers: ['control'] }, // Ctrl+F (Search)
+      { type: 'wait', ms: 800 },
+      // Clear previous search junk
       { type: 'press', key: 'a', modifiers: ['control'] },
       { type: 'press', key: 'backspace' },
-      { type: 'type', text: name },
-      { type: 'wait', ms: 2000 },
-      { type: 'press', key: 'enter' },
-      { type: 'wait', ms: 1200 },
-      { type: 'press', key: 'a', modifiers: ['control'] },
-      { type: 'press', key: 'backspace' },
-      { type: 'type', text: message },
-      { type: 'wait', ms: 500 },
-      { type: 'press', key: 'enter' },
-      { type: 'wait', ms: 200 },
-      { type: 'press', key: 'enter' }
+      { type: 'type', text: name }, // Type Name
+      { type: 'wait', ms: 800 }, // Wait for results
+      { type: 'press', key: 'down' }, // Select first result
+      { type: 'press', key: 'enter' }, // Enter Chat
+      { type: 'wait', ms: 500 }, // Wait for chat history to load
+      { type: 'click' } // Click to ensure focus on text box
     ]
+    await window.electron.ipcRenderer.invoke('ghost-sequence', navActions)
 
-    await window.electron.ipcRenderer.invoke('ghost-sequence', actions)
-    return `✅ Done bhai! Message sent to ${name}.`
+    // 4. SEND CONTENT
+    if (filePath) {
+      // --- FILE MODE ---
+      await window.electron.ipcRenderer.invoke('ghost-sequence', [
+        { type: 'press', key: 'v', modifiers: ['control'] }, // Paste File (Ctrl+V)
+        { type: 'wait', ms: 2500 }, // Wait for Image Preview
+        { type: 'type', text: message }, // Type Caption
+        { type: 'press', key: 'enter' } // Send
+      ])
+    } else {
+      // --- TEXT MODE ---
+      // We use 'paste' action here which triggers Ctrl+V internally
+      await window.electron.ipcRenderer.invoke('ghost-sequence', [
+        { type: 'paste', text: message }, // Paste Message (Instant)
+        { type: 'wait', ms: 500 },
+        { type: 'press', key: 'enter' } // Send
+      ])
+    }
+
+    return `✅ Message sent to ${name}.`
   } catch (error) {
-    return '❌ WhatsApp automation failed.'
+    return '❌ Failed to send.'
   }
+}
+
+// 🟢 SCHEDULED MESSAGE TOOL
+const scheduleWhatsAppMessage = async (
+  name: string,
+  message: string,
+  delayMinutes: number,
+  filePath?: string
+) => {
+  if (!delayMinutes || delayMinutes <= 0) {
+    return await sendWhatsAppMessage(name, message, filePath)
+  }
+
+  console.log(
+    `⏰ Scheduling message for ${name} in ${delayMinutes} mins (File: ${filePath ? 'Yes' : 'No'})`
+  )
+
+  setTimeout(
+    () => {
+      console.log(`⏰ Executing scheduled message for ${name}`)
+      // Wake up the system (jiggle the mouse/keyboard slightly) to ensure focus works
+      window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'type', text: '' }])
+
+      // Send the message
+      sendWhatsAppMessage(name, message, filePath)
+    },
+    delayMinutes * 60 * 1000
+  )
+
+  return `✅ Scheduled! I will send the message to ${name} in ${delayMinutes} minutes.`
 }
 
 const setVolume = async (level: number) => {
@@ -489,14 +545,38 @@ export class GeminiLiveService {
                 {
                   name: 'send_whatsapp',
                   description:
-                    'Send a WhatsApp message automatically. Opens WhatsApp, searches contact, types message.',
+                    'Send a WhatsApp message immediately. If the user wants to send a file, provide the file_path.',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
-                      name: { type: 'STRING', description: 'Contact Name' },
-                      message: { type: 'STRING', description: 'Message Text' }
+                      name: { type: 'STRING', description: 'Contact Name exactly as saved.' },
+                      message: { type: 'STRING', description: 'The message text or file caption.' },
+                      file_path: {
+                        type: 'STRING',
+                        description: 'Optional: Full absolute path to the file to attach.'
+                      }
                     },
                     required: ['name', 'message']
+                  }
+                },
+                {
+                  name: 'schedule_whatsapp',
+                  description: 'Schedule a WhatsApp message to be sent later.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      name: { type: 'STRING' },
+                      message: { type: 'STRING' },
+                      delay_minutes: {
+                        type: 'NUMBER',
+                        description: 'Time in minutes to wait before sending.'
+                      },
+                      file_path: {
+                        type: 'STRING',
+                        description: 'Optional: Full absolute path to the file.'
+                      }
+                    },
+                    required: ['name', 'message', 'delay_minutes']
                   }
                 },
                 {
@@ -588,7 +668,18 @@ export class GeminiLiveService {
             } else if (call.name === 'execute_sequence') {
               result = await executeGhostSequence(call.args.json_actions)
             } else if (call.name === 'send_whatsapp') {
-              result = await sendWhatsAppMessage(call.args.name, call.args.message)
+              result = await sendWhatsAppMessage(
+                call.args.name,
+                call.args.message,
+                call.args.file_path
+              )
+            } else if (call.name === 'schedule_whatsapp') {
+              result = await scheduleWhatsAppMessage(
+                call.args.name,
+                call.args.message,
+                call.args.delay_minutes,
+                call.args.file_path
+              )
             } else if (call.name === 'set_volume') {
               result = await setVolume(call.args.level)
             } else if (call.name === 'take_screenshot') {
