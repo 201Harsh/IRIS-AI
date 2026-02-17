@@ -1,13 +1,14 @@
-import { IpcMain, app, shell, clipboard } from 'electron'
-import { keyboard, Key, mouse } from '@nut-tree-fork/nut-js'
+import { IpcMain, app, shell, clipboard, screen } from 'electron'
+import { keyboard, Key, mouse, Point, Button } from '@nut-tree-fork/nut-js'
 import screenshot from 'screenshot-desktop'
 import loudness from 'loudness'
 import path from 'path'
-import { exec } from 'child_process' // ⚡ REQUIRED FOR FILES
+import { exec } from 'child_process'
 
-// ⚡ Speed configuration
+// ⚡ Speed Configuration (20ms is safe)
 keyboard.config.autoDelayMs = 20
 
+// 🛠️ KEY MAPPING
 const KEY_MAP: Record<string, Key> = {
   enter: Key.Enter,
   return: Key.Enter,
@@ -26,20 +27,58 @@ const KEY_MAP: Record<string, Key> = {
   down: Key.Down,
   left: Key.Left,
   right: Key.Right,
+  pageup: Key.PageUp,
+  pagedown: Key.PageDown,
   f: Key.F,
   c: Key.C,
   v: Key.V,
   a: Key.A,
   s: Key.S,
   n: Key.N,
+  w: Key.W,
+  t: Key.T,
+  q: Key.Q,
+  r: Key.R,
+  x: Key.X,
+  z: Key.Z,
+  y: Key.Y,
+  f1: Key.F1,
+  f5: Key.F5,
   f11: Key.F11,
-  f5: Key.F5
+  f12: Key.F12
+}
+
+// 🌊 HELPER: Generate Human-Like Bezier Path
+function generateHumanPath(start: Point, end: Point): Point[] {
+  const steps = 25 // Lower = Faster, Higher = Smoother
+  const pathArray: Point[] = []
+
+  // Add randomness to the curve
+  const directionX = end.x > start.x ? 1 : -1
+  const directionY = end.y > start.y ? 1 : -1
+  const deviation = Math.random() * 80 + 20 // 20-100px curve
+
+  const controlPoint = new Point(
+    start.x +
+      (Math.abs(end.x - start.x) / 2) * directionX +
+      (Math.random() < 0.5 ? -deviation : deviation),
+    start.y +
+      (Math.abs(end.y - start.y) / 2) * directionY +
+      (Math.random() < 0.5 ? -deviation : deviation)
+  )
+
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps
+    // Quadratic Bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+    const x = (1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * controlPoint.x + t * t * end.x
+    const y = (1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * controlPoint.y + t * t * end.y
+    pathArray.push(new Point(x, y))
+  }
+  return pathArray
 }
 
 export default function registerGhostControl(ipcMain: IpcMain) {
-  console.log('👻 [Main] Registering Enhanced Master Ghost Controller...')
-
-  // ⚡ 1. HANDLE FILE COPYING (POWERSHELL TRICK)
+  // ⚡ 1. HANDLE FILE COPYING
   ipcMain.handle('copy-file-to-clipboard', async (_event, filePath: string) => {
     return new Promise((resolve) => {
       const cmd = `powershell -command "Set-Clipboard -Path '${filePath}'"`
@@ -47,52 +86,31 @@ export default function registerGhostControl(ipcMain: IpcMain) {
         if (error) {
           console.error('File copy failed:', error)
           resolve(false)
-        } else {
-          resolve(true)
-        }
+        } else resolve(true)
       })
     })
   })
 
-  // ⚡ 2. THE SEQUENCER
+  // ⚡ 2. THE SEQUENCER (Complex Macros)
   ipcMain.handle('ghost-sequence', async (_event, actions: any[]) => {
     try {
-      console.log(`🚀 Sequence: ${actions.length} steps`)
-
       for (const action of actions) {
-        // --- 📋 PASTE (THE FIX FOR SENDING) ---
         if (action.type === 'paste') {
-          // Put text in clipboard
           clipboard.writeText(action.text)
-          await new Promise((r) => setTimeout(r, 300)) // Wait for clipboard sync
-
-          // Press Ctrl+V manually
-          await keyboard.pressKey(Key.LeftControl)
-          await keyboard.pressKey(Key.V)
-          await keyboard.releaseKey(Key.V)
-          await keyboard.releaseKey(Key.LeftControl)
-        }
-
-        // --- ⏳ WAIT ---
-        else if (action.type === 'wait') {
-          const ms = action.ms || 1000
-          await new Promise((r) => setTimeout(r, ms))
-        }
-
-        // --- ⌨️ TYPE ---
-        else if (action.type === 'type') {
+          await new Promise((r) => setTimeout(r, 200))
+          await keyboard.pressKey(Key.LeftControl, Key.V)
+          await keyboard.releaseKey(Key.V, Key.LeftControl)
+        } else if (action.type === 'wait') {
+          await new Promise((r) => setTimeout(r, action.ms || 500))
+        } else if (action.type === 'type') {
           await keyboard.type(action.text)
-        }
-
-        // --- 🔘 PRESS ---
-        else if (action.type === 'press') {
-          const keyName = action.key.toLowerCase()
-          const k = KEY_MAP[keyName]
+        } else if (action.type === 'press') {
+          const k = KEY_MAP[action.key.toLowerCase()]
           if (k !== undefined) {
-            if (action.modifiers && Array.isArray(action.modifiers)) {
+            if (action.modifiers) {
               const mods = action.modifiers
                 .map((m: any) => KEY_MAP[m.toLowerCase()])
-                .filter((m: any) => m !== undefined)
+                .filter(Boolean)
               for (const mod of mods) await keyboard.pressKey(mod)
               await keyboard.pressKey(k)
               await keyboard.releaseKey(k)
@@ -102,10 +120,7 @@ export default function registerGhostControl(ipcMain: IpcMain) {
               await keyboard.releaseKey(k)
             }
           }
-        }
-
-        // --- 🖱️ CLICK ---
-        else if (action.type === 'click') {
+        } else if (action.type === 'click') {
           await mouse.leftClick()
         }
       }
@@ -115,16 +130,58 @@ export default function registerGhostControl(ipcMain: IpcMain) {
     }
   })
 
-  // --- VOLUME & SCREENSHOT ---
+  ipcMain.handle('ghost-click-coordinate', async (_event, { x, y, doubleClick }) => {
+    try {
+      const primaryDisplay = screen.getPrimaryDisplay()
+      const scaleFactor = primaryDisplay.scaleFactor // e.g., 1.25 or 1.5
+
+      const logicalX = Math.round(x / scaleFactor)
+      const logicalY = Math.round(y / scaleFactor)
+
+      const startPoint = await mouse.getPosition()
+      const endPoint = new Point(logicalX, logicalY)
+
+      // Move Human-Like
+      const pathPoints = generateHumanPath(startPoint, endPoint)
+      await mouse.move(pathPoints)
+
+      if (doubleClick) await mouse.doubleClick(Button.LEFT)
+      else await mouse.leftClick()
+
+      return true
+    } catch (e) {
+      console.error('Click failed:', e)
+      return false
+    }
+  })
+
+  ipcMain.handle('ghost-scroll', async (_event, { direction, amount }) => {
+    try {
+      const scrollAmount = amount || 500
+      if (direction === 'up') await mouse.scrollUp(scrollAmount)
+      else await mouse.scrollDown(scrollAmount)
+      return true
+    } catch (e) {
+      return false
+    }
+  })
+
+  ipcMain.handle('get-screen-size', async () => {
+    const primaryDisplay = screen.getPrimaryDisplay()
+    return {
+      width: primaryDisplay.size.width * primaryDisplay.scaleFactor, // Send Physical Width to AI
+      height: primaryDisplay.size.height * primaryDisplay.scaleFactor
+    }
+  })
+
   ipcMain.handle('set-volume', async (_event, level: number) => {
     try {
       await loudness.setVolume(level)
-      return `Volume set to ${level}%`
+      return `Volume ${level}%`
     } catch (e) {
       return 'Error'
     }
   })
-
   ipcMain.handle('take-screenshot', async () => {
     try {
       const filename = `IRIS_Capture_${Date.now()}.png`
