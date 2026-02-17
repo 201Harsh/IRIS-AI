@@ -236,7 +236,7 @@ const pressShortcut = async (key: string, modifiers: string[]) => {
 }
 
 const activateCodingMode = async () => {
-  await window.electron.ipcRenderer.invoke('set-volume', 30)
+  await window.electron.ipcRenderer.invoke('set-volume', 80)
 
   await window.electron.ipcRenderer.invoke('open-app', 'vscode')
 
@@ -261,7 +261,7 @@ const activateCodingMode = async () => {
     await window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'click' }])
   }
 
-  return '✅ Coding Mode Active: Volume 30%, VS Code Open, Lofi Playing.'
+  return '✅ Coding Mode Active: Volume 80%, VS Code Open, Lofi Playing.'
 }
 
 const runTerminal = async (command: string, path?: string) => {

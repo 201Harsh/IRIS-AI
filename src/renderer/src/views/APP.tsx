@@ -18,7 +18,6 @@ const SmartIcon = ({ name }: { name: string }) => {
   let color = 'text-zinc-400'
   let bg = 'bg-zinc-800'
 
-  // Simple heuristics for colors
   if (lower.includes('chrome') || lower.includes('edge')) {
     icon = <RiChromeLine size={20} />
     color = 'text-blue-400'
@@ -93,18 +92,16 @@ const AppsView = () => {
     getAllApps().then((raw) => {
       console.log('📦 Apps Loaded:', raw.length)
 
-      // 🛡️ SANITIZE: Ensure we only keep valid objects
       const cleanData = (Array.isArray(raw) ? raw : []).filter(
         (item) => item && typeof item === 'object' && item.name && item.id
       )
 
       setAllApps(cleanData)
-      setVisibleApps(cleanData.slice(0, 15)) // Show first 15
+      setVisibleApps(cleanData.slice(0, 15)) 
       setLoading(false)
     })
   }, [])
 
-  // 2. Pagination
   useEffect(() => {
     if (page > 1) {
       const nextBatch = allApps.slice(0, page * 12 + 6)
