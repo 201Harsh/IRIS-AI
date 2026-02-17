@@ -88,7 +88,7 @@ const IRIS = (props: IrisProps) => {
             { id: 'APPS', icon: <RiBrainLine /> },
             { id: 'NOTES', icon: <RiFolderOpenLine /> },
             { id: 'PHONE', icon: <RiPhoneLine /> },
-            { id: 'CONNECT', icon: <RiSettings4Line /> }
+            { id: 'SETTINGS', icon: <RiSettings4Line /> }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -130,7 +130,7 @@ const IRIS = (props: IrisProps) => {
           {activeTab === 'APPS' && <AppsView />}
           {activeTab === 'NOTES' && <NotesView glassPanel={glassPanel} />}
           {activeTab === 'PHONE' && <PhoneView glassPanel={glassPanel} />}
-          {activeTab === 'CONNECT' && <SettingsView glassPanel={glassPanel} />}
+          {activeTab === 'SETTINGS' && <SettingsView glassPanel={glassPanel} />}
         </Suspense>
       </div>
 
