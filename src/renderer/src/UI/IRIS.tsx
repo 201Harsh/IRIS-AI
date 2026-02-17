@@ -54,7 +54,7 @@ const IRIS = (props: IrisProps) => {
   useEffect(() => {
     const fetchHistory = async () => {
       const history = await getHistory()
-      if (Array.isArray(history)) setChatHistory(history.slice(-12))
+      if (Array.isArray(history)) setChatHistory(history.slice(-15))
     }
     fetchHistory()
     const interval = setInterval(fetchHistory, 500)
