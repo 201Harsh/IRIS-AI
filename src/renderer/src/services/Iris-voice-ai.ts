@@ -138,34 +138,33 @@ const sendWhatsAppMessage = async (name: string, message: string, filePath?: str
     await window.electron.ipcRenderer.invoke('open-app', 'whatsapp')
 
     const navActions = [
-      { type: 'wait', ms: 1500 }, // Wait for WhatsApp to load
-      { type: 'click' }, // Click to focus window
-      { type: 'press', key: 'n', modifiers: ['control'] }, // Ctrl+F (Search)
+      { type: 'wait', ms: 1500 },
+      { type: 'click' },
+      { type: 'press', key: 'n', modifiers: ['control'] },
       { type: 'wait', ms: 500 },
-      // Clear previous search junk
       { type: 'press', key: 'a', modifiers: ['control'] },
       { type: 'press', key: 'backspace' },
-      { type: 'type', text: name }, // Type Name
-      { type: 'wait', ms: 500 }, // Wait for results
-      { type: 'press', key: 'down' }, // Select first result
-      { type: 'press', key: 'enter' }, // Enter Chat
-      { type: 'wait', ms: 500 }, // Wait for chat history to load
-      { type: 'click' } // Click to ensure focus on text box
+      { type: 'type', text: name },
+      { type: 'wait', ms: 500 },
+      { type: 'press', key: 'down' },
+      { type: 'press', key: 'enter' },
+      { type: 'wait', ms: 500 },
+      { type: 'click' }
     ]
     await window.electron.ipcRenderer.invoke('ghost-sequence', navActions)
 
     if (filePath) {
       await window.electron.ipcRenderer.invoke('ghost-sequence', [
-        { type: 'press', key: 'v', modifiers: ['control'] }, // Paste File (Ctrl+V)
-        { type: 'wait', ms: 2500 }, // Wait for Image Preview
-        { type: 'type', text: message }, // Type Caption
-        { type: 'press', key: 'enter' } // Send
+        { type: 'press', key: 'v', modifiers: ['control'] },
+        { type: 'wait', ms: 2500 },
+        { type: 'type', text: message },
+        { type: 'press', key: 'enter' }
       ])
     } else {
       await window.electron.ipcRenderer.invoke('ghost-sequence', [
-        { type: 'paste', text: message }, // Paste Message (Instant)
+        { type: 'paste', text: message },
         { type: 'wait', ms: 500 },
-        { type: 'press', key: 'enter' } // Send
+        { type: 'press', key: 'enter' }
       ])
     }
 
@@ -234,6 +233,35 @@ const scrollScreen = async (direction: 'up' | 'down', amount: number) => {
 const pressShortcut = async (key: string, modifiers: string[]) => {
   await window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'press', key, modifiers }])
   return `Pressed ${modifiers.join('+')}+${key}`
+}
+
+const activateCodingMode = async () => {
+  await window.electron.ipcRenderer.invoke('set-volume', 30)
+
+  await window.electron.ipcRenderer.invoke('open-app', 'vscode')
+
+  await window.electron.ipcRenderer.invoke(
+    'google-search',
+    'https://www.youtube.com/results?search_query=lofi+chill+radio+live'
+  )
+
+  await new Promise((r) => setTimeout(r, 6000))
+
+  try {
+    const screen = await window.electron.ipcRenderer.invoke('get-screen-size')
+
+    const targetX = Math.round(screen.width * 0.35)
+    const targetY = Math.round(screen.height * 0.3)
+
+    console.log(`🎯 Aiming for YouTube Video at (${targetX}, ${targetY})...`)
+
+    await window.electron.ipcRenderer.invoke('ghost-click-coordinate', { x: targetX, y: targetY })
+  } catch (e) {
+    console.error('Screen calculation failed, defaulting to center click.')
+    await window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'click' }])
+  }
+
+  return '✅ Coding Mode Active: Volume 30%, VS Code Open, Lofi Playing.'
 }
 
 const IRIS_SYSTEM_INSTRUCTION = `
@@ -663,6 +691,21 @@ export class GeminiLiveService {
                     },
                     required: ['key', 'modifiers']
                   }
+                },
+                {
+                  name: 'activate_protocol',
+                  description: 'Activates a complex workflow mode (like Coding Mode).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      protocol_name: {
+                        type: 'STRING',
+                        enum: ['coding'],
+                        description: 'The mode to start (e.g., "coding").'
+                      }
+                    },
+                    required: ['protocol_name']
+                  }
                 }
               ]
             }
@@ -687,7 +730,6 @@ export class GeminiLiveService {
         const data = JSON.parse(event.data instanceof Blob ? await event.data.text() : event.data)
         const serverContent = data.serverContent
 
-        // 🛠️ HANDLE TOOL CALLS
         if (data.toolCall) {
           const functionCalls = data.toolCall.functionCalls
           const functionResponses: any[] = []
@@ -696,7 +738,6 @@ export class GeminiLiveService {
             console.log(`🤖 Tool Called: ${call.name}`, call.args)
             let result
 
-            // File & App Tools
             if (call.name === 'search_files') {
               result = await searchFiles(call.args.file_name, call.args.location)
             } else if (call.name === 'read_file') {
@@ -723,8 +764,6 @@ export class GeminiLiveService {
               result = await readSystemNotes()
             } else if (call.name === 'google_search') {
               result = await performWebSearch(call.args.query)
-
-              // 👻 GHOST / NUT.JS TOOLS HANDLERS
             } else if (call.name === 'ghost_type') {
               result = await ghostType(call.args.text)
             } else if (call.name === 'execute_sequence') {
@@ -746,15 +785,12 @@ export class GeminiLiveService {
               result = await setVolume(call.args.level)
             } else if (call.name === 'take_screenshot') {
               result = await takeScreenshot()
-            } // Inside socket.onmessage -> if (data.toolCall) ...
-            else if (call.name === 'click_on_screen') {
-              const { width, height } = await getScreenSize() // e.g., 1920, 1080
+            } else if (call.name === 'click_on_screen') {
+              const { width, height } = await getScreenSize()
 
-              // Gemini gives coordinates in 0-1000 scale (Normalized)
               const normX = call.args.x
               const normY = call.args.y
 
-              // Convert to Real Pixels
               const realX = Math.round((normX / 1000) * width)
               const realY = Math.round((normY / 1000) * height)
 
@@ -763,7 +799,13 @@ export class GeminiLiveService {
               result = await scrollScreen(call.args.direction, call.args.amount)
             else if (call.name === 'press_shortcut')
               result = await pressShortcut(call.args.key, call.args.modifiers)
-            else {
+            else if (call.name === 'activate_protocol') {
+              if (call.args.protocol_name === 'coding') {
+                result = await activateCodingMode()
+              } else {
+                result = 'Error: Unknown protocol.'
+              }
+            } else {
               result = 'Error: Tool not found.'
             }
 
@@ -774,7 +816,6 @@ export class GeminiLiveService {
             })
           }
 
-          // SEND RESULT BACK TO GEMINI
           const responseMsg = {
             toolResponse: {
               functionResponses: functionResponses
