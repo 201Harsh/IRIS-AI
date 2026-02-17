@@ -218,7 +218,6 @@ const takeScreenshot = async () => {
   }
 }
 
-// Add this near your other 
 const getScreenSize = async () => {
   return await window.electron.ipcRenderer.invoke('get-screen-size')
 }
