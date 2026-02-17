@@ -4,6 +4,7 @@ import { irisService } from './services/Iris-voice-ai'
 import { getScreenSourceId } from './hooks/CaptureDesktop'
 import IRIS from './UI/IRIS'
 import TitleBar from './components/Titlebar'
+import TerminalOverlay from './components/TerminalOverlay'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -183,6 +184,7 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
+      <TerminalOverlay />
     </div>
   )
 }

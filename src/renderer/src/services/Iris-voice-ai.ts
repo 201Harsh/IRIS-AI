@@ -264,21 +264,36 @@ const activateCodingMode = async () => {
   return '✅ Coding Mode Active: Volume 30%, VS Code Open, Lofi Playing.'
 }
 
+const runTerminal = async (command: string, path?: string) => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('run-shell-command', {
+      command,
+      cwd: path
+    })
+    if (res.success) return `✅ Output:\n${res.output}`
+    return `❌ Failed:\n${res.output}`
+  } catch (e) {
+    return 'System Error.'
+  }
+}
+
 const createFolder = async (path: string) => {
   try {
-    const res = await window.electron.ipcRenderer.invoke('create-directory', path)
-    return res.success ? `✅ Created folder: ${path}` : `❌ Error: ${res.error}`
+    return (await window.electron.ipcRenderer.invoke('create-directory', path)).success
+      ? `✅ Created: ${path}`
+      : '❌ Failed.'
   } catch (e) {
-    return 'Error creating folder.'
+    return 'Error'
   }
 }
 
 const openInVsCode = async (path: string) => {
   try {
-    const res = await window.electron.ipcRenderer.invoke('open-in-vscode', path)
-    return res.success ? `✅ Opened ${path} in VS Code.` : `❌ Error: ${res.error}`
+    return (await window.electron.ipcRenderer.invoke('open-in-vscode', path)).success
+      ? `✅ Opened in VS Code.`
+      : '❌ Failed.'
   } catch (e) {
-    return 'Error opening VS Code.'
+    return 'Error'
   }
 }
 
@@ -726,31 +741,32 @@ export class GeminiLiveService {
                   }
                 },
                 {
-                  name: 'create_folder',
-                  description: 'Create a new folder (directory). Use full paths.',
+                  name: 'run_terminal',
+                  description: 'Run a shell command (npm install, git status, etc).',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
-                      folder_path: {
-                        type: 'STRING',
-                        description:
-                          'Full path to create (e.g., "C:/Users/Harsh/Desktop/MyProject").'
-                      }
+                      command: { type: 'STRING', description: 'Command to run.' },
+                      path: { type: 'STRING', description: 'Folder path to run it in.' }
                     },
+                    required: ['command']
+                  }
+                },
+                {
+                  name: 'create_folder',
+                  description: 'Create a new folder.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: { folder_path: { type: 'STRING' } },
                     required: ['folder_path']
                   }
                 },
                 {
                   name: 'open_project',
-                  description: 'Open a specific folder directly in VS Code.',
+                  description: 'Open a folder in VS Code.',
                   parameters: {
                     type: 'OBJECT',
-                    properties: {
-                      folder_path: {
-                        type: 'STRING',
-                        description: 'Full path of the folder to open.'
-                      }
-                    },
+                    properties: { folder_path: { type: 'STRING' } },
                     required: ['folder_path']
                   }
                 }
@@ -852,6 +868,8 @@ export class GeminiLiveService {
               } else {
                 result = 'Error: Unknown protocol.'
               }
+            } else if (call.name === 'run_terminal') {
+              result = await runTerminal(call.args.command, call.args.path)
             } else if (call.name === 'create_folder') {
               result = await createFolder(call.args.folder_path)
             } else if (call.name === 'open_project') {
