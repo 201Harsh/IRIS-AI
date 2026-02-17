@@ -37,7 +37,6 @@ function getSystemCpuUsage() {
 }
 
 export default function registerSystemHandlers(ipcMain: IpcMain) {
-  console.log('🔵 [Main] Registering System Info Handlers...')
 
   ipcMain.removeHandler('get-installed-apps')
   ipcMain.handle('get-installed-apps', async () => {
