@@ -1,6 +1,21 @@
 import { IpcMain } from 'electron'
 import { exec } from 'child_process'
 
+// 🛡️ CRITICAL SYSTEM PROCESSES (DO NOT KILL)
+const PROTECTED_PROCESSES = [
+  'explorer.exe', // The Desktop / Taskbar
+  'dwm.exe', // Desktop Window Manager
+  'svchost.exe', // Service Host
+  'lsass.exe', // Local Security Authority
+  'csrss.exe', // Client Server Runtime
+  'wininit.exe', // Windows Initialization
+  'winlogon.exe', // Windows Logon
+  'services.exe', // Services
+  'taskmgr.exe', // Task Manager (Optional, but usually good to keep)
+  'system',
+  'registry'
+]
+
 const APP_ALIASES: Record<string, string> = {
   vscode: 'code',
   code: 'code',
@@ -62,18 +77,19 @@ const PROCESS_NAMES: Record<string, string> = {
   steam: 'steam.exe',
   'epic games': 'EpicGamesLauncher.exe',
 
-  camera: 'WindowsCamera.exe', 
+  camera: 'WindowsCamera.exe',
   calculator: 'CalculatorApp.exe',
   settings: 'SystemSettings.exe',
   'task manager': 'Taskmgr.exe',
   photos: 'Microsoft.Photos.exe',
-  explorer: 'explorer.exe',
+  explorer: 'explorer.exe', // ⚠️ The dangerous one
   files: 'explorer.exe'
 }
 
 export default function registerAppLauncher(ipcMain: IpcMain) {
   console.log('🚀 [Main] Registering App Launcher & Terminator...')
 
+  // --- OPEN APP ---
   ipcMain.removeHandler('open-app')
   ipcMain.handle('open-app', async (_event, appName: string) => {
     return new Promise((resolve) => {
@@ -88,18 +104,30 @@ export default function registerAppLauncher(ipcMain: IpcMain) {
     })
   })
 
+  // --- CLOSE APP (FIXED) ---
   ipcMain.removeHandler('close-app')
   ipcMain.handle('close-app', async (_event, appName: string) => {
     return new Promise((resolve) => {
       const lowerName = appName.toLowerCase().trim()
-
       let processName = PROCESS_NAMES[lowerName]
 
+      // If not found in map, assume it's an exe
       if (!processName) {
         processName = appName.endsWith('.exe') ? appName : `${appName}.exe`
       }
-      const cmd = `taskkill /IM "${processName}" /F /T`
 
+      // 🛑 SECURITY CHECK: Prevent killing system shell
+      if (PROTECTED_PROCESSES.includes(processName.toLowerCase())) {
+        console.warn(`⚠️ Blocked attempt to kill system process: ${processName}`)
+        resolve({
+          success: false,
+          error: `Security Protocol: I cannot close '${appName}' (System Critical Process). Doing so would crash your PC.`
+        })
+        return // Stop execution here
+      }
+
+      // Proceed with termination
+      const cmd = `taskkill /IM "${processName}" /F /T`
 
       exec(cmd, (error) => {
         if (error) {
@@ -111,7 +139,6 @@ export default function registerAppLauncher(ipcMain: IpcMain) {
     })
   })
 }
-
 
 function executeCommand(command: string, appName: string, resolve: any) {
   console.log(`🚀 IRIS Launching Direct: ${command}`)

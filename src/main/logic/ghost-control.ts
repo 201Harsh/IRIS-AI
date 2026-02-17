@@ -4,12 +4,9 @@ import screenshot from 'screenshot-desktop'
 import loudness from 'loudness'
 import path from 'path'
 import { exec } from 'child_process'
-import fs from 'fs/promises'
 
-// ⚡ Speed Configuration (20ms is safe)
 keyboard.config.autoDelayMs = 20
 
-// 🛠️ KEY MAPPING
 const KEY_MAP: Record<string, Key> = {
   enter: Key.Enter,
   return: Key.Enter,
@@ -49,7 +46,6 @@ const KEY_MAP: Record<string, Key> = {
   f12: Key.F12
 }
 
-// 🌊 HELPER: Generate Human-Like Bezier Path
 function generateHumanPath(start: Point, end: Point): Point[] {
   const steps = 25 // Lower = Faster, Higher = Smoother
   const pathArray: Point[] = []
@@ -70,7 +66,6 @@ function generateHumanPath(start: Point, end: Point): Point[] {
 
   for (let i = 0; i <= steps; i++) {
     const t = i / steps
-    // Quadratic Bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
     const x = (1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * controlPoint.x + t * t * end.x
     const y = (1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * controlPoint.y + t * t * end.y
     pathArray.push(new Point(x, y))
@@ -92,7 +87,6 @@ export default function registerGhostControl(ipcMain: IpcMain) {
     })
   })
 
-  // ⚡ 2. THE SEQUENCER (Complex Macros)
   ipcMain.handle('ghost-sequence', async (_event, actions: any[]) => {
     try {
       for (const action of actions) {
@@ -142,7 +136,6 @@ export default function registerGhostControl(ipcMain: IpcMain) {
       const startPoint = await mouse.getPosition()
       const endPoint = new Point(logicalX, logicalY)
 
-      // Move Human-Like
       const pathPoints = generateHumanPath(startPoint, endPoint)
       await mouse.move(pathPoints)
 
@@ -170,7 +163,7 @@ export default function registerGhostControl(ipcMain: IpcMain) {
   ipcMain.handle('get-screen-size', async () => {
     const primaryDisplay = screen.getPrimaryDisplay()
     return {
-      width: primaryDisplay.size.width * primaryDisplay.scaleFactor, // Send Physical Width to AI
+      width: primaryDisplay.size.width * primaryDisplay.scaleFactor,
       height: primaryDisplay.size.height * primaryDisplay.scaleFactor
     }
   })
@@ -193,28 +186,5 @@ export default function registerGhostControl(ipcMain: IpcMain) {
     } catch (e) {
       return 'Error'
     }
-  })
-
-  ipcMain.handle('create-directory', async (_event, folderPath: string) => {
-    try {
-      await fs.mkdir(folderPath, { recursive: true })
-      return { success: true }
-    } catch (e: any) {
-      console.error('Create directory failed:', e)
-      return { success: false, error: e.message }
-    }
-  })
-
-  ipcMain.handle('open-in-vscode', async (_event, folderPath: string) => {
-    return new Promise((resolve) => {
-      exec(`code "${folderPath}"`, (error) => {
-        if (error) {
-          console.error('VS Code open failed:', error)
-          resolve({ success: false, error: error.message })
-        } else {
-          resolve({ success: true })
-        }
-      })
-    })
   })
 }
