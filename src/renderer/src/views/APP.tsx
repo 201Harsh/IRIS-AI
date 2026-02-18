@@ -110,7 +110,7 @@ const AppsView = () => {
   }, [page, allApps])
 
   return (
-    <div className="flex-1 p-8 h-full flex flex-col animate-in fade-in zoom-in duration-300">
+    <div className="flex-1 bg-white/8 p-8 h-full flex flex-col animate-in fade-in zoom-in duration-300">
       <div className="flex items-center justify-between mb-6 shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">

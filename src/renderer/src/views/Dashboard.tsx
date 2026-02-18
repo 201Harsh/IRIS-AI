@@ -98,7 +98,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
   ]
 
   return (
-    <div className="flex-1 p-4 grid grid-cols-12 gap-4 h-full overflow-hidden relative animate-in fade-in zoom-in duration-300 w-full">
+    <div className="flex-1 p-4 bg-white/2 grid grid-cols-12 gap-4 h-full overflow-hidden relative animate-in fade-in zoom-in duration-300 w-full">
       <div className="hidden lg:flex col-span-3 flex-col gap-4 h-full z-40">
         <div className={`${glassPanel} flex-1 flex flex-col p-1 overflow-hidden relative group`}>
           <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
@@ -122,7 +122,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
           )}
 
           <div
-            className={`w-full h-full rounded-xl overflow-hidden bg-black relative border border-white/5 transition-all ${isVideoOn ? 'opacity-100' : 'opacity-30'}`}
+            className={`w-full h-full rounded-xl overflow-hidden bg-black/20 relative border border-white/5 transition-all ${isVideoOn ? 'opacity-100' : 'opacity-30'}`}
           >
             <video
               key={visionMode}

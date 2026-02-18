@@ -42,13 +42,11 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
   const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
 
-  // 📝 Editor State
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newContent, setNewContent] = useState('')
   const [editOriginalFilename, setEditOriginalFilename] = useState<string | null>(null)
 
-  // Fetch Notes Function
   const fetchNotes = async () => {
     try {
       const data = await window.electron.ipcRenderer.invoke('get-notes')
@@ -58,16 +56,13 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
     }
   }
 
-  // Load on Mount
   useEffect(() => {
     fetchNotes()
     const interval = setInterval(fetchNotes, 3000) // Poll for AI updates
     return () => clearInterval(interval)
   }, [])
 
-  // --- ACTIONS ---
 
-  // 1. Start Fresh Note
   const startCreating = () => {
     setSelectedNote(null)
     setEditOriginalFilename(null)
@@ -76,15 +71,12 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
     setIsEditorOpen(true)
   }
 
-  // 2. Edit Existing Note
   const startEditing = () => {
     if (!selectedNote) return
 
     setEditOriginalFilename(selectedNote.filename)
     setNewTitle(selectedNote.title)
 
-    // ⚡ Logic: Remove the auto-generated "# Title" header from the content
-    // so it doesn't duplicate when we save it back.
     const cleanContent = selectedNote.content.replace(/^# .+\n\n/, '')
     setNewContent(cleanContent)
 
@@ -96,27 +88,21 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
     setEditOriginalFilename(null)
   }
 
-  // 3. Save (Create or Update)
   const saveManualNote = async () => {
     if (!newTitle.trim() || !newContent.trim()) return
 
-    // If editing and title changed, optionally delete old file (Backend dependent).
-    // For now, we just save. If title matches, it overwrites.
 
     await window.electron.ipcRenderer.invoke('save-note', {
       title: newTitle,
       content: newContent
     })
 
-    // Reset and Refresh
     setIsEditorOpen(false)
     setEditOriginalFilename(null)
     fetchNotes()
 
-    // Auto-select the updated note
     setTimeout(() => {
       window.electron.ipcRenderer.invoke('get-notes').then((data: Note[]) => {
-        // Find by approximate title match
         const created = data.find((n) =>
           n.title.toLowerCase().includes(newTitle.toLowerCase().replace(/ /g, '_'))
         )
@@ -133,7 +119,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
   }
 
   return (
-    <div className="flex-1 h-full grid grid-cols-12 gap-6 p-6 animate-in fade-in zoom-in duration-300">
+    <div className="flex-1 bg-gray-900/70 h-full grid grid-cols-12 gap-6 p-6 animate-in fade-in zoom-in duration-300">
       {/* --- LEFT: NOTES LIST --- */}
       <div className="col-span-4 flex flex-col gap-4 h-full overflow-hidden">
         {/* Header */}

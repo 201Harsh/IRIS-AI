@@ -70,13 +70,13 @@ const IRIS = (props: IrisProps) => {
   }
 
   return (
-    <div className="h-screen w-full bg-black text-zinc-300 font-sans overflow-hidden select-none flex flex-col relative pb-5">
+    <div className="h-screen w-full bg-black text-zinc-100 font-sans overflow-hidden select-none flex flex-col relative pb-5">
       <div className="h-14 w-full flex items-center justify-between px-6 bg-zinc-950/80 border-b border-white/5 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <RiShieldFlashLine className="text-emerald-500 text-xl animate-pulse" />
           <div className="flex flex-col leading-none">
             <span className="font-black tracking-[0.2em] text-sm text-zinc-100">IRIS OS</span>
-            <span className="text-[8px] font-mono text-emerald-500/60 tracking-widest">
+            <span className="text-[11px] font-mono text-emerald-500/60 tracking-widest">
               SYSTEM VER 2.0
             </span>
           </div>
@@ -93,7 +93,7 @@ const IRIS = (props: IrisProps) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`cursor-pointer px-5 py-1.5 text-[9px] font-bold tracking-widest rounded-md transition-all duration-300 flex items-center gap-2 ${
+              className={`cursor-pointer px-5 py-1.5 text-[10px] font-bold tracking-widest rounded-md transition-all duration-300 flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
