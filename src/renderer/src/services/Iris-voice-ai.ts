@@ -1,3 +1,4 @@
+import { handleNavigation, handleOpenMap } from '@renderer/tools/Earth-View'
 import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000 } from '../utils/audioUtils'
 import { getRunningApps } from './get-apps'
 import { getHistory, saveMessage } from './iris-ai-brain'
@@ -769,6 +770,33 @@ export class GeminiLiveService {
                     properties: { folder_path: { type: 'STRING' } },
                     required: ['folder_path']
                   }
+                },
+                {
+                  name: 'open_map',
+                  description:
+                    'Open a real, interactive dark-mode map for a specific city or location.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      location: {
+                        type: 'STRING',
+                        description: 'The city or place name (e.g. "Tokyo").'
+                      }
+                    },
+                    required: ['location']
+                  }
+                },
+                {
+                  name: 'get_navigation',
+                  description: 'Get driving directions and a visual route between two cities.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      origin: { type: 'STRING', description: 'Start location (e.g. "Delhi").' },
+                      destination: { type: 'STRING', description: 'End location (e.g. "Mumbai").' }
+                    },
+                    required: ['origin', 'destination']
+                  }
                 }
               ]
             }
@@ -874,6 +902,10 @@ export class GeminiLiveService {
               result = await createFolder(call.args.folder_path)
             } else if (call.name === 'open_project') {
               result = await openInVsCode(call.args.folder_path)
+            } else if (call.name === 'open_map') {
+              result = await handleOpenMap(call.args.location)
+            } else if (call.name === 'get_navigation') {
+              result = await handleNavigation(call.args.origin, call.args.destination)
             } else {
               result = 'Error: Tool not found.'
             }

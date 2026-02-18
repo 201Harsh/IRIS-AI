@@ -5,6 +5,7 @@ import { getScreenSourceId } from './hooks/CaptureDesktop'
 import IRIS from './UI/IRIS'
 import TitleBar from './components/Titlebar'
 import TerminalOverlay from './components/TerminalOverlay'
+import LeafletMapWidget from './components/MapView'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -184,6 +185,7 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
+      <LeafletMapWidget />
       <TerminalOverlay />
     </div>
   )
