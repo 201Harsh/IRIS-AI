@@ -3,10 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <title>IRIS AI</title>
- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src blob:; connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com; img-src 'self' data: blob:; media-src 'self' data: blob:;">
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self' 'unsafe-inline' 'unsafe-eval'; 
+        
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; 
+        
+        worker-src blob:; 
+        
+        connect-src 'self' 
+          https://generativelanguage.googleapis.com 
+          wss://generativelanguage.googleapis.com
+          https://nominatim.openstreetmap.org
+          http://router.project-osrm.org
+          https://api.open-meteo.com
+          https://geocoding-api.open-meteo.com
+          http://api.marketstack.com
+          http://api.aviationstack.com
+          http://apilayer.net
+          http://numverify.com; 
+        
+        img-src 'self' data: blob: 
+          http://*.google.com 
+          https://*.google.com 
+          https://*.googleapis.com 
+          https://*.gstatic.com 
+          https://*.basemaps.cartocdn.com 
+          https://*.openstreetmap.org; 
+        
+        media-src 'self' data: blob:;
+      "
+    />
   </head>
 
-  <body>
+  <body class="bg-black text-white overflow-hidden">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
