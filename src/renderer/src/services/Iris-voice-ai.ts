@@ -3,6 +3,7 @@ import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000 } from '../utils/au
 import { getRunningApps } from './get-apps'
 import { getHistory, saveMessage } from './iris-ai-brain'
 import { getAllApps, getSystemStatus } from './system-info'
+import { handleImageGeneration } from '@renderer/tools/Image-generator'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -797,6 +798,21 @@ export class GeminiLiveService {
                     },
                     required: ['origin', 'destination']
                   }
+                },
+                {
+                  name: 'generate_image',
+                  description: 'Generate a high-quality image using AI based on a text prompt.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      prompt: {
+                        type: 'STRING',
+                        description:
+                          'A detailed description of the image to generate (e.g. "Cyberpunk city with neon rain").'
+                      }
+                    },
+                    required: ['prompt']
+                  }
                 }
               ]
             }
@@ -906,6 +922,10 @@ export class GeminiLiveService {
               result = await handleOpenMap(call.args.location)
             } else if (call.name === 'get_navigation') {
               result = await handleNavigation(call.args.origin, call.args.destination)
+            } else if (call.name === 'generate_image') {
+              console.log(`🤖 IRIS is generating image for: ${call.args.prompt}`)
+
+              result = await handleImageGeneration(call.args.prompt)
             } else {
               result = 'Error: Tool not found.'
             }

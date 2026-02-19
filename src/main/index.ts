@@ -5,7 +5,8 @@ import {
   ipcMain,
   desktopCapturer,
   globalShortcut,
-  screen
+  screen,
+  session
 } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -40,7 +41,8 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      backgroundThrottling: false
+      backgroundThrottling: false,
+      webSecurity: false
     }
   })
 
@@ -97,6 +99,19 @@ function toggleOverlayMode() {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = { ...details.responseHeaders }
+    // Remove CSP and CORS headers that might block us
+    delete responseHeaders['content-security-policy']
+    delete responseHeaders['x-content-security-policy']
+    delete responseHeaders['access-control-allow-origin'] // We will inject our own if needed, or just stripping allows implicit
+
+    callback({
+      responseHeaders,
+      statusLine: details.statusLine
+    })
+  })
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
