@@ -3,8 +3,6 @@ import { InferenceClient } from '@huggingface/inference'
 const HF_API_KEY = import.meta.env.VITE_IMAGE_AI_API_KEY1 || 'hf_xxx'
 
 export const handleImageGeneration = async (prompt: string) => {
-  console.log(`🎨 Generating Image via HF Free Tier for: ${prompt}`)
-
   const loadingEvent = new CustomEvent('image-gen', {
     detail: { prompt: prompt, loading: true, url: '' }
   })
@@ -18,17 +16,13 @@ export const handleImageGeneration = async (prompt: string) => {
     const client = new InferenceClient(HF_API_KEY)
 
     const imageBlob: any = await client.textToImage({
-      model: 'stabilityai/stable-diffusion-xl-base-1.0',
-      inputs: prompt,
-      parameters: {
-        negative_prompt: 'blurry, low quality, distorted'
-      }
+      model: 'black-forest-labs/FLUX.1-schnell',
+      inputs: prompt
     })
 
     const imageUrl = URL.createObjectURL(imageBlob)
     console.log('✅ Generated URL:', imageUrl)
 
-    // 5. Notify UI: Success
     const successEvent = new CustomEvent('image-gen', {
       detail: {
         url: imageUrl,
