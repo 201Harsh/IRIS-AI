@@ -30,6 +30,7 @@
     "@react-three/fiber": "^9.5.0",
     "axios": "^1.13.5",
     "cheerio": "^1.2.0",
+    "framer-motion": "^12.34.2",
     "glob": "^13.0.1",
     "leaflet": "^1.9.4",
     "loudness": "^0.4.2",

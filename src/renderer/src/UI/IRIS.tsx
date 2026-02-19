@@ -10,7 +10,8 @@ import {
   RiBatteryChargeLine,
   RiCameraLine,
   RiComputerLine,
-  RiCloseLine
+  RiCloseLine,
+  RiImageLine
 } from 'react-icons/ri'
 import { getSystemStatus } from '@renderer/services/system-info'
 import { VisionMode } from '@renderer/App'
@@ -22,6 +23,8 @@ const AppsView = lazy(() => import('../views/APP'))
 const NotesView = lazy(() => import('../views/Notes'))
 const PhoneView = lazy(() => import('../views/Phone'))
 const SettingsView = lazy(() => import('../views/Settings'))
+const GalleryView = lazy(() => import('../views/Gallery'))
+
 interface IrisProps {
   isSystemActive: boolean
   toggleSystem: () => void
@@ -72,7 +75,7 @@ const IRIS = (props: IrisProps) => {
   return (
     <div className="h-screen w-full bg-black text-zinc-100 font-sans overflow-hidden select-none flex flex-col relative pb-5">
       <div className="h-14 w-full flex items-center justify-between px-6 bg-zinc-950/80 border-b border-white/5 z-50 backdrop-blur-md">
-        <div className="flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <RiShieldFlashLine className="text-emerald-500 text-xl animate-pulse" />
           <div className="flex flex-col leading-none">
             <span className="font-black tracking-[0.2em] text-sm text-zinc-100">IRIS OS</span>
@@ -87,6 +90,7 @@ const IRIS = (props: IrisProps) => {
             { id: 'DASHBOARD', icon: <RiLayoutGridLine /> },
             { id: 'APPS', icon: <RiBrainLine /> },
             { id: 'NOTES', icon: <RiFolderOpenLine /> },
+            { id: 'GALLERY', icon: <RiImageLine /> },
             { id: 'PHONE', icon: <RiPhoneLine /> },
             { id: 'SETTINGS', icon: <RiSettings4Line /> }
           ].map((tab) => (
@@ -131,6 +135,7 @@ const IRIS = (props: IrisProps) => {
           {activeTab === 'NOTES' && <NotesView glassPanel={glassPanel} />}
           {activeTab === 'PHONE' && <PhoneView glassPanel={glassPanel} />}
           {activeTab === 'SETTINGS' && <SettingsView glassPanel={glassPanel} />}
+          {activeTab === 'GALLERY' && <GalleryView />}
         </Suspense>
       </div>
 

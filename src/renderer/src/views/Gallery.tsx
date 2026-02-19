@@ -1,0 +1,355 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+import {
+  RiImage2Line,
+  RiDeleteBinLine,
+  RiFolderOpenLine,
+  RiCloseLine,
+  RiMagicLine,
+  RiFileWarningLine,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiDownloadLine
+} from 'react-icons/ri'
+import { motion, AnimatePresence } from 'framer-motion'
+
+// Type Definition
+interface GalleryImage {
+  filename: string
+  displayName: string
+  path: string
+  url: string
+  createdAt: Date
+}
+
+const GalleryView = () => {
+  const [allImages, setAllImages] = useState<GalleryImage[]>([])
+  const [visibleImages, setVisibleImages] = useState<GalleryImage[]>([])
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
+
+  // Animation Direction State
+  const [direction, setDirection] = useState(0) // 1 = Right, -1 = Left
+
+  // Lazy Load Config
+  const [page, setPage] = useState(1)
+  const ITEMS_PER_PAGE = 12
+  const observer = useRef<IntersectionObserver | null>(null)
+
+  // Infinite Scroll Trigger
+  const lastImageRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (observer.current) observer.current.disconnect()
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && visibleImages.length < allImages.length) {
+          setPage((prev) => prev + 1)
+        }
+      })
+      if (node) observer.current.observe(node)
+    },
+    [visibleImages.length, allImages.length]
+  )
+
+  const fetchGallery = async () => {
+    try {
+      const data = await window.electron.ipcRenderer.invoke('get-gallery')
+      if (Array.isArray(data)) setAllImages(data)
+    } catch (e) {
+      console.error('Gallery Fetch Error:', e)
+    }
+  }
+
+  // Initial Load & Polling
+  useEffect(() => {
+    fetchGallery()
+    const interval = setInterval(fetchGallery, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Pagination
+  useEffect(() => {
+    const endIndex = page * ITEMS_PER_PAGE
+    setVisibleImages(allImages.slice(0, endIndex))
+  }, [page, allImages])
+
+  // --- ACTIONS ---
+
+  const deleteImage = async (filename: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    await window.electron.ipcRenderer.invoke('delete-image', filename)
+
+    // Smart Navigation after Delete
+    if (selectedImage) {
+      const currentIndex = allImages.findIndex((img) => img.filename === selectedImage.filename)
+      const nextImage = allImages[currentIndex + 1] || allImages[currentIndex - 1]
+
+      if (nextImage) {
+        setSelectedImage(nextImage)
+      } else {
+        setSelectedImage(null)
+      }
+    }
+    fetchGallery()
+  }
+
+  const openLocation = async (path: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    await window.electron.ipcRenderer.invoke('open-image-location', path)
+  }
+
+  const saveCopy = async (path: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    await window.electron.ipcRenderer.invoke('save-image-external', path)
+  }
+
+  // --- CAROUSEL NAVIGATION ---
+
+  const navigateImage = useCallback(
+    (newDirection: number) => {
+      if (!selectedImage || allImages.length === 0) return
+
+      setDirection(newDirection) // Trigger Animation Direction
+
+      const currentIndex = allImages.findIndex((img) => img.filename === selectedImage.filename)
+      if (currentIndex === -1) return
+
+      let newIndex = currentIndex + newDirection
+
+      // Loop around
+      if (newIndex >= allImages.length) newIndex = 0
+      if (newIndex < 0) newIndex = allImages.length - 1
+
+      setSelectedImage(allImages[newIndex])
+    },
+    [selectedImage, allImages]
+  )
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return
+
+      if (e.key === 'ArrowRight') navigateImage(1)
+      if (e.key === 'ArrowLeft') navigateImage(-1)
+      if (e.key === 'Escape') setSelectedImage(null)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedImage, navigateImage])
+
+  // Framer Motion Variants
+  const variants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1
+    },
+    exit: (dir: number) => ({
+      zIndex: 0,
+      x: dir < 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8
+    })
+  }
+
+  return (
+    <div className="flex-1 bg-white/8 h-full p-8 animate-in fade-in zoom-in duration-500 flex flex-col overflow-hidden">
+      {/* --- HEADER --- */}
+      <div className="flex items-center justify-between pb-6 border-b border-white/5 mb-6 shrink-0">
+        <div className="flex items-center gap-3 text-zinc-100">
+          <div className="p-2 bg-green-500/10 rounded-lg border border-green-500/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+            <RiImage2Line className="text-green-400" size={24} />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold tracking-[0.2em] text-zinc-200">VISUAL VAULT</h2>
+            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">GENERATED BY IRIS</p>
+          </div>
+        </div>
+
+        <div className="text-[10px] font-mono text-green-300 bg-green-500/10 px-3 py-1.5 rounded border border-green-500/20 shadow-sm flex items-center gap-2">
+          <RiMagicLine size={12} /> {allImages.length} ARTIFACTS
+        </div>
+      </div>
+
+      {/* --- GALLERY GRID --- */}
+      <div className="flex-1 overflow-y-auto scrollbar-small pr-2 min-h-0">
+        {allImages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-zinc-600 gap-4">
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+              <RiImage2Line size={32} className="opacity-30" />
+            </div>
+            <p className="text-xs tracking-widest opacity-50 font-mono">NO ARTIFACTS FOUND</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-10">
+            {visibleImages.map((img, index) => {
+              const isLast = index === visibleImages.length - 1
+
+              return (
+                <div
+                  key={`${img.filename}-${index}`}
+                  ref={isLast ? lastImageRef : null}
+                  onClick={() => {
+                    setDirection(0) // Reset animation for open
+                    setSelectedImage(img)
+                  }}
+                  className="group relative aspect-16/10 bg-zinc-900/50 rounded-xl border border-white/5 overflow-hidden hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 cursor-pointer"
+                >
+                  <img
+                    src={img.url}
+                    alt={img.displayName}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                    }}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100 grayscale-20 group-hover:grayscale-0"
+                  />
+
+                  {/* ERROR FALLBACK */}
+                  <div className="hidden absolute inset-0 items-center justify-center flex-col gap-2 bg-zinc-900">
+                    <RiFileWarningLine className="text-red-500/50" size={24} />
+                    <span className="text-[8px] text-zinc-500">RENDER ERROR</span>
+                  </div>
+
+                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 translate-y-2 group-hover:translate-y-0">
+                    <p className="text-[10px] text-zinc-200 line-clamp-1 font-bold mb-0.5 tracking-wide capitalize">
+                      {img.displayName}
+                    </p>
+                    <p className="text-[8px] text-green-400 font-mono mb-3 uppercase tracking-wider opacity-80">
+                      {new Date(img.createdAt).toLocaleDateString()}
+                    </p>
+
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={(e) => openLocation(img.path, e)}
+                        className="p-2 bg-white/10 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-all backdrop-blur-md border border-white/10"
+                        title="Open File Location"
+                      >
+                        <RiFolderOpenLine size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => deleteImage(img.filename, e)}
+                        className="p-2 bg-white/10 text-white rounded-lg hover:bg-red-600 hover:text-white transition-all backdrop-blur-md border border-white/10"
+                        title="Delete Image"
+                      >
+                        <RiDeleteBinLine size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-9999 bg-black/90 flex items-center justify-center"
+          >
+            {/* CLOSE BUTTON */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="cursor-pointer absolute top-6 right-6 p-3 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full text-zinc-400 transition-all border border-white/5 z-50"
+            >
+              <RiCloseLine size={24} />
+            </button>
+
+            <div
+              className="absolute left-0 top-0 bottom-0 w-32 z-40 flex items-center justify-start pl-6 group cursor-pointer hover:bg-linear-to-r hover:from-black/50 hover:to-transparent transition-all"
+              onClick={() => navigateImage(-1)}
+            >
+              <div className="p-4 bg-white/5 group-hover:bg-green-500/20 text-zinc-400 group-hover:text-green-400 rounded-full transition-all border border-white/5 transform group-hover:-translate-x-1">
+                <RiArrowLeftSLine size={32} />
+              </div>
+            </div>
+
+            <div
+              className="absolute right-0 top-0 bottom-0 w-32 z-40 flex items-center justify-end pr-6 group cursor-pointer hover:bg-linear-to-l hover:from-black/50 hover:to-transparent transition-all"
+              onClick={() => navigateImage(1)}
+            >
+              <div className="p-4 bg-white/5 group-hover:bg-green-500/20 text-zinc-400 group-hover:text-green-400 rounded-full transition-all border border-white/5 transform group-hover:translate-x-1">
+                <RiArrowRightSLine size={32} />
+              </div>
+            </div>
+
+            <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+              <div className="relative w-full max-w-7xl h-[75vh] flex items-center justify-center">
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.img
+                    key={selectedImage.filename}
+                    src={selectedImage.url}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: 'spring', stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 },
+                      scale: { duration: 0.2 }
+                    }}
+                    className="absolute max-w-full max-h-full rounded-lg shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 object-contain"
+                  />
+                </AnimatePresence>
+              </div>
+
+              <div className="absolute bottom-10 z-50 flex flex-col items-center gap-6">
+                <div className="text-center px-4 py-2 bg-black/60 backdrop-blur-md rounded-xl border border-white/5">
+                  <h3 className="text-xl font-bold text-white mb-1 capitalize">
+                    {selectedImage.displayName}
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-mono">
+                    {new Date(selectedImage.createdAt).toLocaleString()} • GENERATED BY IRIS
+                  </p>
+                </div>
+
+                <div className="flex gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => openLocation(selectedImage.path)}
+                    className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-bold tracking-wider transition-all border border-white/5 hover:border-white/20"
+                  >
+                    <RiFolderOpenLine size={16} /> OPEN FOLDER
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => saveCopy(selectedImage.path)}
+                    className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-blue-900/20 hover:bg-blue-600 text-blue-200 hover:text-white rounded-xl text-xs font-bold tracking-wider transition-all border border-blue-500/20 hover:border-blue-500"
+                  >
+                    <RiDownloadLine size={16} /> SAVE COPY
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => deleteImage(selectedImage.filename)}
+                    className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-red-900/20 hover:bg-red-600 text-red-200 hover:text-white rounded-xl text-xs font-bold tracking-wider transition-all border border-red-500/20 hover:border-red-500"
+                  >
+                    <RiDeleteBinLine size={16} /> DELETE
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+export default GalleryView
