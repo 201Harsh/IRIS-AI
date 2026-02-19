@@ -24,6 +24,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@google/genai": "^1.39.0",
+    "@huggingface/inference": "^4.13.12",
     "@nut-tree-fork/nut-js": "^4.2.6",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",

@@ -6,6 +6,7 @@ import IRIS from './UI/IRIS'
 import TitleBar from './components/Titlebar'
 import TerminalOverlay from './components/TerminalOverlay'
 import LeafletMapWidget from './components/MapView'
+import ImageWidget from './components/ImageWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -186,6 +187,7 @@ const App = () => {
         />
       </div>
       <LeafletMapWidget />
+      <ImageWidget />
       <TerminalOverlay />
     </div>
   )
