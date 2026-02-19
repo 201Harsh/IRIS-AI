@@ -53,11 +53,11 @@ const CustomParticleSphere = ({ count = 5000 }) => {
     const currentPos = mesh.current.geometry.attributes.position.array as Float32Array
 
     for (let i = 0; i < count; i++) {
-      const ix = i * 3
+      const ix = i * 3 
       const iy = i * 3 + 1
       const iz = i * 3 + 2 
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.30
+      const expansion = 1 + volume * spreadFactors[i] * 0.35
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion

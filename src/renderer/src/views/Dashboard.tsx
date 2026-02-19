@@ -178,7 +178,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
         </div>
 
         <div
-          className={`w-[60vh] h-[60vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'opacity-100 scale-105' : 'opacity-80 scale-90 grayscale'}`}
+          className={`w-[60vh] h-[60vh] max-w-full transition-all duration-1000 ${isSystemActive ? 'opacity-100 scale-100' : 'opacity-85 scale-90 grayscale'}`}
         >
           <Sphere />
         </div>
