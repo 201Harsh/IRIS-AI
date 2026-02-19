@@ -25,6 +25,7 @@ import registerNotesHandlers from './logic/notes-manager'
 import registerWebAgent from './logic/web-agent'
 import registerGhostControl from './logic/ghost-control'
 import registerterminalControl from './logic/terminal-control'
+import registerGalleryHandlers from './logic/gallery-manager'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -117,6 +118,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerGalleryHandlers(ipcMain)
   registerterminalControl(ipcMain)
   registerGhostControl(ipcMain)
   registerWebAgent(ipcMain)
