@@ -4,6 +4,7 @@ import { getRunningApps } from './get-apps'
 import { getHistory, saveMessage } from './iris-ai-brain'
 import { getAllApps, getSystemStatus } from './system-info'
 import { handleImageGeneration } from '@renderer/tools/Image-generator'
+import { fetchWeather } from '@renderer/tools/weather-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -357,7 +358,7 @@ const readEmails = async (maxResults: number = 5) => {
     })
     window.dispatchEvent(event)
 
-    return result.speechText 
+    return result.speechText
   } catch (err) {
     return `System Error: Could not read emails.`
   }
@@ -957,6 +958,21 @@ export class GeminiLiveService {
                     },
                     required: ['to', 'subject', 'body']
                   }
+                },
+                {
+                  name: 'get_weather',
+                  description:
+                    'Get the current real-time weather, temperature, and atmospheric conditions for a specific city or location.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      location: {
+                        type: 'STRING',
+                        description: 'The name of the city (e.g., "New York", "London", "Aligarh").'
+                      }
+                    },
+                    required: ['location']
+                  }
                 }
               ]
             }
@@ -1080,6 +1096,8 @@ export class GeminiLiveService {
               result = await sendEmail(call.args.to, call.args.subject, call.args.body)
             } else if (call.name === 'draft_email') {
               result = await draftEmail(call.args.to, call.args.subject, call.args.body)
+            } else if (call.name === 'get_weather') {
+              result = await fetchWeather(call.args.location)
             } else {
               result = 'Error: Tool not found.'
             }
