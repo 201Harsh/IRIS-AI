@@ -299,6 +299,55 @@ const openInVsCode = async (path: string) => {
   }
 }
 
+// 1. Gives IRIS the list of images WITH their exact direct paths
+const readGalleryImages = async () => {
+  try {
+    const images: any[] = await window.electron.ipcRenderer.invoke('get-gallery')
+    if (!images || images.length === 0) return 'Visual Vault is empty. No images found.'
+
+    return images
+      .slice(0, 15) // Keep it to 15 so we don't crash her memory
+      .map((img) => `🖼️ Name: "${img.displayName}" | Path: ${img.path}`)
+      .join('\n')
+  } catch (e) {
+    return 'System Error: Could not access Visual Vault.'
+  }
+}
+
+// 2. The ultimate tool: Feeds the direct file into IRIS's "Eyes" so she can see it
+const analyzeDirectPhoto = async (filePath: string, socket: WebSocket | null) => {
+  try {
+    // Read the local file via the browser fetch API (unlocked by your CSP earlier)
+    const url = `file:///${filePath.replace(/\\/g, '/')}`
+    const res = await fetch(url)
+    const blob = await res.blob()
+    const reader = new FileReader()
+
+    return new Promise((resolve) => {
+      reader.onloadend = () => {
+        const base64data = (reader.result as string).split(',')[1]
+
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          // Send the image directly into Gemini's Vision stream
+          socket.send(
+            JSON.stringify({
+              realtimeInput: { mediaChunks: [{ mimeType: 'image/png', data: base64data }] }
+            })
+          )
+          resolve(
+            '✅ Photo successfully injected into your vision. You can now see it. Describe what you see to Harsh.'
+          )
+        } else {
+          resolve('❌ Failed: Connection not open.')
+        }
+      }
+      reader.readAsDataURL(blob)
+    })
+  } catch (e) {
+    return '❌ Error loading direct photo.'
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION (Project JARVIS)
 
@@ -813,6 +862,27 @@ export class GeminiLiveService {
                     },
                     required: ['prompt']
                   }
+                },
+                {
+                  name: 'read_gallery',
+                  description:
+                    'Get a list of all saved AI images in the Gallery with their exact file paths. Use this first to find the path of an image before sending it to WhatsApp or analyzing it.',
+                  parameters: { type: 'OBJECT', properties: {}, required: [] }
+                },
+                {
+                  name: 'analyze_direct_photo',
+                  description:
+                    'Use this tool to physically look at a specific photo from the gallery. Requires the exact file_path. Once you call this, the image will be sent to your vision processing and you can describe it.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_path: {
+                        type: 'STRING',
+                        description: 'The absolute file path of the image.'
+                      }
+                    },
+                    required: ['file_path']
+                  }
                 }
               ]
             }
@@ -926,6 +996,10 @@ export class GeminiLiveService {
               console.log(`🤖 IRIS is generating image for: ${call.args.prompt}`)
 
               result = await handleImageGeneration(call.args.prompt)
+            } else if (call.name === 'read_gallery') {
+              result = await readGalleryImages()
+            } else if (call.name === 'analyze_direct_photo') {
+              result = await analyzeDirectPhoto(call.args.file_path, this.socket)
             } else {
               result = 'Error: Tool not found.'
             }
