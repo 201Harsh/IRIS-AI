@@ -9,6 +9,7 @@ import LeafletMapWidget from './components/MapView'
 import ImageWidget from './components/ImageWidget'
 import EmailWidget from './components/EmailWidget'
 import WeatherWidget from './components/WeatherWidget'
+import StockWidget from './components/StockWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -189,6 +190,7 @@ const App = () => {
         />
       </div>
       <LeafletMapWidget />
+      <StockWidget />
       <WeatherWidget />
       <ImageWidget />
       <EmailWidget />
