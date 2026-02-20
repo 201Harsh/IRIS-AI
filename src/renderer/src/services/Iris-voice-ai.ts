@@ -6,6 +6,7 @@ import { getAllApps, getSystemStatus } from './system-info'
 import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
 import { getLiveLocation } from '@renderer/tools/live-location'
+import { compareStocks, fetchStockData } from '@renderer/tools/stock-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -981,6 +982,31 @@ export class GeminiLiveService {
                     },
                     required: ['location']
                   }
+                },
+                {
+                  name: 'get_stock_price',
+                  description:
+                    'Get the real-time stock price and today\'s interactive chart for a specific company ticker. IMPORTANT: For Indian stocks (like Tata, Jio, Reliance), you MUST append ".NS" (e.g., "TATAMOTORS.NS", "JIOFIN.NS", "RELIANCE.NS"). For US stocks, use standard tickers (e.g., "TTWO", "AAPL").',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      ticker: { type: 'STRING', description: 'The official stock ticker symbol.' }
+                    },
+                    required: ['ticker']
+                  }
+                },
+                {
+                  name: 'compare_stocks',
+                  description:
+                    'Compare the real-time intraday stock prices and charts of TWO companies simultaneously. Remember to append ".NS" for Indian stocks (e.g., "JIOFIN.NS" and "TATAMOTORS.NS").',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      ticker1: { type: 'STRING', description: 'The first stock ticker symbol.' },
+                      ticker2: { type: 'STRING', description: 'The second stock ticker symbol.' }
+                    },
+                    required: ['ticker1', 'ticker2']
+                  }
                 }
               ]
             }
@@ -1106,6 +1132,10 @@ export class GeminiLiveService {
               result = await draftEmail(call.args.to, call.args.subject, call.args.body)
             } else if (call.name === 'get_weather') {
               result = await fetchWeather(call.args.location)
+            } else if (call.name === 'get_stock_price') {
+              result = await fetchStockData(call.args.ticker)
+            } else if (call.name === 'compare_stocks') {
+              result = await compareStocks(call.args.ticker1, call.args.ticker2)
             } else {
               result = 'Error: Tool not found.'
             }
