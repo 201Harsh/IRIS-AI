@@ -5,6 +5,7 @@ import { getHistory, saveMessage } from './iris-ai-brain'
 import { getAllApps, getSystemStatus } from './system-info'
 import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
+import { getLiveLocation } from '@renderer/tools/live-location'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -462,10 +463,16 @@ export class GeminiLiveService {
     const allapps = await getAllApps()
     this.lastAppList = await getRunningApps()
 
+    const locationData = await getLiveLocation()
+    const locStr = locationData?.fullString || 'Unknown Location'
+    const locTimezone = locationData?.timezone || 'Unknown Timezone'
+
     const contextPrompt = `
     ---
     # 🌍 REAL-TIME CONTEXT
     - **User:** Harsh Pandey
+    - **Current Physical Location:** ${locStr}
+    - **Timezone:** ${locTimezone}
     - **OS:** ${sysStats?.os.type || 'Unknown'}
     - **System Health:** CPU ${sysStats?.cpu || '0'}% | RAM ${sysStats?.memory.usedPercentage || '0'}%
     - **Uptime:** ${sysStats?.os.uptime || 'Unknown'}

@@ -2,10 +2,8 @@ import { IpcMain } from 'electron'
 import os from 'os'
 import { exec } from 'child_process'
 
-// Helper to run shell commands
 const runCommand = (cmd: string): Promise<string> => {
   return new Promise((resolve) => {
-    // 10MB Buffer to handle huge lists of installed apps
     exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout) => {
       if (error) {
         console.warn('Command Warning:', error.message)
@@ -15,7 +13,6 @@ const runCommand = (cmd: string): Promise<string> => {
   })
 }
 
-// Global CPU snapshot for calculation
 let cpuLastSnapshot = os.cpus()
 
 function getSystemCpuUsage() {

@@ -27,6 +27,7 @@ import registerGhostControl from './logic/ghost-control'
 import registerterminalControl from './logic/terminal-control'
 import registerGalleryHandlers from './logic/gallery-manager'
 import registerGmailHandlers from './logic/gmail-manager'
+import registerLocationHandlers from './logic/live-location'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -118,6 +119,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerLocationHandlers(ipcMain)
   registerGmailHandlers(ipcMain)
   registerGalleryHandlers(ipcMain)
   registerterminalControl(ipcMain)
