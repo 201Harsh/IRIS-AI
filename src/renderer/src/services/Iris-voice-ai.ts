@@ -448,7 +448,7 @@ export class GeminiLiveService {
   private lastAppList: string[] = []
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_IRIS_AI_API_KEY || ''
+    this.apiKey = import.meta.env.VITE_IRIS_AI_API_KEY || 'your_api_key-here'
   }
 
   setMute(muted: boolean) {
