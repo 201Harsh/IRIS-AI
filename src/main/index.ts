@@ -26,6 +26,7 @@ import registerWebAgent from './logic/web-agent'
 import registerGhostControl from './logic/ghost-control'
 import registerterminalControl from './logic/terminal-control'
 import registerGalleryHandlers from './logic/gallery-manager'
+import registerGmailHandlers from './logic/gmail-manager'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -103,10 +104,9 @@ app.whenReady().then(() => {
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const responseHeaders = { ...details.responseHeaders }
-    // Remove CSP and CORS headers that might block us
     delete responseHeaders['content-security-policy']
     delete responseHeaders['x-content-security-policy']
-    delete responseHeaders['access-control-allow-origin'] // We will inject our own if needed, or just stripping allows implicit
+    delete responseHeaders['access-control-allow-origin']
 
     callback({
       responseHeaders,
@@ -118,6 +118,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerGmailHandlers(ipcMain)
   registerGalleryHandlers(ipcMain)
   registerterminalControl(ipcMain)
   registerGhostControl(ipcMain)
