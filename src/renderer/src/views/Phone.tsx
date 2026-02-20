@@ -3,7 +3,6 @@ import { RiLinkM, RiWifiLine, RiSmartphoneLine, RiInformationLine } from 'react-
 
 const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
   <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 p-6 animate-in fade-in zoom-in duration-300 bg-black min-h-screen text-emerald-50">
-    {/* LEFT COLUMN: CONNECTION FORM */}
     <div className="w-full lg:w-1/3 max-w-sm flex flex-col gap-4">
       <div className="p-6 bg-zinc-950/80 border border-emerald-900/40 rounded-2xl shadow-lg flex items-center gap-4">
         <div className="p-3 bg-emerald-950/40 rounded-xl border border-emerald-400/30">
@@ -52,15 +51,11 @@ const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
       </div>
     </div>
 
-    {/* CENTER COLUMN: PHONE MOCKUP */}
     <div className="w-full lg:w-1/3 flex justify-center py-4">
-      <div className="w-full max-w-[300px] h-[600px] bg-zinc-950 rounded-[3rem] border-[10px] border-zinc-900 shadow-2xl relative overflow-hidden flex flex-col">
-        {/* Notch */}
+      <div className="w-full max-w-75 h-150 bg-zinc-950 rounded-[3rem] border-10 border-zinc-900 shadow-2xl relative overflow-hidden flex flex-col">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-zinc-900 rounded-b-xl z-20"></div>
 
-        {/* Screen Content */}
-        <div className="flex-1 bg-gradient-to-b from-emerald-950/30 to-black p-6 flex flex-col">
-          {/* Status Bar */}
+        <div className="flex-1 bg-linear-to-b from-emerald-950/30 to-black p-6 flex flex-col">
           <div className="flex justify-between items-center text-[10px] text-emerald-500 font-medium mt-2">
             <span>9:41</span>
             <div className="flex gap-1">
@@ -69,28 +64,24 @@ const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
             </div>
           </div>
 
-          {/* Clock Area */}
           <div className="mt-16 text-center">
             <h1 className="text-5xl font-light text-white tracking-tight">09:41</h1>
             <p className="text-xs text-emerald-400/70 mt-2 tracking-wide">WAITING FOR CONNECTION</p>
           </div>
 
-          {/* Center Scan Icon */}
           <div className="flex-1 flex items-center justify-center relative">
             <div className="w-20 h-20 rounded-full bg-emerald-950/50 flex items-center justify-center border border-emerald-500/30">
               <RiSmartphoneLine size={32} className="text-emerald-400" />
             </div>
-            {/* Simple subtle ring */}
             <div className="absolute w-32 h-32 border border-emerald-500/20 rounded-full animate-ping opacity-50"></div>
           </div>
         </div>
       </div>
     </div>
 
-    {/* RIGHT COLUMN: INSTRUCTIONS */}
     <div className="w-full lg:w-1/3 max-w-sm flex flex-col h-full justify-center">
       <div
-        className={`${glassPanel} p-6 bg-zinc-950/80 border border-emerald-900/40 rounded-2xl shadow-lg h-[500px] overflow-y-auto scrollbar-small`}
+        className={`${glassPanel} p-6 bg-zinc-950/80 border border-emerald-900/40 rounded-2xl shadow-lg h-125 overflow-y-auto scrollbar-small`}
       >
         <h3 className="text-sm font-bold text-emerald-100 tracking-wide flex items-center gap-2 mb-6 pb-4 border-b border-emerald-900/50">
           <RiInformationLine className="text-emerald-400" size={18} /> How to Connect
