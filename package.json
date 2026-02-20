@@ -23,6 +23,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@google-cloud/local-auth": "^3.0.1",
     "@google/genai": "^1.39.0",
     "@huggingface/inference": "^4.13.12",
     "@nut-tree-fork/nut-js": "^4.2.6",
@@ -32,6 +33,7 @@
     "cheerio": "^1.2.0",
     "framer-motion": "^12.34.2",
     "glob": "^13.0.1",
+    "googleapis": "^171.4.0",
     "leaflet": "^1.9.4",
     "loudness": "^0.4.2",
     "puppeteer": "^24.37.3",
