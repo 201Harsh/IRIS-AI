@@ -7,6 +7,7 @@ import TitleBar from './components/Titlebar'
 import TerminalOverlay from './components/TerminalOverlay'
 import LeafletMapWidget from './components/MapView'
 import ImageWidget from './components/ImageWidget'
+import EmailWidget from './components/EmailWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -188,6 +189,7 @@ const App = () => {
       </div>
       <LeafletMapWidget />
       <ImageWidget />
+      <EmailWidget />
       <TerminalOverlay />
     </div>
   )
