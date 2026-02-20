@@ -15,12 +15,6 @@ out
 .vscode/*
 !.vscode/extensions.json
 
-# Google API Secrets
-credentials.json
-gmail_token.json
-.env
-
-# Google API Secrets
 credentials.json
 gmail_token.json
 .env
