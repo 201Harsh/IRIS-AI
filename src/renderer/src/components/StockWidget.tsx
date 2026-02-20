@@ -24,9 +24,8 @@ export default function StockWidget() {
 
   if (!isVisible || !stock) return null
 
-  // Colors
   const c1 = stock.isPositive1 ? '#10b981' : '#ef4444'
-  const c2 = stock.isPositive2 ? '#3b82f6' : '#f59e0b' // Blue vs Orange for 2nd stock
+  const c2 = stock.isPositive2 ? '#3b82f6' : '#f59e0b'
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -56,7 +55,7 @@ export default function StockWidget() {
   }
 
   return (
-    <div className="fixed inset-0 z-[9050] flex items-center justify-center p-10 bg-black/80 backdrop-blur-sm animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-9650 flex items-center justify-center p-10 bg-black/80 backdrop-blur-sm animate-in fade-in duration-500">
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -90,7 +89,6 @@ export default function StockWidget() {
         </div>
 
         <div className="p-8 pb-4 flex items-end gap-8">
-          {/* Ticker 1 Stats */}
           <div className="flex items-end gap-4">
             <h1
               className="text-5xl font-black text-white font-mono tracking-tighter"
@@ -110,7 +108,6 @@ export default function StockWidget() {
             </div>
           </div>
 
-          {/* Ticker 2 Stats (If Comparison) */}
           {stock.isComparison && (
             <div className="flex items-end gap-4 border-l border-white/10 pl-8">
               <h1
@@ -133,7 +130,7 @@ export default function StockWidget() {
           )}
         </div>
 
-        <div className="w-full h-72 min-h-[250px] px-4 pb-4">
+        <div className="w-full h-72 min-h-62.5 px-4 pb-4">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={stock.chartData}>
               <defs>
