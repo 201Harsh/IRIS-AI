@@ -350,7 +350,14 @@ const analyzeDirectPhoto = async (filePath: string, socket: WebSocket | null) =>
 
 const readEmails = async (maxResults: number = 5) => {
   try {
-    return await window.electron.ipcRenderer.invoke('gmail-read', maxResults)
+    const result: any = await window.electron.ipcRenderer.invoke('gmail-read', maxResults)
+
+    const event = new CustomEvent('show-emails', {
+      detail: { emails: result.uiData }
+    })
+    window.dispatchEvent(event)
+
+    return result.speechText 
   } catch (err) {
     return `System Error: Could not read emails.`
   }

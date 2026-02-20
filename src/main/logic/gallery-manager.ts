@@ -1,114 +1,179 @@
-import { IpcMain, app, shell } from 'electron'
-import fs from 'fs'
+import { IpcMain, app, BrowserWindow } from 'electron'
+import fs from 'fs/promises'
 import path from 'path'
-import { pathToFileURL } from 'url' // ⚡ URL Helper
+import process from 'process'
+import { authenticate } from '@google-cloud/local-auth'
+import { google } from 'googleapis'
 
-export default function registerGalleryHandlers(ipcMain: IpcMain) {
-  const GALLERY_DIR = path.resolve(app.getPath('userData'), 'Gallery')
+const SCOPES = ['https://mail.google.com/']
+const TOKEN_PATH = path.join(app.getPath('userData'), 'gmail_token.json')
+const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json')
 
-  if (!fs.existsSync(GALLERY_DIR)) {
-    fs.mkdirSync(GALLERY_DIR, { recursive: true })
+export default function registerGmailHandlers(ipcMain: IpcMain) {
+  async function loadSavedCredentialsIfExist(): Promise<any | null> {
+    try {
+      const content = await fs.readFile(TOKEN_PATH, 'utf-8')
+      const credentials = JSON.parse(content)
+      return google.auth.fromJSON(credentials)
+    } catch (err) {
+      return null
+    }
   }
 
-  // --- 1. GET GALLERY (Fixes Broken Images) ---
-  ipcMain.handle('get-gallery', async () => {
-    try {
-      if (!fs.existsSync(GALLERY_DIR)) return []
+  async function saveCredentials(client: any) {
+    const content = await fs.readFile(CREDENTIALS_PATH, 'utf-8')
+    const keys = JSON.parse(content)
+    const key = keys.installed || keys.web
+    const payload = JSON.stringify({
+      type: 'authorized_user',
+      client_id: key.client_id,
+      client_secret: key.client_secret,
+      refresh_token: client.credentials.refresh_token
+    })
+    await fs.writeFile(TOKEN_PATH, payload)
+  }
 
-      const files = fs
-        .readdirSync(GALLERY_DIR)
-        .filter((file) => /\.(png|jpg|jpeg|webp|gif)$/i.test(file))
+  async function authorize(): Promise<{ client: any; isNewLogin: boolean }> {
+    let client = await loadSavedCredentialsIfExist()
+    if (client) return { client, isNewLogin: false }
 
-      return files
-        .map((file) => {
-          const filePath = path.join(GALLERY_DIR, file)
-          const stats = fs.statSync(filePath)
+    console.log('🔐 Opening browser to authenticate IRIS with Gmail...')
 
-          // ⚡ FIX: Use pathToFileURL to generate valid file:/// URLs on Windows
-          const fileUrl = pathToFileURL(filePath).href
-
-          return {
-            filename: file,
-            // Clean Name: Removes timestamp and IRIS suffix for display
-            displayName: file
-              .replace(/_\d+_Generated_by_IRIS\.png$/, '') // Remove ID+Suffix
-              .replace(/_/g, ' '), // Underscores to spaces
-            path: filePath,
-            url: fileUrl,
-            createdAt: stats.birthtime
-          }
-        })
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    } catch (error) {
-      console.error('❌ Gallery Load Error:', error)
-      return []
+    client = (await authenticate({ scopes: SCOPES, keyfilePath: CREDENTIALS_PATH })) as any
+    if (client && client.credentials) {
+      await saveCredentials(client)
     }
-  })
 
-  // --- 2. SAVE IMAGE (Adds Branding) ---
-  ipcMain.handle('save-image-to-gallery', async (_event, { title, base64Data }) => {
-    try {
-      const safeTitle = (title || 'visual')
-        .replace(/[^a-z0-9]/gi, '_')
-        .toLowerCase()
-        .substring(0, 50)
-
-      const timestamp = Date.now()
-      const fileName = `${safeTitle}_${timestamp}_Generated_by_IRIS.png`
-      const filePath = path.join(GALLERY_DIR, fileName)
-
-      const data = base64Data.replace(/^data:image\/\w+;base64,/, '')
-      const buffer = Buffer.from(data, 'base64')
-
-      fs.writeFileSync(filePath, buffer)
-      console.log(`🖼️ Saved: ${fileName}`)
-
-      return { success: true, path: filePath }
-    } catch (error: any) {
-      console.error('❌ Save Error:', error)
-      return { success: false, error: error.message }
+    const mainWindow = BrowserWindow.getAllWindows()[0]
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
+      mainWindow.focus()
+      mainWindow.setAlwaysOnTop(true)
+      mainWindow.setAlwaysOnTop(false)
     }
-  })
 
-  ipcMain.handle('delete-image', async (_event, filename) => {
-    try {
-      const filePath = path.join(GALLERY_DIR, filename)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-        return true
-      }
-      return false
-    } catch (e) {
-      return false
-    }
-  })
+    return { client, isNewLogin: true }
+  }
 
-  // --- 4. OPEN FOLDER ---
-  ipcMain.handle('open-image-location', async (_event, filePath) => {
-    shell.showItemInFolder(filePath)
-  })
+  const makeEmail = (to: string, subject: string, body: string) => {
+    const str = [`To: ${to}`, `Subject: ${subject}`, '', body].join('\n')
+    return Buffer.from(str)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+  }
 
-  ipcMain.handle('save-image-external', async (_event, sourcePath) => {
-    try {
-      const { dialog } = require('electron')
-      const fs = require('fs')
+  function parseMessageParts(part: any, result = { text: '', html: '', attachments: [] as any[] }) {
+    if (!part) return result
 
-      // 1. Show "Save As" Dialog
-      const { filePath } = await dialog.showSaveDialog({
-        title: 'Save Image Copy',
-        defaultPath: path.basename(sourcePath),
-        filters: [{ name: 'Images', extensions: ['png', 'jpg'] }]
+    if (part.filename && part.filename.length > 0) {
+      result.attachments.push({
+        filename: part.filename,
+        mimeType: part.mimeType,
+        size: part.body?.size
       })
-
-      if (filePath) {
-        // 2. Copy the file
-        fs.copyFileSync(sourcePath, filePath)
-        return { success: true }
+    } else {
+      if (part.mimeType === 'text/plain' && part.body?.data) {
+        result.text += Buffer.from(part.body.data, 'base64').toString('utf-8')
+      } else if (part.mimeType === 'text/html' && part.body?.data) {
+        result.html += Buffer.from(part.body.data, 'base64').toString('utf-8')
       }
-      return { canceled: true }
-    } catch (error: any) {
-      console.error('Export Error:', error)
-      return { success: false, error: error.message }
+    }
+
+    if (part.parts && part.parts.length > 0) {
+      for (const childPart of part.parts) {
+        parseMessageParts(childPart, result)
+      }
+    }
+    return result
+  }
+
+  ipcMain.removeHandler('gmail-read') 
+  ipcMain.handle('gmail-read', async (_event, maxResults = 5) => {
+    try {
+      const { client: auth, isNewLogin } = await authorize()
+      if (!auth) throw new Error('Failed to authenticate.')
+
+      const gmail = google.gmail({ version: 'v1', auth: auth as any })
+      const res = await gmail.users.messages.list({ userId: 'me', maxResults })
+      const messages = res.data.messages || []
+
+      const prefix = isNewLogin
+        ? '[SYSTEM NOTICE: Gmail Login was just completed successfully. Tell the user this before reading the emails.]\n\n'
+        : ''
+
+      if (!messages.length) return { speechText: prefix + '📭 Inbox is empty.', uiData: [] }
+
+      let emailListForIris: string[] = []
+      let uiDataArray: any[] = []
+
+      for (const msg of messages) {
+        const fullMsg = await gmail.users.messages.get({ userId: 'me', id: msg.id! })
+        const headers = fullMsg.data.payload?.headers || []
+
+        const subject = headers.find((h) => h.name === 'Subject')?.value || 'No Subject'
+        const from = headers.find((h) => h.name === 'From')?.value || 'Unknown'
+        const date = headers.find((h) => h.name === 'Date')?.value || ''
+        const snippet = fullMsg.data.snippet
+
+        const parsed = parseMessageParts(fullMsg.data.payload)
+
+        emailListForIris.push(`📧 From: ${from}\nSubject: ${subject}\nPreview: ${snippet}\n`)
+
+        uiDataArray.push({
+          id: fullMsg.data.id,
+          from,
+          subject,
+          date,
+          preview: snippet,
+          body: parsed.html || parsed.text || snippet,
+          attachments: parsed.attachments
+        })
+      }
+
+      return {
+        speechText: prefix + emailListForIris.join('\n---\n'),
+        uiData: uiDataArray
+      }
+    } catch (e: any) {
+      console.error('Gmail Read Error:', e)
+      return { speechText: `❌ Gmail Error: ${e.message}`, uiData: [] }
+    }
+  })
+
+  ipcMain.removeHandler('gmail-send') 
+  ipcMain.handle('gmail-send', async (_event, { to, subject, body }) => {
+    try {
+      const { client: auth, isNewLogin } = await authorize()
+      if (!auth) throw new Error('Failed to authenticate.')
+      const gmail = google.gmail({ version: 'v1', auth: auth as any })
+      const raw = makeEmail(to, subject, body)
+
+      await gmail.users.messages.send({ userId: 'me', requestBody: { raw } })
+
+      const prefix = isNewLogin ? '[SYSTEM NOTICE: Login successful.]\n\n' : ''
+      return prefix + `✅ Email successfully sent to ${to}.`
+    } catch (e: any) {
+      return `❌ Send Error: ${e.message}`
+    }
+  })
+
+  ipcMain.removeHandler('gmail-draft')
+  ipcMain.handle('gmail-draft', async (_event, { to, subject, body }) => {
+    try {
+      const { client: auth, isNewLogin } = await authorize()
+      if (!auth) throw new Error('Failed to authenticate.')
+      const gmail = google.gmail({ version: 'v1', auth: auth as any })
+      const raw = makeEmail(to, subject, body)
+
+      await gmail.users.drafts.create({ userId: 'me', requestBody: { message: { raw } } })
+
+      const prefix = isNewLogin ? '[SYSTEM NOTICE: Login successful.]\n\n' : ''
+      return prefix + `✅ Draft created for ${to}. You can review it in your Gmail.`
+    } catch (e: any) {
+      return `❌ Draft Error: ${e.message}`
     }
   })
 }
