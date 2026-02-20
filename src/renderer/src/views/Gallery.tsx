@@ -12,7 +12,6 @@ import {
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Type Definition
 interface GalleryImage {
   filename: string
   displayName: string
@@ -26,15 +25,12 @@ const GalleryView = () => {
   const [visibleImages, setVisibleImages] = useState<GalleryImage[]>([])
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
 
-  // Animation Direction State
-  const [direction, setDirection] = useState(0) // 1 = Right, -1 = Left
+  const [direction, setDirection] = useState(0)
 
-  // Lazy Load Config
   const [page, setPage] = useState(1)
   const ITEMS_PER_PAGE = 12
   const observer = useRef<IntersectionObserver | null>(null)
 
-  // Infinite Scroll Trigger
   const lastImageRef = useCallback(
     (node: HTMLDivElement) => {
       if (observer.current) observer.current.disconnect()
@@ -57,26 +53,22 @@ const GalleryView = () => {
     }
   }
 
-  // Initial Load & Polling
   useEffect(() => {
     fetchGallery()
     const interval = setInterval(fetchGallery, 5000)
     return () => clearInterval(interval)
   }, [])
 
-  // Pagination
   useEffect(() => {
     const endIndex = page * ITEMS_PER_PAGE
     setVisibleImages(allImages.slice(0, endIndex))
   }, [page, allImages])
 
-  // --- ACTIONS ---
 
   const deleteImage = async (filename: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
     await window.electron.ipcRenderer.invoke('delete-image', filename)
 
-    // Smart Navigation after Delete
     if (selectedImage) {
       const currentIndex = allImages.findIndex((img) => img.filename === selectedImage.filename)
       const nextImage = allImages[currentIndex + 1] || allImages[currentIndex - 1]
@@ -100,20 +92,18 @@ const GalleryView = () => {
     await window.electron.ipcRenderer.invoke('save-image-external', path)
   }
 
-  // --- CAROUSEL NAVIGATION ---
 
   const navigateImage = useCallback(
     (newDirection: number) => {
       if (!selectedImage || allImages.length === 0) return
 
-      setDirection(newDirection) // Trigger Animation Direction
+      setDirection(newDirection)
 
       const currentIndex = allImages.findIndex((img) => img.filename === selectedImage.filename)
       if (currentIndex === -1) return
 
       let newIndex = currentIndex + newDirection
 
-      // Loop around
       if (newIndex >= allImages.length) newIndex = 0
       if (newIndex < 0) newIndex = allImages.length - 1
 
@@ -122,7 +112,6 @@ const GalleryView = () => {
     [selectedImage, allImages]
   )
 
-  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedImage) return
@@ -136,7 +125,6 @@ const GalleryView = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedImage, navigateImage])
 
-  // Framer Motion Variants
   const variants = {
     enter: (dir: number) => ({
       x: dir > 0 ? 1000 : -1000,
@@ -159,7 +147,6 @@ const GalleryView = () => {
 
   return (
     <div className="flex-1 bg-white/8 h-full p-8 animate-in fade-in zoom-in duration-500 flex flex-col overflow-hidden">
-      {/* --- HEADER --- */}
       <div className="flex items-center justify-between pb-6 border-b border-white/5 mb-6 shrink-0">
         <div className="flex items-center gap-3 text-zinc-100">
           <div className="p-2 bg-green-500/10 rounded-lg border border-green-500/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
@@ -176,7 +163,6 @@ const GalleryView = () => {
         </div>
       </div>
 
-      {/* --- GALLERY GRID --- */}
       <div className="flex-1 overflow-y-auto scrollbar-small pr-2 min-h-0">
         {allImages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-zinc-600 gap-4">
@@ -211,7 +197,6 @@ const GalleryView = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100 grayscale-20 group-hover:grayscale-0"
                   />
 
-                  {/* ERROR FALLBACK */}
                   <div className="hidden absolute inset-0 items-center justify-center flex-col gap-2 bg-zinc-900">
                     <RiFileWarningLine className="text-red-500/50" size={24} />
                     <span className="text-[8px] text-zinc-500">RENDER ERROR</span>
