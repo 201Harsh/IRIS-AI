@@ -1,4 +1,3 @@
-// ⚡ Direct fetch! No proxies needed because your Electron webSecurity is false.
 const fetchYahooData = async (ticker: string) => {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=1d&interval=5m`
   const response = await fetch(url)
@@ -54,7 +53,6 @@ export const compareStocks = async (ticker1: string, ticker2: string) => {
 
     const chartMap = new Map()
 
-    // Process Ticker 1
     const t1 = res1.timestamp || []
     const c1 = res1.indicators.quote[0].close || []
     for (let i = 0; i < t1.length; i++) {
@@ -67,7 +65,6 @@ export const compareStocks = async (ticker1: string, ticker2: string) => {
       }
     }
 
-    // Process Ticker 2
     const t2 = res2.timestamp || []
     const c2 = res2.indicators.quote[0].close || []
     for (let i = 0; i < t2.length; i++) {
@@ -84,7 +81,6 @@ export const compareStocks = async (ticker1: string, ticker2: string) => {
       }
     }
 
-    // Calculate changes
     const change1 = res1.meta.regularMarketPrice - res1.meta.chartPreviousClose
     const change2 = res2.meta.regularMarketPrice - res2.meta.chartPreviousClose
 
