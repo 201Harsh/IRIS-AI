@@ -348,6 +348,30 @@ const analyzeDirectPhoto = async (filePath: string, socket: WebSocket | null) =>
   }
 }
 
+const readEmails = async (maxResults: number = 5) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('gmail-read', maxResults)
+  } catch (err) {
+    return `System Error: Could not read emails.`
+  }
+}
+
+const sendEmail = async (to: string, subject: string, body: string) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('gmail-send', { to, subject, body })
+  } catch (err) {
+    return `System Error: Could not send email.`
+  }
+}
+
+const draftEmail = async (to: string, subject: string, body: string) => {
+  try {
+    return await window.electron.ipcRenderer.invoke('gmail-draft', { to, subject, body })
+  } catch (err) {
+    return `System Error: Could not draft email.`
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION (Project JARVIS)
 
@@ -883,6 +907,49 @@ export class GeminiLiveService {
                     },
                     required: ['file_path']
                   }
+                },
+                {
+                  name: 'read_emails',
+                  description:
+                    'Read the latest unread emails from the user\'s Gmail inbox. Use this when the user asks "check my emails" or "do I have any new emails?".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      max_results: {
+                        type: 'NUMBER',
+                        description: 'Number of emails to fetch (default is 5).'
+                      }
+                    },
+                    required: []
+                  }
+                },
+                {
+                  name: 'send_email',
+                  description:
+                    'Send an email to a specific email address. Only use this if the user explicitly says to SEND it.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      to: { type: 'STRING', description: 'The recipient email address.' },
+                      subject: { type: 'STRING', description: 'The subject of the email.' },
+                      body: { type: 'STRING', description: 'The main message content.' }
+                    },
+                    required: ['to', 'subject', 'body']
+                  }
+                },
+                {
+                  name: 'draft_email',
+                  description:
+                    'Create an email draft but do NOT send it. Use this if the user asks you to "draft a reply" or "write an email" but doesn\'t say to send it immediately.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      to: { type: 'STRING', description: 'The recipient email address.' },
+                      subject: { type: 'STRING', description: 'The subject of the email.' },
+                      body: { type: 'STRING', description: 'The main message content.' }
+                    },
+                    required: ['to', 'subject', 'body']
+                  }
                 }
               ]
             }
@@ -1000,6 +1067,12 @@ export class GeminiLiveService {
               result = await readGalleryImages()
             } else if (call.name === 'analyze_direct_photo') {
               result = await analyzeDirectPhoto(call.args.file_path, this.socket)
+            } else if (call.name === 'read_emails') {
+              result = await readEmails(call.args.max_results || 5)
+            } else if (call.name === 'send_email') {
+              result = await sendEmail(call.args.to, call.args.subject, call.args.body)
+            } else if (call.name === 'draft_email') {
+              result = await draftEmail(call.args.to, call.args.subject, call.args.body)
             } else {
               result = 'Error: Tool not found.'
             }
