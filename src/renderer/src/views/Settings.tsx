@@ -8,12 +8,10 @@ import {
   RiTimerFlashLine,
   RiTempHotLine,
   RiDatabase2Line,
-  RiWifiLine
 } from 'react-icons/ri'
 
 const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
   <div className="flex-1 p-4 md:p-8 lg:p-12 flex flex-col gap-8 animate-in fade-in zoom-in duration-300 w-full overflow-y-auto scrollbar-small bg-black min-h-screen text-emerald-50">
-    {/* HEADER */}
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-emerald-500/20 pb-6">
       <div className="flex items-center gap-6">
         <div className="p-4 bg-emerald-950/30 rounded-2xl border border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.15)]">
@@ -35,7 +33,6 @@ const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
       </div>
     </div>
 
-    {/* STATS DASHBOARD */}
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {[
         { label: 'CPU USAGE', value: '42%', icon: RiCpuLine, width: '42%' },
@@ -67,9 +64,7 @@ const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
       ))}
     </div>
 
-    {/* CORE SETTINGS GRID */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-      {/* 1. PROFILE NAME */}
       <div
         className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
       >
@@ -87,7 +82,6 @@ const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
         </div>
       </div>
 
-      {/* 2. AI MODEL SELECTION */}
       <div
         className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
       >
@@ -111,7 +105,6 @@ const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
         </div>
       </div>
 
-      {/* 3. VOICE PROFILE */}
       <div
         className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
       >
@@ -136,7 +129,6 @@ const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
         </div>
       </div>
 
-      {/* 4. API KEY */}
       <div
         className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
       >
