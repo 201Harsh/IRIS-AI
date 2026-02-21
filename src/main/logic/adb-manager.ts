@@ -119,4 +119,25 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       return 'I am connected, but I could not retrieve the telemetry data.'
     }
   })
+
+  ipcMain.removeHandler('adb-open-app')
+  ipcMain.handle('adb-open-app', async (_, { packageName }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
+        await execAsync(`adb ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
+        return { success: true }
+      }
+
+      await execAsync(
+        `adb ${target} shell monkey -p ${packageName} -c android.intent.category.LAUNCHER 1`
+      )
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
 }
