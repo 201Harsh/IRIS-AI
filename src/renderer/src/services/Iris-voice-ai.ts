@@ -378,6 +378,15 @@ const draftEmail = async (to: string, subject: string, body: string) => {
   }
 }
 
+const fetchMobileInfo = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('get-mobile-info-ai')
+    return result
+  } catch (e) {
+    return 'System Error: Mobile telemetry bridge is offline.'
+  }
+}
+
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION (Project JARVIS)
 
@@ -1008,6 +1017,16 @@ export class GeminiLiveService {
                     },
                     required: ['ticker1', 'ticker2']
                   }
+                },
+                {
+                  name: 'get_mobile_info',
+                  description:
+                    'Get the real-time battery and hardware telemetry of the user\'s connected Android mobile device. Use this if the user asks "How is my phone doing?" or "What is my mobile battery?".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
+                  }
                 }
               ]
             }
@@ -1137,6 +1156,8 @@ export class GeminiLiveService {
               result = await fetchStockData(call.args.ticker)
             } else if (call.name === 'compare_stocks') {
               result = await compareStocks(call.args.ticker1, call.args.ticker2)
+            } else if (call.name === 'get_mobile_info') {
+              result = await fetchMobileInfo()
             } else {
               result = 'Error: Tool not found.'
             }
