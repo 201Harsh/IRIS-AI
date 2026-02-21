@@ -81,7 +81,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
       interval = setInterval(() => {
         fetchTelemetry()
         fetchScreen()
-      }, 5000)
+      }, 2000)
     }
     return () => clearInterval(interval)
   }, [status])

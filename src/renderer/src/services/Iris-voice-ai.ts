@@ -7,6 +7,7 @@ import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
 import { getLiveLocation } from '@renderer/tools/live-location'
 import { compareStocks, fetchStockData } from '@renderer/tools/stock-api'
+import { openMobileApp } from '@renderer/tools/Mobile-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1027,6 +1028,21 @@ export class GeminiLiveService {
                     properties: {},
                     required: []
                   }
+                },
+                {
+                  name: 'open_mobile_app',
+                  description:
+                    'Launch an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., if the user says "WhatsApp", output "com.whatsapp". For "Instagram", output "com.instagram.android"). Use your vast knowledge to guess the correct package name. If the user asks for the Camera, output "android.media.action.STILL_IMAGE_CAMERA".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      package_name: {
+                        type: 'STRING',
+                        description: 'The exact Android package name to launch.'
+                      }
+                    },
+                    required: ['package_name']
+                  }
                 }
               ]
             }
@@ -1158,6 +1174,8 @@ export class GeminiLiveService {
               result = await compareStocks(call.args.ticker1, call.args.ticker2)
             } else if (call.name === 'get_mobile_info') {
               result = await fetchMobileInfo()
+            } else if (call.name === 'open_mobile_app') {
+              result = await openMobileApp(call.args.package_name)
             } else {
               result = 'Error: Tool not found.'
             }
