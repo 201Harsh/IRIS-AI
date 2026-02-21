@@ -1,21 +1,54 @@
-import { IpcMain } from 'electron'
+import { IpcMain, app } from 'electron'
 import { exec } from 'child_process'
 import util from 'util'
+import fs from 'fs/promises'
+import path from 'path'
 
 const execAsync = util.promisify(exec)
 
 let activeDevice: { ip: string; port: string } | any | null = null
 
 export default function registerAdbHandlers(ipcMain: IpcMain) {
-  ipcMain.removeHandler('adb-connect')
-  ipcMain.removeHandler('adb-disconnect')
-  ipcMain.removeHandler('adb-telemetry')
-  ipcMain.removeHandler('adb-screenshot')
-  ipcMain.removeHandler('get-mobile-info-ai')
+  const dirPath = path.join(app.getPath('userData'), 'Connected Devices')
+  const historyPath = path.join(dirPath, 'Connect-mobile.json')
 
+  const saveDeviceToHistory = async (ip: string, port: string, model: string) => {
+    try {
+      await fs.mkdir(dirPath, { recursive: true })
+
+      let history: any[] = []
+      try {
+        const file = await fs.readFile(historyPath, 'utf-8')
+        history = JSON.parse(file)
+      } catch (e) {}
+
+      const existingIndex = history.findIndex((d) => d.ip === ip)
+      const deviceData = { ip, port, model, lastConnected: new Date().toISOString() }
+
+      if (existingIndex > -1) {
+        history[existingIndex] = deviceData
+      } else {
+        history.push(deviceData)
+      }
+      await fs.writeFile(historyPath, JSON.stringify(history, null, 2))
+    } catch (e) {
+      console.error('Failed to save device history', e)
+    }
+  }
+
+  ipcMain.removeHandler('adb-get-history')
+  ipcMain.handle('adb-get-history', async () => {
+    try {
+      const file = await fs.readFile(historyPath, 'utf-8')
+      return JSON.parse(file)
+    } catch (e) {
+      return []
+    }
+  })
+
+  ipcMain.removeHandler('adb-connect')
   ipcMain.handle('adb-connect', async (_, { ip, port }) => {
     try {
-      console.log(`📡 Attempting ADB connection to ${ip}:${port}...`)
       const { stdout } = await execAsync(`adb connect ${ip}:${port}`)
 
       if (
@@ -23,6 +56,14 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         stdout.toLowerCase().includes('already connected')
       ) {
         activeDevice = { ip, port }
+
+        try {
+          const { stdout: modelOut } = await execAsync(
+            `adb -s ${ip}:${port} shell getprop ro.product.model`
+          )
+          await saveDeviceToHistory(ip, port, modelOut.trim().toUpperCase() || 'UNKNOWN DEVICE')
+        } catch (e) {}
+
         return { success: true }
       }
       return { success: false, error: stdout }
@@ -31,6 +72,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
+  ipcMain.removeHandler('adb-disconnect')
   ipcMain.handle('adb-disconnect', async () => {
     if (!activeDevice) return { success: true }
     try {
@@ -42,6 +84,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
+  ipcMain.removeHandler('adb-screenshot')
   ipcMain.handle('adb-screenshot', async () => {
     if (!activeDevice) return { success: false }
     return new Promise((resolve) => {
@@ -60,6 +103,27 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     })
   })
 
+  ipcMain.removeHandler('adb-quick-action')
+  ipcMain.handle('adb-quick-action', async (_, { action }) => {
+    if (!activeDevice) return { success: false }
+    const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+    try {
+      if (action === 'camera') {
+        await execAsync(`adb ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
+      } else if (action === 'wake') {
+        await execAsync(`adb ${target} shell input keyevent KEYCODE_WAKEUP`)
+      } else if (action === 'lock') {
+        await execAsync(`adb ${target} shell input keyevent KEYCODE_SLEEP`)
+      } else if (action === 'home') {
+        await execAsync(`adb ${target} shell input keyevent KEYCODE_HOME`)
+      }
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-telemetry')
   ipcMain.handle('adb-telemetry', async () => {
     if (!activeDevice) return { success: false, error: 'No device connected' }
     const target = `-s ${activeDevice.ip}:${activeDevice.port}`
@@ -67,12 +131,11 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       const { stdout: batteryOut } = await execAsync(`adb ${target} shell dumpsys battery`)
       const levelMatch = batteryOut.match(/level: (\d+)/)
       const tempMatch = batteryOut.match(/temperature: (\d+)/)
-      const acMatch = batteryOut.match(/AC powered: (true|false)/)
-      const usbMatch = batteryOut.match(/USB powered: (true|false)/)
+      const isCharging =
+        batteryOut.includes('AC powered: true') || batteryOut.includes('USB powered: true')
 
       const level = levelMatch ? parseInt(levelMatch[1]) : 0
       const temp = tempMatch ? (parseInt(tempMatch[1]) / 10).toFixed(1) : 0
-      const isCharging = (acMatch && acMatch[1] === 'true') || (usbMatch && usbMatch[1] === 'true')
 
       const { stdout: storageOut } = await execAsync(`adb ${target} shell df -h /data`)
       const storageLines = storageOut.trim().split('\n')
@@ -101,60 +164,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
           storage: { used: storageUsed, total: storageTotal, percent: storagePercent }
         }
       }
-    } catch (e: any) {
-      return { success: false, error: e.message }
-    }
-  })
-
-  ipcMain.handle('get-mobile-info-ai', async () => {
-    if (!activeDevice) return 'Error: You are not currently connected to any mobile device.'
-    try {
-      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
-      const { stdout: batOut } = await execAsync(`adb ${target} shell dumpsys battery`)
-      const level = batOut.match(/level: (\d+)/)?.[1] || 'Unknown'
-      const { stdout: modelOut } = await execAsync(`adb ${target} shell getprop ro.product.model`)
-
-      return `I am currently linked to your ${modelOut.trim()}. The battery is at ${level}%.`
-    } catch (e) {
-      return 'I am connected, but I could not retrieve the telemetry data.'
-    }
-  })
-
-  ipcMain.removeHandler('adb-open-app')
-  ipcMain.handle('adb-open-app', async (_, { packageName }) => {
-    if (!activeDevice) return { success: false, error: 'No phone connected.' }
-
-    try {
-      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
-
-      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
-        await execAsync(`adb ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
-        return { success: true }
-      }
-
-      await execAsync(
-        `adb ${target} shell monkey -p ${packageName} -c android.intent.category.LAUNCHER 1`
-      )
-      return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
-    }
-  })
-
-  ipcMain.removeHandler('adb-close-app')
-  ipcMain.handle('adb-close-app', async (_, { packageName }) => {
-    if (!activeDevice) return { success: false, error: 'No phone connected.' }
-
-    try {
-      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
-
-      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
-        await execAsync(`adb ${target} shell am force-stop com.google.android.GoogleCamera`)
-        return { success: true }
-      }
-
-      await execAsync(`adb ${target} shell am force-stop ${packageName}`)
-      return { success: true }
     } catch (e: any) {
       return { success: false, error: e.message }
     }
