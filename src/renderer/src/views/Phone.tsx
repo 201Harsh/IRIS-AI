@@ -2,9 +2,9 @@ import { FaAndroid } from 'react-icons/fa6'
 import { RiLinkM, RiWifiLine, RiSmartphoneLine, RiInformationLine } from 'react-icons/ri'
 
 const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
-  <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 p-6 animate-in fade-in zoom-in duration-300 bg-black min-h-screen text-emerald-50">
+  <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-6 p-6 animate-in fade-in zoom-in duration-300 bg-white/3 min-h-screen text-emerald-50">
     <div className="w-full lg:w-1/3 max-w-sm flex flex-col gap-4">
-      <div className="p-6 bg-zinc-950/80 border border-emerald-900/40 rounded-2xl shadow-lg flex items-center gap-4">
+      <div className="p-6 bg-black border border-emerald-900/40 rounded-2xl shadow-lg flex items-center gap-4">
         <div className="p-3 bg-emerald-950/40 rounded-xl border border-emerald-400/30">
           <FaAndroid className="text-emerald-400 text-2xl" />
         </div>
@@ -15,7 +15,7 @@ const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
       </div>
 
       <div
-        className={`${glassPanel} p-6 bg-zinc-950/80 border border-emerald-900/40 rounded-2xl shadow-lg flex flex-col gap-6`}
+        className={`${glassPanel} p-6 bg-zinc-950 border border-emerald-900/40 rounded-2xl shadow-lg flex flex-col gap-6`}
       >
         <div>
           <label className="text-xs font-bold text-emerald-400/80 tracking-wide mb-2 block">
@@ -52,8 +52,8 @@ const PhoneView = ({ glassPanel }: { glassPanel: string }) => (
     </div>
 
     <div className="w-full lg:w-1/3 flex justify-center py-4">
-      <div className="w-full max-w-75 h-150 bg-zinc-950 rounded-[3rem] border-10 border-zinc-900 shadow-2xl relative overflow-hidden flex flex-col">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-zinc-900 rounded-b-xl z-20"></div>
+      <div className="w-full max-w-75 h-150 bg-zinc-950 rounded-[3rem] border-10 border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-zinc-800 rounded-b-xl z-20"></div>
 
         <div className="flex-1 bg-linear-to-b from-emerald-950/30 to-black p-6 flex flex-col">
           <div className="flex justify-between items-center text-[10px] text-emerald-500 font-medium mt-2">
