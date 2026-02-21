@@ -90,14 +90,12 @@ const AppsView = () => {
 
   useEffect(() => {
     getAllApps().then((raw) => {
-      console.log('📦 Apps Loaded:', raw.length)
-
       const cleanData = (Array.isArray(raw) ? raw : []).filter(
         (item) => item && typeof item === 'object' && item.name && item.id
       )
 
       setAllApps(cleanData)
-      setVisibleApps(cleanData.slice(0, 15)) 
+      setVisibleApps(cleanData.slice(0, 15))
       setLoading(false)
     })
   }, [])

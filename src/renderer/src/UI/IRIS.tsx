@@ -18,10 +18,11 @@ import { VisionMode } from '@renderer/App'
 import { getHistory } from '@renderer/services/iris-ai-brain'
 import ViewSkeleton from '@renderer/components/ViewSkelrton'
 
-const DashboardView = lazy(() => import('../views/Dashboard'))
+import DashboardView from '../views/Dashboard'
+import PhoneView from '../views/Phone'
+
 const AppsView = lazy(() => import('../views/APP'))
 const NotesView = lazy(() => import('../views/Notes'))
-const PhoneView = lazy(() => import('../views/Phone'))
 const SettingsView = lazy(() => import('../views/Settings'))
 const GalleryView = lazy(() => import('../views/Gallery'))
 
@@ -122,18 +123,22 @@ const IRIS = (props: IrisProps) => {
       </div>
 
       <div className="flex-1 overflow-hidden relative bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-zinc-900/50 via-black to-black">
+        <div className={`absolute inset-0 ${activeTab === 'DASHBOARD' ? 'block' : 'hidden'}`}>
+          <DashboardView
+            props={props}
+            stats={stats}
+            chatHistory={chatHistory}
+            onVisionClick={handleVisionClick}
+          />
+        </div>
+
+        <div className={`absolute inset-0 ${activeTab === 'PHONE' ? 'block' : 'hidden'}`}>
+          <PhoneView glassPanel={glassPanel} />
+        </div>
+
         <Suspense fallback={<ViewSkeleton />}>
-          {activeTab === 'DASHBOARD' && (
-            <DashboardView
-              props={props}
-              stats={stats}
-              chatHistory={chatHistory}
-              onVisionClick={handleVisionClick}
-            />
-          )}
           {activeTab === 'APPS' && <AppsView />}
           {activeTab === 'NOTES' && <NotesView glassPanel={glassPanel} />}
-          {activeTab === 'PHONE' && <PhoneView glassPanel={glassPanel} />}
           {activeTab === 'SETTINGS' && <SettingsView glassPanel={glassPanel} />}
           {activeTab === 'GALLERY' && <GalleryView />}
         </Suspense>
