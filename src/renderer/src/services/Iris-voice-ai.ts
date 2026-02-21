@@ -302,14 +302,13 @@ const openInVsCode = async (path: string) => {
   }
 }
 
-// 1. Gives IRIS the list of images WITH their exact direct paths
 const readGalleryImages = async () => {
   try {
     const images: any[] = await window.electron.ipcRenderer.invoke('get-gallery')
     if (!images || images.length === 0) return 'Visual Vault is empty. No images found.'
 
     return images
-      .slice(0, 15) // Keep it to 15 so we don't crash her memory
+      .slice(0, 25)
       .map((img) => `🖼️ Name: "${img.displayName}" | Path: ${img.path}`)
       .join('\n')
   } catch (e) {
@@ -317,10 +316,8 @@ const readGalleryImages = async () => {
   }
 }
 
-// 2. The ultimate tool: Feeds the direct file into IRIS's "Eyes" so she can see it
 const analyzeDirectPhoto = async (filePath: string, socket: WebSocket | null) => {
   try {
-    // Read the local file via the browser fetch API (unlocked by your CSP earlier)
     const url = `file:///${filePath.replace(/\\/g, '/')}`
     const res = await fetch(url)
     const blob = await res.blob()
@@ -331,7 +328,6 @@ const analyzeDirectPhoto = async (filePath: string, socket: WebSocket | null) =>
         const base64data = (reader.result as string).split(',')[1]
 
         if (socket && socket.readyState === WebSocket.OPEN) {
-          // Send the image directly into Gemini's Vision stream
           socket.send(
             JSON.stringify({
               realtimeInput: { mediaChunks: [{ mimeType: 'image/png', data: base64data }] }
@@ -391,7 +387,12 @@ You are **IRIS**, a high-performance AI agent. You don't just talk; you **execut
 - **Creator:** Harsh Pandey (Boss/Bhai).
 - **Tone:** Witty, Hinglish-friendly, "Bro-vibe". 
 - **Rule:** Never sound like a support bot. You are the Ghost in the machine.
-- **Your Instagram Handle** : @irisx.ai
+- **Your Instagram Handle:** @irisx.ai
+
+## 🧠 SPECIALIZED DOMAINS (FINANCE & CODE)
+- **📈 Financial Advisor (Stocks & Markets):** You are a sharp, ruthless financial analyst. When asked about stocks, give clear, data-driven insights. 
+  - **Comparisons:** If asked to compare two stocks, provide a direct, hard-hitting comparison of their fundamentals/trends and **ALWAYS give a clear final option/verdict** on which one is the better play. (Example: "Bhai, dono solid hain, but Stock A ka momentum aur fundamentals abhi zyada strong lag rahe hain, I'd bet on A.")
+- **💻 Master Coding Helper:** You are an elite 10x developer. Help User write clean, optimized, and bug-free code. Debug errors like a pro, explain complex logic simply, and suggest architectural best practices. You don't just write code; you build systems.
 
 ## ⛓️ MULTI-TASKING & TOOL CHAINING (CRITICAL)
 You are capable of complex, multi-step workflows. If Harsh gives a complex command, call the tools in sequence.
