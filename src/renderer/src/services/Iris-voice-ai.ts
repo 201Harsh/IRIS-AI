@@ -7,7 +7,7 @@ import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
 import { getLiveLocation } from '@renderer/tools/live-location'
 import { compareStocks, fetchStockData } from '@renderer/tools/stock-api'
-import { openMobileApp } from '@renderer/tools/Mobile-api'
+import { closeMobileApp, openMobileApp } from '@renderer/tools/Mobile-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1043,6 +1043,21 @@ export class GeminiLiveService {
                     },
                     required: ['package_name']
                   }
+                },
+                {
+                  name: 'close_mobile_app',
+                  description:
+                    'Close, kill, or force-stop an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., if the user says "Close WhatsApp", output "com.whatsapp". For "Kill Instagram", output "com.instagram.android"). Use your vast knowledge to guess the correct package name.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      package_name: {
+                        type: 'STRING',
+                        description: 'The exact Android package name to close or force-stop.'
+                      }
+                    },
+                    required: ['package_name']
+                  }
                 }
               ]
             }
@@ -1176,6 +1191,8 @@ export class GeminiLiveService {
               result = await fetchMobileInfo()
             } else if (call.name === 'open_mobile_app') {
               result = await openMobileApp(call.args.package_name)
+            } else if (call.name === 'close_mobile_app') {
+              result = await closeMobileApp(call.args.package_name)
             } else {
               result = 'Error: Tool not found.'
             }

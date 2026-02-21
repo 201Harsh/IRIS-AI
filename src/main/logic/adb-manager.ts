@@ -140,4 +140,23 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       return { success: false, error: e.message }
     }
   })
+
+  ipcMain.removeHandler('adb-close-app')
+  ipcMain.handle('adb-close-app', async (_, { packageName }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
+        await execAsync(`adb ${target} shell am force-stop com.google.android.GoogleCamera`)
+        return { success: true }
+      }
+
+      await execAsync(`adb ${target} shell am force-stop ${packageName}`)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
 }

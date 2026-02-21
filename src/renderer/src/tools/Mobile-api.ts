@@ -11,3 +11,17 @@ export const openMobileApp = async (packageName: string) => {
     return `System Error: The mobile bridge is offline or the command failed.`
   }
 }
+
+export const closeMobileApp = async (packageName: string) => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('adb-close-app', { packageName })
+
+    if (res.success) {
+      return `Successfully closed and force-stopped the app (${packageName}) on the connected mobile device.`
+    } else {
+      return `Failed to close ${packageName}. Reason: ${res.error}`
+    }
+  } catch (error) {
+    return `System Error: The mobile bridge is offline or the command failed.`
+  }
+}
