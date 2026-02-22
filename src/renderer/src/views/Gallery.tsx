@@ -181,7 +181,7 @@ const GalleryView = () => {
                   key={`${img.filename}-${index}`}
                   ref={isLast ? lastImageRef : null}
                   onClick={() => {
-                    setDirection(0) // Reset animation for open
+                    setDirection(0) 
                     setSelectedImage(img)
                   }}
                   className="group relative aspect-16/10 bg-zinc-900/50 rounded-xl border border-white/5 overflow-hidden hover:border-green-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 cursor-pointer"
