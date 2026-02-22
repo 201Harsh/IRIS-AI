@@ -24,11 +24,11 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   const [status, setStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
   const [uiMode, setUiMode] = useState<'history' | 'manual'>('history')
   const [errorMsg, setErrorMsg] = useState('')
-  const [deviceHistory, setDeviceHistory] = useState<any[]>([])
+  const [deviceHistory] = useState<any[]>([])
 
   const screenRef = useRef<HTMLImageElement>(null)
   const isStreaming = useRef(false)
-  const knownNotifs = useRef<string[]>([]) 
+  const knownNotifs = useRef<string[]>([])
 
   const [telemetry, setTelemetry] = useState({
     model: 'UNKNOWN DEVICE',
@@ -37,33 +37,50 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     storage: { used: '0 GB', total: '0 GB TOTAL', percent: 0 }
   })
 
+  // 🔔 AUTONOMOUS NOTIFICATION TRACKER
   const checkNotifications = async () => {
     try {
       const res = await window.electron.ipcRenderer.invoke('adb-get-notifications')
       if (res.success && res.data) {
         const currentNotifs: string[] = res.data
 
-        const newNotifs = currentNotifs.filter((n) => !knownNotifs.current.includes(n))
-
-        if (newNotifs.length > 0 && knownNotifs.current.length > 0) {
-          console.log('🔔 NEW ALERT INTERCEPTED:', newNotifs[0])
-
-          window.dispatchEvent(
-            new CustomEvent('ai-force-speak', {
-              detail: `System Alert: The user just received a new mobile notification. Please announce it to them out loud naturally and briefly: "${newNotifs[0]}"`
-            })
-          )
+        // 1. If memory is empty, just save the current state and do NOT trigger AI (prevents spam on load)
+        if (knownNotifs.current.length === 0) {
+          knownNotifs.current = currentNotifs
+          return
         }
 
-        knownNotifs.current = currentNotifs
+        // 2. Find new ones
+        const newNotifs = currentNotifs.filter((n) => !knownNotifs.current.includes(n))
+
+        if (newNotifs.length > 0) {
+          console.log('🚨 NEW NOTIFICATION DETECTED:', newNotifs[0])
+
+          // ⚡ FIRE THE GLOBAL TRIGGER
+          window.dispatchEvent(
+            new CustomEvent('ai-force-speak', {
+              detail: `System Alert: The user just received a new mobile notification. Announce it out loud briefly: "${newNotifs[0]}"`
+            })
+          )
+
+          // 3. Update memory
+          knownNotifs.current = currentNotifs
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Notification Poll Error:', e)
+    }
   }
 
   useEffect(() => {
-    window.electron.ipcRenderer.invoke('adb-get-history').then((data) => {
-      setDeviceHistory(data)
-    })
+    let interval: any
+    if (status === 'connected') {
+      interval = setInterval(() => {
+        fetchTelemetry()
+        checkNotifications()
+      }, 2000)
+    }
+    return () => clearInterval(interval)
   }, [status])
 
   const connectToDevice = async (targetIp: string, targetPort: string) => {
@@ -136,7 +153,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   useEffect(() => {
     let interval: any
     if (status === 'connected') {
-      interval = setInterval(fetchTelemetry, 5000)
+      interval = setInterval(fetchTelemetry, 3000)
     }
     return () => clearInterval(interval)
   }, [status])
