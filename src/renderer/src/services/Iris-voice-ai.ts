@@ -7,7 +7,7 @@ import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
 import { getLiveLocation } from '@renderer/tools/live-location'
 import { compareStocks, fetchStockData } from '@renderer/tools/stock-api'
-import { closeMobileApp, openMobileApp } from '@renderer/tools/Mobile-api'
+import { closeMobileApp, openMobileApp, swipeMobileScreen, tapMobileScreen } from '@renderer/tools/Mobile-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1020,19 +1020,9 @@ export class GeminiLiveService {
                   }
                 },
                 {
-                  name: 'get_mobile_info',
-                  description:
-                    'Get the real-time battery and hardware telemetry of the user\'s connected Android mobile device. Use this if the user asks "How is my phone doing?" or "What is my mobile battery?".',
-                  parameters: {
-                    type: 'OBJECT',
-                    properties: {},
-                    required: []
-                  }
-                },
-                {
                   name: 'open_mobile_app',
                   description:
-                    'Launch an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., if the user says "WhatsApp", output "com.whatsapp". For "Instagram", output "com.instagram.android"). Use your vast knowledge to guess the correct package name. If the user asks for the Camera, output "android.media.action.STILL_IMAGE_CAMERA".',
+                    'Launch an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., if the user says "WhatsApp", output "com.whatsapp". For "Instagram", output "com.instagram.android"). If they ask for the Camera, output "android.media.action.STILL_IMAGE_CAMERA".',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -1047,7 +1037,7 @@ export class GeminiLiveService {
                 {
                   name: 'close_mobile_app',
                   description:
-                    'Close, kill, or force-stop an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., if the user says "Close WhatsApp", output "com.whatsapp". For "Kill Instagram", output "com.instagram.android"). Use your vast knowledge to guess the correct package name.',
+                    'Close, kill, or force-stop an app on the user\'s connected Android phone. YOU MUST CONVERT the app name into its official Android package name (e.g., "com.whatsapp").',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -1057,6 +1047,51 @@ export class GeminiLiveService {
                       }
                     },
                     required: ['package_name']
+                  }
+                },
+                {
+                  name: 'tap_mobile_screen',
+                  description:
+                    'Tap or click on a specific visual element on the connected Android phone. If the user attaches an image and says "Click the red button" or "Tap the plus icon", visually analyze the image. Estimate the exact X and Y coordinates of that object as a PERCENTAGE from 0 to 100. (e.g., Top-Left is X:0 Y:0, Bottom-Right is X:100 Y:100, Dead Center is X:50 Y:50).',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      x_percent: {
+                        type: 'NUMBER',
+                        description: 'The X coordinate percentage (0-100) from left to right.'
+                      },
+                      y_percent: {
+                        type: 'NUMBER',
+                        description: 'The Y coordinate percentage (0-100) from top to bottom.'
+                      }
+                    },
+                    required: ['x_percent', 'y_percent']
+                  }
+                },
+                {
+                  name: 'swipe_mobile_screen',
+                  description:
+                    'Swipe or scroll the mobile device screen. Use this if the user says "Scroll down", "Swipe left", "Go next page", etc.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      direction: {
+                        type: 'STRING',
+                        description:
+                          'The direction to swipe. ONLY use: "up", "down", "left", or "right". (Note: Swiping "up" means scrolling down the page).'
+                      }
+                    },
+                    required: ['direction']
+                  }
+                },
+                {
+                  name: 'get_mobile_info',
+                  description:
+                    'Get the real-time battery and hardware telemetry of the user\'s connected Android mobile device. Use this if the user asks "How is my phone doing?" or "What is my mobile battery?".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
                   }
                 }
               ]
@@ -1187,12 +1222,16 @@ export class GeminiLiveService {
               result = await fetchStockData(call.args.ticker)
             } else if (call.name === 'compare_stocks') {
               result = await compareStocks(call.args.ticker1, call.args.ticker2)
-            } else if (call.name === 'get_mobile_info') {
-              result = await fetchMobileInfo()
             } else if (call.name === 'open_mobile_app') {
               result = await openMobileApp(call.args.package_name)
             } else if (call.name === 'close_mobile_app') {
               result = await closeMobileApp(call.args.package_name)
+            } else if (call.name === 'tap_mobile_screen') {
+              result = await tapMobileScreen(call.args.x_percent, call.args.y_percent)
+            } else if (call.name === 'swipe_mobile_screen') {
+              result = await swipeMobileScreen(call.args.direction)
+            } else if (call.name === 'get_mobile_info') {
+              result = await fetchMobileInfo()
             } else {
               result = 'Error: Tool not found.'
             }
