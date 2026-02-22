@@ -37,14 +37,12 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     storage: { used: '0 GB', total: '0 GB TOTAL', percent: 0 }
   })
 
-  // 🔔 AUTONOMOUS NOTIFICATION TRACKER
   const checkNotifications = async () => {
     try {
       const res = await window.electron.ipcRenderer.invoke('adb-get-notifications')
       if (res.success && res.data) {
         const currentNotifs: string[] = res.data
 
-        // 1. If memory is empty, just save the current state and do NOT trigger AI (prevents spam on load)
         if (knownNotifs.current.length === 0) {
           knownNotifs.current = currentNotifs
           return
@@ -56,14 +54,12 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
         if (newNotifs.length > 0) {
           console.log('🚨 NEW NOTIFICATION DETECTED:', newNotifs[0])
 
-          // ⚡ FIRE THE GLOBAL TRIGGER
           window.dispatchEvent(
             new CustomEvent('ai-force-speak', {
               detail: `System Alert: The user just received a new mobile notification. Announce it out loud briefly: "${newNotifs[0]}"`
             })
           )
 
-          // 3. Update memory
           knownNotifs.current = currentNotifs
         }
       }
