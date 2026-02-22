@@ -285,7 +285,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
-  // 🔔 NOTIFICATION INTERCEPTOR (UPGRADED FOR MIUI)
   ipcMain.removeHandler('adb-get-notifications')
   ipcMain.handle('adb-get-notifications', async () => {
     if (!activeDevice) return { success: false, error: 'No device connected.' }
@@ -299,7 +298,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       let currentTitle = ''
 
       for (const line of lines) {
-        // More aggressive regex to catch MIUI's CharSequence formatting
         if (line.includes('android.title=')) {
           const match = line.match(/android\.title=(?:String|CharSequence) \((.*?)\)/)
           if (match && match[1]) currentTitle = match[1].trim()
@@ -308,7 +306,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
           if (match && match[1]) {
             const currentText = match[1].trim()
 
-            // Ignore system noise
             const isSystem =
               currentTitle.toLowerCase().includes('running') ||
               currentTitle.toLowerCase().includes('sync') ||
@@ -316,7 +313,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
             if (currentTitle && currentText && !isSystem) {
               const fullMsg = `Message from ${currentTitle}: ${currentText}`
-              // Avoid exact duplicates
               if (!notifications.includes(fullMsg)) {
                 notifications.push(fullMsg)
               }
