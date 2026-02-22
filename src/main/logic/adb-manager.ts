@@ -36,7 +36,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   }
 
-  // --- UI ROUTES ---
 
   ipcMain.removeHandler('adb-get-history')
   ipcMain.handle('adb-get-history', async () => {
@@ -171,9 +170,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
-  // ==========================================
-  // 🧠 AI AUTONOMY ROUTES (RESTORED)
-  // ==========================================
 
   ipcMain.removeHandler('get-mobile-info-ai')
   ipcMain.handle('get-mobile-info-ai', async () => {
