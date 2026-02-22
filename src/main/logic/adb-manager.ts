@@ -285,6 +285,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
+  // 🔔 NOTIFICATION INTERCEPTOR (UPGRADED FOR MIUI)
   ipcMain.removeHandler('adb-get-notifications')
   ipcMain.handle('adb-get-notifications', async () => {
     if (!activeDevice) return { success: false, error: 'No device connected.' }
@@ -298,26 +299,34 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       let currentTitle = ''
 
       for (const line of lines) {
-        if (line.includes('android.title=String')) {
-          currentTitle = line.split('android.title=String (')[1]?.slice(0, -2) || ''
-        } else if (line.includes('android.text=String')) {
-          const currentText = line.split('android.text=String (')[1]?.slice(0, -2) || ''
+        // More aggressive regex to catch MIUI's CharSequence formatting
+        if (line.includes('android.title=')) {
+          const match = line.match(/android\.title=(?:String|CharSequence) \((.*?)\)/)
+          if (match && match[1]) currentTitle = match[1].trim()
+        } else if (line.includes('android.text=')) {
+          const match = line.match(/android\.text=(?:String|CharSequence) \((.*?)\)/)
+          if (match && match[1]) {
+            const currentText = match[1].trim()
 
-          if (
-            currentTitle &&
-            currentText &&
-            !currentTitle.toLowerCase().includes('running') &&
-            !currentTitle.toLowerCase().includes('sync')
-          ) {
-            notifications.push(`Message from ${currentTitle}: ${currentText}`)
-            currentTitle = ''
+            // Ignore system noise
+            const isSystem =
+              currentTitle.toLowerCase().includes('running') ||
+              currentTitle.toLowerCase().includes('sync') ||
+              currentText.toLowerCase().includes('running')
+
+            if (currentTitle && currentText && !isSystem) {
+              const fullMsg = `Message from ${currentTitle}: ${currentText}`
+              // Avoid exact duplicates
+              if (!notifications.includes(fullMsg)) {
+                notifications.push(fullMsg)
+              }
+              currentTitle = ''
+            }
           }
         }
       }
 
-      const uniqueNotifs = [...new Set(notifications)].filter((n) => n.length > 5).slice(0, 5)
-
-      return { success: true, data: uniqueNotifs }
+      return { success: true, data: notifications }
     } catch (e: any) {
       return { success: false, error: e.message }
     }

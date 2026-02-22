@@ -532,6 +532,27 @@ export class GeminiLiveService {
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${this.apiKey}`
     this.socket = new WebSocket(url)
 
+    window.addEventListener('ai-force-speak', (event: any) => {
+      const systemPrompt = event.detail
+      if (systemPrompt && this.socket && this.socket.readyState === WebSocket.OPEN) {
+        console.log('🔊 FORCING IRIS TO SPEAK:', systemPrompt)
+
+        const overrideMsg = {
+          clientContent: {
+            turns: [
+              {
+                role: 'user',
+                parts: [{ text: systemPrompt }]
+              }
+            ],
+            turnComplete: true // Force the AI to respond immediately
+          }
+        }
+
+        this.socket.send(JSON.stringify(overrideMsg))
+      }
+    })
+
     this.socket.onopen = async () => {
       console.log('🟢 IRIS Connected')
       this.isConnected = true
