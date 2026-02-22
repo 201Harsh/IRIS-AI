@@ -62,3 +62,20 @@ export const fetchMobileInfo = async () => {
     return 'System Error: Mobile telemetry bridge is offline.'
   }
 }
+
+export const fetchMobileNotifications = async () => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('adb-get-notifications')
+
+    if (res.success) {
+      if (res.data.length === 0) {
+        return 'You have no new notifications on your phone right now.'
+      }
+      return `Here are the latest notifications from the phone:\n${res.data.join('\n')}`
+    } else {
+      return `Failed to read notifications. Reason: ${res.error}`
+    }
+  } catch (error) {
+    return `System Error: The mobile bridge is offline.`
+  }
+}

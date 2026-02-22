@@ -36,7 +36,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   }
 
-
   ipcMain.removeHandler('adb-get-history')
   ipcMain.handle('adb-get-history', async () => {
     try {
@@ -170,7 +169,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   })
 
-
   ipcMain.removeHandler('get-mobile-info-ai')
   ipcMain.handle('get-mobile-info-ai', async () => {
     if (!activeDevice) return 'Error: You are not currently connected to any mobile device.'
@@ -283,6 +281,44 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       return { success: false, error: 'Invalid direction.' }
     } catch (e: any) {
       console.error(e)
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-get-notifications')
+  ipcMain.handle('adb-get-notifications', async () => {
+    if (!activeDevice) return { success: false, error: 'No device connected.' }
+    const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+    try {
+      const { stdout } = await execAsync(`adb ${target} shell dumpsys notification --noredact`)
+
+      const notifications: string[] = []
+      const lines = stdout.split('\n')
+      let currentTitle = ''
+
+      for (const line of lines) {
+        if (line.includes('android.title=String')) {
+          currentTitle = line.split('android.title=String (')[1]?.slice(0, -2) || ''
+        } else if (line.includes('android.text=String')) {
+          const currentText = line.split('android.text=String (')[1]?.slice(0, -2) || ''
+
+          if (
+            currentTitle &&
+            currentText &&
+            !currentTitle.toLowerCase().includes('running') &&
+            !currentTitle.toLowerCase().includes('sync')
+          ) {
+            notifications.push(`Message from ${currentTitle}: ${currentText}`)
+            currentTitle = ''
+          }
+        }
+      }
+
+      const uniqueNotifs = [...new Set(notifications)].filter((n) => n.length > 5).slice(0, 5)
+
+      return { success: true, data: uniqueNotifs }
+    } catch (e: any) {
       return { success: false, error: e.message }
     }
   })
