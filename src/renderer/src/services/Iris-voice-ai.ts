@@ -7,7 +7,13 @@ import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
 import { getLiveLocation } from '@renderer/tools/live-location'
 import { compareStocks, fetchStockData } from '@renderer/tools/stock-api'
-import { closeMobileApp, openMobileApp, swipeMobileScreen, tapMobileScreen } from '@renderer/tools/Mobile-api'
+import {
+  closeMobileApp,
+  fetchMobileNotifications,
+  openMobileApp,
+  swipeMobileScreen,
+  tapMobileScreen
+} from '@renderer/tools/Mobile-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1093,6 +1099,16 @@ export class GeminiLiveService {
                     properties: {},
                     required: []
                   }
+                },
+                {
+                  name: 'get_mobile_notifications',
+                  description:
+                    'Read the latest incoming notifications, messages, and alerts from the user\'s connected Android phone. Use this when the user says "Read my notifications", "Do I have any messages?", "Check my phone alerts", or "Did anyone text me?".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
+                  }
                 }
               ]
             }
@@ -1232,6 +1248,8 @@ export class GeminiLiveService {
               result = await swipeMobileScreen(call.args.direction)
             } else if (call.name === 'get_mobile_info') {
               result = await fetchMobileInfo()
+            } else if (call.name === 'get_mobile_notifications') {
+              result = await fetchMobileNotifications()
             } else {
               result = 'Error: Tool not found.'
             }
