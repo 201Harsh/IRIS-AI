@@ -58,7 +58,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
 
   useEffect(() => {
     fetchNotes()
-    const interval = setInterval(fetchNotes, 3000) // Poll for AI updates
+    const interval = setInterval(fetchNotes, 3000) 
     return () => clearInterval(interval)
   }, [])
 
@@ -120,9 +120,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
 
   return (
     <div className="flex-1 bg-gray-900/70 h-full grid grid-cols-12 gap-6 p-6 animate-in fade-in zoom-in duration-300">
-      {/* --- LEFT: NOTES LIST --- */}
       <div className="col-span-4 flex flex-col gap-4 h-full overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-white/10">
           <div className="flex items-center gap-2 text-zinc-100">
             <RiStickyNoteLine className="text-emerald-400" />
@@ -131,7 +129,6 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-zinc-500 font-mono mr-2">{notes.length} ITEMS</span>
-            {/* ⚡ CREATE BUTTON */}
             <button
               onClick={startCreating}
               className="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500 hover:text-black transition-all"
@@ -142,7 +139,6 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
           </div>
         </div>
 
-        {/* List */}
         <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-small">
           {notes.length === 0 ? (
             <div className="text-center text-zinc-600 text-xs mt-10">
@@ -186,11 +182,9 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
         </div>
       </div>
 
-      {/* --- RIGHT: PREVIEW OR EDITOR --- */}
       <div
         className={`col-span-8 ${glassPanel || ''} bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl flex flex-col overflow-hidden relative`}
       >
-        {/* MODE 1: CREATE / EDIT NOTE */}
         {isEditorOpen ? (
           <div className="flex-1 flex flex-col p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
@@ -230,7 +224,6 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
             </div>
           </div>
         ) : selectedNote ? (
-          /* MODE 2: READ NOTE */
           <>
             <div className="h-12 border-b border-white/5 flex items-center justify-between px-6 bg-white/5">
               <div className="flex items-center gap-2 text-zinc-300">
@@ -241,7 +234,6 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
                 <span className="text-[9px] font-mono text-zinc-600 bg-black/20 px-2 py-1 rounded">
                   READ ONLY
                 </span>
-                {/* ⚡ EDIT BUTTON */}
                 <button
                   onClick={startEditing}
                   className="text-zinc-500 hover:text-emerald-400 transition-colors"
@@ -261,7 +253,6 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
             </div>
           </>
         ) : (
-          /* MODE 3: EMPTY STATE */
           <div className="flex-1 flex flex-col items-center justify-center text-zinc-700 gap-4">
             <RiFileTextLine size={48} className="opacity-20" />
             <span className="text-xs tracking-widest opacity-50">
