@@ -28,7 +28,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
 
   const screenRef = useRef<HTMLImageElement>(null)
   const isStreaming = useRef(false)
-  const knownNotifs = useRef<string[]>([]) // ⚡ AI MEMORY: Remembers old notifications
+  const knownNotifs = useRef<string[]>([]) 
 
   const [telemetry, setTelemetry] = useState({
     model: 'UNKNOWN DEVICE',
@@ -37,21 +37,17 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     storage: { used: '0 GB', total: '0 GB TOTAL', percent: 0 }
   })
 
-  // 🔔 AUTONOMOUS NOTIFICATION TRACKER
   const checkNotifications = async () => {
     try {
       const res = await window.electron.ipcRenderer.invoke('adb-get-notifications')
       if (res.success && res.data) {
         const currentNotifs: string[] = res.data
 
-        // Find notifications that we haven't seen before
         const newNotifs = currentNotifs.filter((n) => !knownNotifs.current.includes(n))
 
-        // If there is a new message, AND it's not the very first time we are loading...
         if (newNotifs.length > 0 && knownNotifs.current.length > 0) {
           console.log('🔔 NEW ALERT INTERCEPTED:', newNotifs[0])
 
-          // ⚡ FIRE THE GLOBAL AI TRIGGER
           window.dispatchEvent(
             new CustomEvent('ai-force-speak', {
               detail: `System Alert: The user just received a new mobile notification. Please announce it to them out loud naturally and briefly: "${newNotifs[0]}"`
@@ -59,7 +55,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
           )
         }
 
-        knownNotifs.current = currentNotifs // Update memory
+        knownNotifs.current = currentNotifs
       }
     } catch (e) {}
   }
