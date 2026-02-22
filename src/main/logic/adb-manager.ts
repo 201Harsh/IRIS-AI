@@ -36,6 +36,8 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
     }
   }
 
+  // --- UI ROUTES ---
+
   ipcMain.removeHandler('adb-get-history')
   ipcMain.handle('adb-get-history', async () => {
     try {
@@ -165,6 +167,126 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         }
       }
     } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  // ==========================================
+  // 🧠 AI AUTONOMY ROUTES (RESTORED)
+  // ==========================================
+
+  ipcMain.removeHandler('get-mobile-info-ai')
+  ipcMain.handle('get-mobile-info-ai', async () => {
+    if (!activeDevice) return 'Error: You are not currently connected to any mobile device.'
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+      const { stdout: batOut } = await execAsync(`adb ${target} shell dumpsys battery`)
+      const level = batOut.match(/level: (\d+)/)?.[1] || 'Unknown'
+      const { stdout: modelOut } = await execAsync(`adb ${target} shell getprop ro.product.model`)
+
+      return `I am currently linked to your ${modelOut.trim()}. The battery is at ${level}%.`
+    } catch (e) {
+      return 'I am connected, but I could not retrieve the telemetry data.'
+    }
+  })
+
+  ipcMain.removeHandler('adb-open-app')
+  ipcMain.handle('adb-open-app', async (_, { packageName }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
+        await execAsync(`adb ${target} shell am start -a android.media.action.STILL_IMAGE_CAMERA`)
+        return { success: true }
+      }
+
+      await execAsync(
+        `adb ${target} shell monkey -p ${packageName} -c android.intent.category.LAUNCHER 1`
+      )
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-close-app')
+  ipcMain.handle('adb-close-app', async (_, { packageName }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+      if (packageName === 'android.media.action.STILL_IMAGE_CAMERA') {
+        await execAsync(`adb ${target} shell am force-stop com.google.android.GoogleCamera`)
+        return { success: true }
+      }
+
+      await execAsync(`adb ${target} shell am force-stop ${packageName}`)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-tap')
+  ipcMain.handle('adb-tap', async (_, { xPercent, yPercent }) => {
+    if (!activeDevice) return { success: false, error: 'No device' }
+    const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+    try {
+      const { stdout } = await execAsync(`adb ${target} shell wm size`)
+      const match = stdout.match(/(\d+)x(\d+)/)
+
+      if (match) {
+        const width = parseInt(match[1])
+        const height = parseInt(match[2])
+
+        const x = Math.round((xPercent / 100) * width)
+        const y = Math.round((yPercent / 100) * height)
+
+        await execAsync(`adb ${target} shell input tap ${x} ${y}`)
+        return { success: true }
+      }
+      return { success: false, error: 'Could not calculate screen size.' }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-swipe')
+  ipcMain.handle('adb-swipe', async (_, { direction }) => {
+    if (!activeDevice) return { success: false, error: 'No device' }
+    const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+    try {
+      const { stdout } = await execAsync(`adb ${target} shell wm size`)
+      const match = stdout.match(/(\d+)x(\d+)/)
+      if (!match) return { success: false }
+
+      const w = parseInt(match[1])
+      const h = parseInt(match[2])
+      const cx = Math.round(w / 2)
+      const cy = Math.round(h / 2)
+
+      let cmd = ''
+      if (direction === 'up')
+        cmd = `input swipe ${cx} ${Math.round(h * 0.7)} ${cx} ${Math.round(h * 0.3)} 300`
+      if (direction === 'down')
+        cmd = `input swipe ${cx} ${Math.round(h * 0.3)} ${cx} ${Math.round(h * 0.7)} 300`
+      if (direction === 'left')
+        cmd = `input swipe ${Math.round(w * 0.8)} ${cy} ${Math.round(w * 0.2)} ${cy} 300`
+      if (direction === 'right')
+        cmd = `input swipe ${Math.round(w * 0.2)} ${cy} ${Math.round(w * 0.8)} ${cy} 300`
+
+      if (cmd) {
+        await execAsync(`adb ${target} shell ${cmd}`)
+        return { success: true }
+      }
+      return { success: false, error: 'Invalid direction.' }
+    } catch (e: any) {
+      console.error(e)
       return { success: false, error: e.message }
     }
   })
