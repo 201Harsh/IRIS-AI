@@ -105,3 +105,19 @@ export const pullFileFromMobile = async (sourcePath: string, destPath?: string) 
     return `System Error: The mobile bridge is offline.`
   }
 }
+
+export const toggleMobileHardware = async (setting: string, state: boolean) => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('adb-hardware-toggle', { setting, state })
+    if (res.success) {
+      let msg = `Successfully turned ${state ? 'ON' : 'OFF'} the ${setting}.`
+      if (res.warning) msg += ` Note: ${res.warning}`
+      return msg
+    } else {
+      return `Failed to toggle ${setting}. Reason: ${res.error}`
+    }
+  } catch (error) {
+    console.log(error)
+    return `System Error: Mobile bridge offline.`
+  }
+}

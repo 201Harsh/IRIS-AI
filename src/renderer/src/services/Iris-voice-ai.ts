@@ -14,7 +14,8 @@ import {
   pullFileFromMobile,
   pushFileToMobile,
   swipeMobileScreen,
-  tapMobileScreen
+  tapMobileScreen,
+  toggleMobileHardware
 } from '@renderer/tools/Mobile-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
@@ -1174,6 +1175,26 @@ export class GeminiLiveService {
                     },
                     required: ['source_path']
                   }
+                },
+                {
+                  name: 'toggle_mobile_hardware',
+                  description:
+                    'Turn system hardware settings ON or OFF on the connected Android phone. Supported settings include: "wifi", "bluetooth", "data", "airplane", "location", "flashlight". WARNING: If the user asks to turn OFF Wi-Fi, you MUST warn them first saying "Bhai, if I turn off Wi-Fi, our wireless connection will break instantly. Are you sure?" Proceed only if they confirm.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      setting: {
+                        type: 'STRING',
+                        description:
+                          'The name of the setting to toggle (e.g., "wifi", "bluetooth", "location", "airplane", "flashlight"). Extract this from the user\'s command.'
+                      },
+                      state: {
+                        type: 'BOOLEAN',
+                        description: 'Pass true to turn ON, false to turn OFF.'
+                      }
+                    },
+                    required: ['setting', 'state']
+                  }
                 }
               ]
             }
@@ -1319,6 +1340,8 @@ export class GeminiLiveService {
               result = await pushFileToMobile(call.args.source_path, call.args.dest_path)
             } else if (call.name === 'pull_file_from_mobile') {
               result = await pullFileFromMobile(call.args.source_path, call.args.dest_path)
+            } else if (call.name === 'toggle_mobile_hardware') {
+              result = await toggleMobileHardware(call.args.setting, call.args.state)
             } else {
               result = 'Error: Tool not found.'
             }

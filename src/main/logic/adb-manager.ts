@@ -354,4 +354,70 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       return { success: false, error: e.message }
     }
   })
+
+  ipcMain.removeHandler('adb-hardware-toggle')
+  ipcMain.handle('adb-hardware-toggle', async (_, { setting, state }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+    const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+    try {
+      const cleanSetting = setting.toLowerCase().trim()
+      const action = state ? 'enable' : 'disable'
+
+      if (cleanSetting === 'bluetooth' || cleanSetting === 'bt') {
+        try {
+          await execAsync(`adb ${target} shell svc bluetooth ${action}`, { timeout: 5000 })
+        } catch (e) {
+          console.log('svc bluetooth failed (Code 137). Triggering fallback cmd...')
+          await execAsync(`adb ${target} shell cmd bluetooth_manager ${action}`, { timeout: 5000 })
+        }
+        return { success: true }
+      }
+
+      if (cleanSetting === 'wifi') {
+        try {
+          await execAsync(`adb ${target} shell svc wifi ${action}`, { timeout: 5000 })
+        } catch (e) {
+          const wifiState = state ? 'enabled' : 'disabled'
+          await execAsync(`adb ${target} shell cmd wifi set-wifi-enabled ${wifiState}`, {
+            timeout: 5000
+          })
+        }
+        return { success: true }
+      }
+
+      if (cleanSetting === 'data' || cleanSetting === 'mobile data') {
+        await execAsync(`adb ${target} shell svc data ${action}`, { timeout: 5000 })
+        return { success: true }
+      }
+
+      if (cleanSetting === 'airplane' || cleanSetting === 'flight') {
+        await execAsync(`adb ${target} shell cmd connectivity airplane-mode ${action}`, {
+          timeout: 5000
+        })
+        return { success: true }
+      }
+
+      if (cleanSetting === 'location' || cleanSetting === 'gps') {
+        const locState = state ? '3' : '0' 
+        await execAsync(`adb ${target} shell settings put secure location_mode ${locState}`, {
+          timeout: 5000
+        })
+        return { success: true }
+      }
+
+      if (cleanSetting === 'flashlight' || cleanSetting === 'torch') {
+        await execAsync(
+          `adb ${target} shell am start -a android.intent.action.MAIN -n com.android.systemui/.flashlight.FlashlightActivity`,
+          { timeout: 5000 }
+        )
+        return { success: true, warning: 'Flashlight intent fired.' }
+      }
+
+      return { success: false, error: `I don't know how to toggle: ${setting}` }
+    } catch (e: any) {
+      console.error('Hardware Toggle Error:', e)
+      return { success: false, error: e.message }
+    }
+  })
 }
