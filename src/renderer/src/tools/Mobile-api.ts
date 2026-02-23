@@ -79,3 +79,29 @@ export const fetchMobileNotifications = async () => {
     return `System Error: The mobile bridge is offline.`
   }
 }
+
+export const pushFileToMobile = async (sourcePath: string, destPath?: string) => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('adb-push-file', { sourcePath, destPath })
+    if (res.success) {
+      return `Successfully pushed the file to the mobile device at ${destPath || '/sdcard/Download/'}.`
+    } else {
+      return `Failed to push file to mobile. Reason: ${res.error}`
+    }
+  } catch (error) {
+    return `System Error: The mobile bridge is offline.`
+  }
+}
+
+export const pullFileFromMobile = async (sourcePath: string, destPath?: string) => {
+  try {
+    const res = await window.electron.ipcRenderer.invoke('adb-pull-file', { sourcePath, destPath })
+    if (res.success) {
+      return `Successfully pulled the file from the mobile device. Saved to PC at: ${res.savedTo}`
+    } else {
+      return `Failed to pull file from mobile. Make sure the file actually exists at ${sourcePath}. Reason: ${res.error}`
+    }
+  } catch (error) {
+    return `System Error: The mobile bridge is offline.`
+  }
+}
