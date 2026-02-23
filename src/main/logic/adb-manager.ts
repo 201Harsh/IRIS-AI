@@ -327,4 +327,31 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       return { success: false, error: e.message }
     }
   })
+
+  ipcMain.removeHandler('adb-push-file')
+  ipcMain.handle('adb-push-file', async (_, { sourcePath, destPath = '/sdcard/Download/' }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+      await execAsync(`adb ${target} push "${sourcePath}" "${destPath}"`)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.removeHandler('adb-pull-file')
+  ipcMain.handle('adb-pull-file', async (_, { sourcePath, destPath }) => {
+    if (!activeDevice) return { success: false, error: 'No phone connected.' }
+    try {
+      const target = `-s ${activeDevice.ip}:${activeDevice.port}`
+
+      const finalDest = destPath || path.join(app.getPath('downloads'))
+
+      await execAsync(`adb ${target} pull "${sourcePath}" "${finalDest}"`)
+      return { success: true, savedTo: finalDest }
+    } catch (e: any) {
+      return { success: false, error: e.message }
+    }
+  })
 }

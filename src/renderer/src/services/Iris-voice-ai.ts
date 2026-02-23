@@ -11,6 +11,8 @@ import {
   closeMobileApp,
   fetchMobileNotifications,
   openMobileApp,
+  pullFileFromMobile,
+  pushFileToMobile,
   swipeMobileScreen,
   tapMobileScreen
 } from '@renderer/tools/Mobile-api'
@@ -1130,6 +1132,48 @@ export class GeminiLiveService {
                     properties: {},
                     required: []
                   }
+                },
+                {
+                  name: 'push_file_to_mobile',
+                  description:
+                    'Send (push) a file from the user\'s PC to their connected Android mobile device. Use this if the user says "Send this file to my phone" or "Push the photo to my mobile".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      source_path: {
+                        type: 'STRING',
+                        description:
+                          'The absolute file path on the PC (e.g., "C:/Users/Harsh/Desktop/document.pdf").'
+                      },
+                      dest_path: {
+                        type: 'STRING',
+                        description:
+                          'Optional. The destination path on the phone. Leave empty to default to "/sdcard/Download/".'
+                      }
+                    },
+                    required: ['source_path']
+                  }
+                },
+                {
+                  name: 'pull_file_from_mobile',
+                  description:
+                    'Retrieve (pull) a file from the user\'s connected Android phone and save it to their PC. Use this if the user says "Get the latest photo from my phone" or "Pull the file from my mobile".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      source_path: {
+                        type: 'STRING',
+                        description:
+                          'The absolute file path on the Android phone (e.g., "/sdcard/DCIM/Camera/photo.jpg").'
+                      },
+                      dest_path: {
+                        type: 'STRING',
+                        description:
+                          "Optional. The destination folder on the PC. Leave empty to default to the PC's Downloads folder."
+                      }
+                    },
+                    required: ['source_path']
+                  }
                 }
               ]
             }
@@ -1271,6 +1315,10 @@ export class GeminiLiveService {
               result = await fetchMobileInfo()
             } else if (call.name === 'get_mobile_notifications') {
               result = await fetchMobileNotifications()
+            } else if (call.name === 'push_file_to_mobile') {
+              result = await pushFileToMobile(call.args.source_path, call.args.dest_path)
+            } else if (call.name === 'pull_file_from_mobile') {
+              result = await pullFileFromMobile(call.args.source_path, call.args.dest_path)
             } else {
               result = 'Error: Tool not found.'
             }
