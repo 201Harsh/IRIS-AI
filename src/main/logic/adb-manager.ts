@@ -312,7 +312,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
               currentText.toLowerCase().includes('running')
 
             if (currentTitle && currentText && !isSystem) {
-              const fullMsg = `Message from ${currentTitle}: ${currentText}`
+              const fullMsg = `You got a Message on your Smartphone from ${currentTitle}: ${currentText}`
               if (!notifications.includes(fullMsg)) {
                 notifications.push(fullMsg)
               }
@@ -399,7 +399,7 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
 
       if (cleanSetting === 'location' || cleanSetting === 'gps') {
-        const locState = state ? '3' : '0' 
+        const locState = state ? '3' : '0'
         await execAsync(`adb ${target} shell settings put secure location_mode ${locState}`, {
           timeout: 5000
         })
@@ -407,11 +407,16 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
 
       if (cleanSetting === 'flashlight' || cleanSetting === 'torch') {
-        await execAsync(
-          `adb ${target} shell am start -a android.intent.action.MAIN -n com.android.systemui/.flashlight.FlashlightActivity`,
-          { timeout: 5000 }
-        )
-        return { success: true, warning: 'Flashlight intent fired.' }
+        // Step 1: Wake up the screen
+        await execAsync(`adb ${target} shell input keyevent KEYCODE_WAKEUP`)
+
+        await execAsync(`adb ${target} shell cmd statusbar expand-settings`)
+
+        return {
+          success: true,
+          warning:
+            'Android OS blocks silent flashlight toggles. I have pulled down your Quick Settings menu instead.'
+        }
       }
 
       return { success: false, error: `I don't know how to toggle: ${setting}` }
