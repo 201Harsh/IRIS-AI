@@ -50,7 +50,6 @@ export default function registerNotesHandlers(ipcMain: IpcMain) {
     }
   })
 
-  // --- 3. DELETE NOTE ---
   ipcMain.handle('delete-note', async (_event, filename) => {
     try {
       const filePath = path.join(NOTES_DIR, filename)
