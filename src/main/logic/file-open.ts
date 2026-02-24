@@ -1,7 +1,6 @@
 import { shell } from 'electron'
 
 export default function registerFileOpen(ipcMain: Electron.IpcMain) {
-  // 📂 OPEN FILE IN DEFAULT APP
   ipcMain.handle('file:open', async (_, filePath: string) => {
     try {
       console.log(`[IRIS] Opening file: ${filePath}`)
