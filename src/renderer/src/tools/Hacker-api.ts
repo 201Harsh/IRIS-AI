@@ -2,7 +2,7 @@ export const executeRealityHack = async (url: string, mode: string, customText?:
   try {
     const res = await window.electron.ipcRenderer.invoke('hack-website', { url, mode, customText })
     if (res.success) {
-      return `Successfully hacked ${url} and injected the ${mode} payload.`
+      return `Successfully hacked ${url} By IRIS.`
     } else {
       return `Hack failed. The target firewall blocked the injection: ${res.error}`
     }

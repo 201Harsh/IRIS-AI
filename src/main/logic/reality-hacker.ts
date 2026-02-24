@@ -15,6 +15,7 @@ export default function registerRealityHacker(ipcMain: IpcMain) {
         height: 900,
         show: false,
         autoHideMenuBar: true,
+        fullscreenable: true,
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
