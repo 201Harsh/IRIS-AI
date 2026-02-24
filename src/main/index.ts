@@ -29,6 +29,7 @@ import registerGalleryHandlers from './logic/gallery-manager'
 import registerGmailHandlers from './logic/gmail-manager'
 import registerLocationHandlers from './logic/live-location'
 import registerAdbHandlers from './logic/adb-manager'
+import registerRealityHacker from './logic/reality-hacker'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -120,6 +121,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerRealityHacker(ipcMain)
   registerAdbHandlers(ipcMain)
   registerLocationHandlers(ipcMain)
   registerGmailHandlers(ipcMain)

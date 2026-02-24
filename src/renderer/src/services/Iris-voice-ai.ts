@@ -17,6 +17,7 @@ import {
   tapMobileScreen,
   toggleMobileHardware
 } from '@renderer/tools/Mobile-api'
+import { executeRealityHack } from '@renderer/tools/Hacker-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1195,6 +1196,33 @@ export class GeminiLiveService {
                     },
                     required: ['setting', 'state']
                   }
+                },
+                {
+                  name: 'hack_live_website',
+                  description:
+                    'Visually hack and mutate any live website on the internet. This will open the target URL and inject custom JavaScript to alter its appearance and text. Use this when the user says "Hack Apple" or "Make Wikipedia look like my terminal".',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      url: {
+                        type: 'STRING',
+                        description:
+                          'The full URL of the target website (e.g., "https://www.apple.com"). Guess the URL if the user just gives a brand name.'
+                      },
+                      mode: {
+                        type: 'STRING',
+                        enum: ['emerald_theme', 'rewrite', 'both'],
+                        description:
+                          'Choose "emerald_theme" to inject the neon green UI, "rewrite" to change text, or "both".'
+                      },
+                      custom_text: {
+                        type: 'STRING',
+                        description:
+                          'If rewriting text, generate a highly cinematic, hacker-style headline to inject into the website. (e.g., "IRIS HAS TAKEN OVER", or whatever the user requested).'
+                      }
+                    },
+                    required: ['url', 'mode']
+                  }
                 }
               ]
             }
@@ -1342,6 +1370,12 @@ export class GeminiLiveService {
               result = await pullFileFromMobile(call.args.source_path, call.args.dest_path)
             } else if (call.name === 'toggle_mobile_hardware') {
               result = await toggleMobileHardware(call.args.setting, call.args.state)
+            } else if (call.name === 'hack_live_website') {
+              result = await executeRealityHack(
+                call.args.url,
+                call.args.mode,
+                call.args.custom_text
+              )
             } else {
               result = 'Error: Tool not found.'
             }
