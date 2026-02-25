@@ -6,13 +6,11 @@ import { load } from 'cheerio'
 puppeteer.use(StealthPlugin())
 
 const USER_BOOKMARKS: Record<string, string> = {
-  twitter: 'https://twitter.com',
-  x: 'https://twitter.com',
   instagram: 'https://instagram.com',
   reddit: 'https://reddit.com',
   chatgpt: 'https://chat.openai.com',
   claude: 'https://claude.ai',
-  linkedin: 'https://linkedin.com',
+  linkedin: 'https://linkedin.com'
 }
 
 const getSmartUrl = (
@@ -70,7 +68,6 @@ const getSmartUrl = (
 }
 
 export default function registerWebAgent(ipcMain: IpcMain) {
-
   ipcMain.handle('google-search', async (_event, query: string) => {
     let browser: any = null
 
@@ -116,7 +113,7 @@ export default function registerWebAgent(ipcMain: IpcMain) {
           .map((_, el) => $(el).text().trim())
           .get()
           .filter((t) => t.length > 50)
-          .slice(0, 3) 
+          .slice(0, 3)
 
         summary = paragraphs.join('\n\n')
 
