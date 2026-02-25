@@ -30,6 +30,7 @@ import registerGmailHandlers from './logic/gmail-manager'
 import registerLocationHandlers from './logic/live-location'
 import registerAdbHandlers from './logic/adb-manager'
 import registerRealityHacker from './logic/reality-hacker'
+import registerIrisCoder from './services/iris-coder'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -121,6 +122,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerIrisCoder({ ipcMain, app })
   registerRealityHacker(ipcMain)
   registerAdbHandlers(ipcMain)
   registerLocationHandlers(ipcMain)

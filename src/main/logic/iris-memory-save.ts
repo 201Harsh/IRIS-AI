@@ -3,7 +3,6 @@ import path from 'path'
 import { IpcMain, App } from 'electron'
 
 export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain; app: App }) {
-
   const CHAT_DIR = path.resolve(app.getPath('userData'), 'Chat')
   const FILE_PATH = path.join(CHAT_DIR, 'iris_memory.json')
 
@@ -46,8 +45,7 @@ export default function registerIpcHandlers({ ipcMain, app }: { ipcMain: IpcMain
           parts: [{ text: m.content }]
         }))
       }
-    } catch (err) {
-    }
+    } catch (err) {}
     return []
   })
 }
