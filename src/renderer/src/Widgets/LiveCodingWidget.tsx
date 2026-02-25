@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { FileCode2, ExternalLink, X, Sparkles } from 'lucide-react'
 
@@ -10,22 +10,19 @@ export default function LiveCodingWidget() {
   const [code, setCode] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  // Setup Monaco Emerald Theme
   useEffect(() => {
     if (monaco) {
       monaco.editor.defineTheme('iris-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [{ token: 'comment', foreground: '10b981', fontStyle: 'italic' }],
-        colors: { 'editor.background': '#00000000' } // Transparent
+        colors: { 'editor.background': '#00000000' }
       })
       monaco.editor.setTheme('iris-dark')
     }
   }, [monaco])
 
-  // Listen for Voice Commands & Stream Events
   useEffect(() => {
-    // Triggered by Voice Tool
     const handleStartCoding = async (e: any) => {
       const { prompt, file_name } = e.detail
       setFilename(file_name)
@@ -33,7 +30,6 @@ export default function LiveCodingWidget() {
       setIsVisible(true)
       setIsGenerating(true)
 
-      // Call Backend
       const result = await window.electron.ipcRenderer.invoke('start-live-coding', {
         prompt,
         filename: file_name
@@ -64,7 +60,7 @@ export default function LiveCodingWidget() {
   if (!isVisible) return null
 
   return (
-    <div className="absolute inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-10">
+    <div className="absolute inset-0 z-999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-10">
       <div className="w-full max-w-4xl h-[70vh] flex flex-col bg-[#0a0a0a] border border-emerald-500/30 rounded-xl shadow-[0_0_50px_rgba(16,185,129,0.1)] overflow-hidden">
         <div className="h-12 bg-black border-b border-white/5 flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
