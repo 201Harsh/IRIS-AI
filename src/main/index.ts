@@ -32,6 +32,7 @@ import registerAdbHandlers from './logic/adb-manager'
 import registerRealityHacker from './logic/reality-hacker'
 import registerIrisCoder from './services/iris-coder'
 import registerTelekinesis from './logic/telekinesis'
+import registerPermanentMemory from './logic/permanent-memory'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -123,6 +124,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerPermanentMemory({ ipcMain, app })
   registerTelekinesis({ ipcMain })
   registerIrisCoder({ ipcMain, app })
   registerRealityHacker(ipcMain)
