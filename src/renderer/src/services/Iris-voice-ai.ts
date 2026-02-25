@@ -1248,6 +1248,41 @@ export class GeminiLiveService {
                   name: 'open_in_vscode',
                   description:
                     "Opens the currently active file or project in Visual Studio Code. Use this when the user says 'open it in vscode'."
+                },
+                {
+                  name: 'teleport_windows',
+                  description:
+                    "Moves, resizes, and stacks physical desktop application windows based on the user's voice command.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      commands: {
+                        type: 'ARRAY',
+                        items: {
+                          type: 'OBJECT',
+                          properties: {
+                            appName: {
+                              type: 'STRING',
+                              description: "The name of the app (e.g., 'code', 'brave', 'chrome')"
+                            },
+                            position: {
+                              type: 'STRING',
+                              enum: [
+                                'left',
+                                'right',
+                                'top-left',
+                                'bottom-left',
+                                'top-right',
+                                'bottom-right',
+                                'maximize'
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    required: ['commands']
+                  }
                 }
               ]
             }
@@ -1411,6 +1446,9 @@ export class GeminiLiveService {
             } else if (call.name === 'open_in_vscode') {
               window.dispatchEvent(new CustomEvent('ai-open-vscode'))
               result = '✅ Opening Visual Studio Code.'
+            } else if (call.name === 'teleport_windows') {
+              await window.electron.ipcRenderer.invoke('teleport-windows', call.args.commands)
+              result = '✅ I have restructured the desktop windows, Boss.'
             } else {
               result = 'Error: Tool not found.'
             }
