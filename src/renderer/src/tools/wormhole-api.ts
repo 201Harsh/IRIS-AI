@@ -1,10 +1,8 @@
 export const deployWormhole = async (port: number): Promise<string> => {
   try {
-    // @ts-ignore
     const result = await window.electron.ipcRenderer.invoke('open-wormhole', port)
 
     if (result.success) {
-      // 🚨 Pass BOTH the URL and the Password to the UI Widget 🚨
       window.dispatchEvent(
         new CustomEvent('wormhole-opened', {
           detail: { url: result.url, password: result.password }
@@ -22,7 +20,6 @@ export const deployWormhole = async (port: number): Promise<string> => {
 
 export const closeWormhole = async (): Promise<string> => {
   try {
-    // @ts-ignore
     await window.electron.ipcRenderer.invoke('close-wormhole')
     window.dispatchEvent(new CustomEvent('wormhole-closed'))
     return '✅ Wormhole closed securely. Port is no longer exposed.'
