@@ -17,7 +17,7 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
       const apiKey =
         (import.meta.env as any).VITE_GEMINI_API_KEY ||
         (process.env as any).MAIN_VITE_GEMINI_API_KEY ||
-        'PASTE_YOUR_ACTUAL_API_KEY_HERE'
+        'PASTE_YOUR_ACTUAL_GEMINI_API_KEY_HERE'
 
       const ai = new GoogleGenAI({ apiKey })
 
@@ -38,7 +38,6 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
       return { success: true, filePath }
     } catch (err) {
       console.error('Coding Error:', err)
-      // If the API fails, it prints the red error directly into your UI
       event.sender.send('live-code-chunk', `\n\n❌ [SYSTEM FAILURE]: ${String(err)}`)
       return { success: false, error: String(err) }
     }
