@@ -11,7 +11,6 @@ export default function registerWormhole({ ipcMain }: { ipcMain: IpcMain }) {
         activeTunnel = null
       }
 
-      // 🚨 Bypass the Cloudflare ToS terminal prompt entirely
       activeTunnel = await startTunnel({
         port,
         acceptCloudflareNotice: true
