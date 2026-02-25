@@ -11,6 +11,7 @@ import EmailWidget from './Widgets/EmailWidget'
 import WeatherWidget from './Widgets/WeatherWidget'
 import StockWidget from './Widgets/StockWidget'
 import LiveCodingWidget from './Widgets/LiveCodingWidget'
+import WormholeWidget from './Widgets/WormholeWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -190,6 +191,7 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
+      <WormholeWidget />
       <LeafletMapWidget />
       <StockWidget />
       <WeatherWidget />

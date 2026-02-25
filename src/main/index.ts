@@ -33,6 +33,7 @@ import registerRealityHacker from './logic/reality-hacker'
 import registerIrisCoder from './services/iris-coder'
 import registerTelekinesis from './logic/telekinesis'
 import registerPermanentMemory from './logic/permanent-memory'
+import registerWormhole from './services/wormhole'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -124,6 +125,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerWormhole({ ipcMain })
   registerPermanentMemory({ ipcMain, app })
   registerTelekinesis({ ipcMain })
   registerIrisCoder({ ipcMain, app })

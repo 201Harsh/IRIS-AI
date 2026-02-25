@@ -18,6 +18,7 @@ import {
   toggleMobileHardware
 } from '@renderer/tools/Mobile-api'
 import { executeRealityHack } from '@renderer/tools/Hacker-api'
+import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1309,6 +1310,31 @@ export class GeminiLiveService {
                     properties: {},
                     required: []
                   }
+                },
+                {
+                  name: 'deploy_wormhole',
+                  description:
+                    'Exposes a local server port to the public internet. Use this when the user asks to share a local project, open a wormhole, or deploy localhost.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      port: {
+                        type: 'NUMBER',
+                        description: 'The localhost port to expose (e.g., 3000, 5173, 8080).'
+                      }
+                    },
+                    required: ['port']
+                  }
+                },
+                {
+                  name: 'close_wormhole',
+                  description:
+                    'Closes the public internet exposure of a local server port. Use this when the user asks to stop sharing a local project, close a wormhole, or stop deploying localhost.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
+                  }
                 }
               ]
             }
@@ -1479,6 +1505,10 @@ export class GeminiLiveService {
               result = await saveCoreMemory(call.args.fact)
             } else if (call.name === 'retrieve_core_memory') {
               result = await retrieveCoreMemory()
+            } else if (call.name === 'deploy_wormhole') {
+              result = await deployWormhole(call.args.port)
+            } else if (call.name === 'close_wormhole') {
+              result = await closeWormhole()
             } else {
               result = 'Error: Tool not found.'
             }
