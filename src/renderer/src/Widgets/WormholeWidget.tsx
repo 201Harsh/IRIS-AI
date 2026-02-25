@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Globe, X, ExternalLink, CloudLightning } from 'lucide-react'
+import { X, ExternalLink, CloudLightning } from 'lucide-react'
 
 export default function WormholeWidget() {
   const [isVisible, setIsVisible] = useState(false)
@@ -25,10 +25,8 @@ export default function WormholeWidget() {
   if (!isVisible) return null
 
   return (
-    <div className="absolute inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-8">
-      {/* 📦 THE MASSIVE CENTERED WIDGET CONTAINER */}
+    <div className="absolute inset-0 z-999 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-8">
       <div className="w-full max-w-3xl bg-[#050505] border border-emerald-500/30 rounded-2xl shadow-[0_0_80px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col relative">
-        {/* Header */}
         <div className="h-14 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <CloudLightning className="w-5 h-5 text-emerald-400 animate-pulse" />
@@ -44,10 +42,8 @@ export default function WormholeWidget() {
           </button>
         </div>
 
-        {/* ✂️ SPLIT PANE CONTENT */}
         <div className="p-8 md:p-10 flex flex-col md:flex-row items-start gap-10">
-          {/* LEFT SIDE: GIANT QR CODE */}
-          <div className="flex flex-col items-center gap-4 flex-shrink-0">
+          <div className="flex flex-col items-center gap-4 shrink-0">
             <div className="p-4 bg-white rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.1)]">
               <QRCodeSVG value={url} size={200} level="H" />
             </div>
@@ -56,7 +52,6 @@ export default function WormholeWidget() {
             </span>
           </div>
 
-          {/* RIGHT SIDE: INFO */}
           <div className="flex-1 flex flex-col w-full min-w-0">
             <h2 className="text-2xl md:text-3xl font-black text-white mb-3 leading-tight">
               GLOBAL TUNNEL OPEN
@@ -66,7 +61,6 @@ export default function WormholeWidget() {
               optimized.
             </p>
 
-            {/* URL Box - FIXED WRAPPING */}
             <div className="mb-8 w-full">
               <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase mb-2 block">
                 Secure Public Route
@@ -77,11 +71,10 @@ export default function WormholeWidget() {
                 rel="noreferrer"
                 className="flex items-start justify-between gap-4 p-4 bg-black/50 border border-white/10 rounded-xl hover:border-emerald-500/50 transition-colors group cursor-pointer shadow-inner w-full"
               >
-                {/* 🚨 THE FIX: break-all forces the massive URL to wrap securely inside the box 🚨 */}
                 <span className="text-sm font-mono text-emerald-300 break-all leading-relaxed">
                   {url}
                 </span>
-                <ExternalLink className="w-5 h-5 text-zinc-500 group-hover:text-emerald-400 flex-shrink-0 mt-0.5" />
+                <ExternalLink className="w-5 h-5 text-zinc-500 group-hover:text-emerald-400 shrink-0 mt-0.5" />
               </a>
             </div>
 
