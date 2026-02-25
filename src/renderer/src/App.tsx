@@ -10,6 +10,7 @@ import ImageWidget from './Widgets/ImageWidget'
 import EmailWidget from './Widgets/EmailWidget'
 import WeatherWidget from './Widgets/WeatherWidget'
 import StockWidget from './Widgets/StockWidget'
+import LiveCodingWidget from './Widgets/LiveCodingWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -195,6 +196,7 @@ const App = () => {
       <ImageWidget />
       <EmailWidget />
       <TerminalOverlay />
+      <LiveCodingWidget />
     </div>
   )
 }

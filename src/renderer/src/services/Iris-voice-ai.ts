@@ -1223,6 +1223,31 @@ export class GeminiLiveService {
                     },
                     required: ['url', 'mode']
                   }
+                },
+                {
+                  name: 'build_file',
+                  description:
+                    'Writes code and saves it to a specific file. Use this when the user asks you to create a script, write a component, or code a file.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      file_name: {
+                        type: 'STRING',
+                        description: 'Name of the file with extension (e.g., auth.ts, server.py)'
+                      },
+                      prompt: {
+                        type: 'STRING',
+                        description:
+                          'The exact instructions for what code to write inside the file.'
+                      }
+                    },
+                    required: ['file_name', 'prompt']
+                  }
+                },
+                {
+                  name: 'open_in_vscode',
+                  description:
+                    "Opens the currently active file or project in Visual Studio Code. Use this when the user says 'open it in vscode'."
                 }
               ]
             }
@@ -1376,6 +1401,16 @@ export class GeminiLiveService {
                 call.args.mode,
                 call.args.custom_text
               )
+            } else if (call.name === 'build_file') {
+              window.dispatchEvent(
+                new CustomEvent('ai-start-coding', {
+                  detail: { file_name: call.args.file_name, prompt: call.args.prompt }
+                })
+              )
+              result = `✅ I am streaming the code for ${call.args.file_name} to the screen now.`
+            } else if (call.name === 'open_in_vscode') {
+              window.dispatchEvent(new CustomEvent('ai-open-vscode'))
+              result = '✅ Opening Visual Studio Code.'
             } else {
               result = 'Error: Tool not found.'
             }

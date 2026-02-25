@@ -7,13 +7,14 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="
-        default-src 'self' 'unsafe-inline' 'unsafe-eval';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.puter.com;
-        worker-src blob:;
-        connect-src * data: blob: 'unsafe-inline';
-        img-src * data: blob: file: 'unsafe-inline';
-        media-src * data: blob: file: 'unsafe-inline';
-      "
+    default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+    script-src * 'unsafe-inline' 'unsafe-eval' data: blob: https://cdn.jsdelivr.net https://js.puter.com;
+    worker-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+    connect-src * data: blob: 'unsafe-inline';
+    img-src * data: blob: file: 'unsafe-inline';
+    media-src * data: blob: file: 'unsafe-inline';
+    style-src * 'unsafe-inline';
+  "
     />
   </head>
 
