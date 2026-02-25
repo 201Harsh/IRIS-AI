@@ -1,7 +1,7 @@
 import { handleNavigation, handleOpenMap } from '@renderer/tools/Earth-View'
 import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000 } from '../utils/audioUtils'
 import { getRunningApps } from './get-apps'
-import { getHistory, saveMessage } from './iris-ai-brain'
+import { getHistory, retrieveCoreMemory, saveCoreMemory, saveMessage } from './iris-ai-brain'
 import { getAllApps, getSystemStatus } from './system-info'
 import { handleImageGeneration } from '@renderer/tools/Image-generator'
 import { fetchWeather } from '@renderer/tools/weather-api'
@@ -1283,6 +1283,32 @@ export class GeminiLiveService {
                     },
                     required: ['commands']
                   }
+                },
+                {
+                  name: 'save_core_memory',
+                  description:
+                    'Saves an important fact, preference, or detail about the user into long-term permanent memory (e.g., dates of birth, names, important events, user preferences). Use this when the user explicitly asks you to remember something.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      fact: {
+                        type: 'STRING',
+                        description:
+                          "The exact, concise fact to remember (e.g., 'The user's date of birth is October 12th')."
+                      }
+                    },
+                    required: ['fact']
+                  }
+                },
+                {
+                  name: 'retrieve_core_memory',
+                  description:
+                    "Retrieves the user's permanent memory bank to answer questions about past facts, preferences, or personal details. Use this if the user asks a personal question that isn't in the immediate chat context.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {},
+                    required: []
+                  }
                 }
               ]
             }
@@ -1449,6 +1475,10 @@ export class GeminiLiveService {
             } else if (call.name === 'teleport_windows') {
               await window.electron.ipcRenderer.invoke('teleport-windows', call.args.commands)
               result = '✅ I have restructured the desktop windows, Boss.'
+            } else if (call.name === 'save_core_memory') {
+              result = await saveCoreMemory(call.args.fact)
+            } else if (call.name === 'retrieve_core_memory') {
+              result = await retrieveCoreMemory()
             } else {
               result = 'Error: Tool not found.'
             }
