@@ -12,6 +12,7 @@ import WeatherWidget from './Widgets/WeatherWidget'
 import StockWidget from './Widgets/StockWidget'
 import LiveCodingWidget from './Widgets/LiveCodingWidget'
 import WormholeWidget from './Widgets/WormholeWidget'
+import OracleWidget from './Widgets/RagOrcaleWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -191,6 +192,7 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
+      <OracleWidget />
       <WormholeWidget />
       <LeafletMapWidget />
       <StockWidget />
