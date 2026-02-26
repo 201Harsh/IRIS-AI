@@ -540,8 +540,6 @@ export class GeminiLiveService {
     window.addEventListener('ai-force-speak', (event: any) => {
       const systemPrompt = event.detail
       if (systemPrompt && this.socket && this.socket.readyState === WebSocket.OPEN) {
-        console.log('🔊 FORCING IRIS TO SPEAK:', systemPrompt)
-
         const overrideMsg = {
           clientContent: {
             turns: [
@@ -550,7 +548,7 @@ export class GeminiLiveService {
                 parts: [{ text: systemPrompt }]
               }
             ],
-            turnComplete: true // Force the AI to respond immediately
+            turnComplete: true
           }
         }
 
