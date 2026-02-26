@@ -5,7 +5,6 @@ import crypto from 'crypto'
 import { GoogleGenAI } from '@google/genai'
 import Groq from 'groq-sdk'
 
-// --- Persistent State Management ---
 const getStateDir = () => path.join(app.getPath('userData'), 'iris_scan_states')
 
 interface ScanState {
@@ -37,7 +36,6 @@ const loadState = async (dirPath: string): Promise<ScanState | null> => {
     return null
   }
 }
-// ------------------------------------
 
 let vectorDB: { filePath: string; chunk: string; embedding: number[] }[] = []
 let processedFiles = new Set<string>()
@@ -83,7 +81,6 @@ export default function registerOracle({ ipcMain }: { ipcMain: IpcMain }) {
       isCancelled = false
       const ai = getGeminiClient()
 
-      // 1. Try to load existing state for resume
       const prevState = await loadState(targetPath)
       if (prevState) {
         vectorDB = prevState.vectorDB
@@ -93,7 +90,6 @@ export default function registerOracle({ ipcMain }: { ipcMain: IpcMain }) {
         processedFiles = new Set()
       }
 
-      // 2. Scan for all files
       const ignoreDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'out', 'public']
       const ignoreFiles = [
         'package-lock.json',
@@ -135,7 +131,6 @@ export default function registerOracle({ ipcMain }: { ipcMain: IpcMain }) {
 
       if (isCancelled) return { success: false, error: 'Aborted by user.' }
 
-      // 3. Filter and Sort
       const filesToProcess = allFiles.filter((f) => !processedFiles.has(f))
       const filesWithStats = await Promise.all(
         filesToProcess.map(async (f) => ({ path: f, size: (await fs.stat(f)).size }))
@@ -151,7 +146,6 @@ export default function registerOracle({ ipcMain }: { ipcMain: IpcMain }) {
         chunks: vectorDB.length
       })
 
-      // 4. Processing Loop
       for (let i = 0; i < sortedFilesToProcess.length; i++) {
         if (isCancelled) {
           event.sender.send('oracle-progress', { status: 'cancelled' })
