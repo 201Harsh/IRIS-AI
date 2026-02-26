@@ -157,7 +157,7 @@ export default function OracleWidget() {
   const isPaused = status === 'cancelled' || status === 'done'
 
   return (
-    <div className="absolute inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-8">
+    <div className="absolute inset-0 z-999 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-8">
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -167,7 +167,7 @@ export default function OracleWidget() {
           className="w-full max-w-4xl bg-[#050505] border border-emerald-500/30 rounded-2xl shadow-[0_0_100px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col relative"
         >
           <motion.div
-            className={`absolute top-0 left-0 h-[2px] z-10 transition-colors ${status === 'cancelled' ? 'bg-red-500' : 'bg-emerald-500'}`}
+            className={`absolute top-0 left-0 h-0.5 z-10 transition-colors ${status === 'cancelled' ? 'bg-red-500' : 'bg-emerald-500'}`}
             initial={{ width: '0%' }}
             animate={{
               width:
@@ -283,7 +283,7 @@ export default function OracleWidget() {
 
                 <div
                   ref={terminalRef}
-                  className="bg-[#0a0a0a] border border-zinc-800 rounded-xl p-6 h-[180px] overflow-y-auto relative font-mono text-sm scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
+                  className="bg-[#0a0a0a] border border-zinc-800 rounded-xl p-6 h-45 overflow-y-auto relative font-mono text-sm scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
                 >
                   {logStream.map((log, i) => (
                     <motion.div
@@ -292,7 +292,7 @@ export default function OracleWidget() {
                       animate={{ opacity: 1, x: 0 }}
                       className="text-emerald-400/80 mb-2 flex items-start gap-3"
                     >
-                      <span className="text-zinc-600 font-bold mt-[2px]">&gt;</span>
+                      <span className="text-zinc-600 font-bold mt-0.5">&gt;</span>
                       <span className="break-all">{log}</span>
                     </motion.div>
                   ))}
