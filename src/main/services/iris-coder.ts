@@ -16,8 +16,12 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
 
       const apiKey =
         (import.meta.env as any).VITE_GEMINI_API_KEY ||
-        (process.env as any).MAIN_VITE_GEMINI_API_KEY ||
-        'PASTE_YOUR_ACTUAL_GEMINI_API_KEY_HERE'
+        (import.meta.env as any).MAIN_VITE_GEMINI_API_KEY ||
+        (process.env as any).VITE_GEMINI_API_KEY
+
+      if (!apiKey) {
+        throw new Error('API Key missing. Make sure VITE_GEMINI_API_KEY is in your .env file.')
+      }
 
       const ai = new GoogleGenAI({ apiKey })
 
