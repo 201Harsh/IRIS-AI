@@ -2,7 +2,6 @@ export const ingestCodebase = async (dirPath: string): Promise<string> => {
   try {
     window.dispatchEvent(new CustomEvent('oracle-ingest-start', { detail: { path: dirPath } }))
 
-    // @ts-ignore
     const cleanupListener = window.electron.ipcRenderer.on(
       'oracle-progress',
       (_ipcEvent: any, data: any) => {
@@ -11,7 +10,6 @@ export const ingestCodebase = async (dirPath: string): Promise<string> => {
       }
     )
 
-    // @ts-ignore
     const result = await window.electron.ipcRenderer.invoke('ingest-codebase', dirPath)
 
     if (typeof cleanupListener === 'function') cleanupListener()
@@ -34,7 +32,6 @@ export const ingestCodebase = async (dirPath: string): Promise<string> => {
 export const consultOracle = async (query: string): Promise<string> => {
   try {
     window.dispatchEvent(new CustomEvent('oracle-thinking'))
-    // @ts-ignore
     const result = await window.electron.ipcRenderer.invoke('consult-oracle', query)
 
     if (result.success) {
@@ -49,8 +46,6 @@ export const consultOracle = async (query: string): Promise<string> => {
   }
 }
 
-// Tied to the red "STOP SCAN" button in the UI
 export const cancelIngestion = async (): Promise<void> => {
-  // @ts-ignore
   await window.electron.ipcRenderer.invoke('cancel-ingestion')
 }
