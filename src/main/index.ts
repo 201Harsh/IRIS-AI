@@ -34,6 +34,7 @@ import registerIrisCoder from './services/iris-coder'
 import registerTelekinesis from './logic/telekinesis'
 import registerPermanentMemory from './logic/permanent-memory'
 import registerWormhole from './services/wormhole'
+import registerOracle from './services/RAG-oracle'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -125,6 +126,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerOracle({ ipcMain })
   registerWormhole({ ipcMain })
   registerPermanentMemory({ ipcMain, app })
   registerTelekinesis({ ipcMain })

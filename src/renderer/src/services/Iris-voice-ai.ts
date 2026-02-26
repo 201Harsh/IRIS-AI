@@ -19,6 +19,7 @@ import {
 } from '@renderer/tools/Mobile-api'
 import { executeRealityHack } from '@renderer/tools/Hacker-api'
 import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
+import { consultOracle, ingestCodebase } from '@renderer/tools/rag-oracle-tool'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -1333,6 +1334,36 @@ export class GeminiLiveService {
                     properties: {},
                     required: []
                   }
+                },
+                {
+                  name: 'ingest_codebase',
+                  description:
+                    'Reads a local folder path and saves it to Vector Memory. Use this to scan a new folder OR resume scanning a folder that was previously paused.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      dirPath: {
+                        type: 'STRING',
+                        description: 'The absolute path of the directory to ingest or resume.'
+                      }
+                    },
+                    required: ['dirPath']
+                  }
+                },
+                {
+                  name: 'consult_oracle',
+                  description:
+                    "Use this to answer complex questions about the user's local code. It triggers a RAG search against the ingested codebase.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      query: {
+                        type: 'STRING',
+                        description: 'The specific coding question regarding the ingested codebase.'
+                      }
+                    },
+                    required: ['query']
+                  }
                 }
               ]
             }
@@ -1507,6 +1538,16 @@ export class GeminiLiveService {
               result = await deployWormhole(call.args.port)
             } else if (call.name === 'close_wormhole') {
               result = await closeWormhole()
+            } else if (call.name === 'ingest_codebase') {
+              result = await ingestCodebase(call.args.dirPath)
+            } else if (call.name === 'consult_oracle') {
+              result = await consultOracle(call.args.query)
+            } else if (call.name === 'ingest_codebase') {
+              console.log(`[SYSTEM] Starting or Resuming ingestion for: ${call.args.dirPath}`)
+              result = await ingestCodebase(call.args.dirPath)
+            } else if (call.name === 'consult_oracle') {
+              console.log(`[SYSTEM] Consulting Oracle for: ${call.args.query}`)
+              result = await consultOracle(call.args.query)
             } else {
               result = 'Error: Tool not found.'
             }
