@@ -4,7 +4,6 @@ import { tavily } from '@tavily/core'
 import Groq from 'groq-sdk'
 
 export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) {
-  // --- PROTOCOL 1: THE DEEP RESEARCH PIPELINE ---
   ipcMain.handle('execute-deep-research', async (event, query: string) => {
     try {
       const tavilyKey =
@@ -21,7 +20,7 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
       event.sender.send('oracle-progress', {
         status: 'scanning',
-        file: 'Tavily Neural Search Active...',
+        file: 'IRIS and Tavily Neural Search Active...',
         totalFound: 1
       })
 
@@ -37,7 +36,7 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
       event.sender.send('oracle-progress', {
         status: 'reading',
-        file: 'Llama 3.1 Synthesizing Data...',
+        file: 'Llama 3.1 Instantly Synthesizing Data...',
         totalFound: 2
       })
 
@@ -65,11 +64,9 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
         totalFound: 3
       })
 
-      // 🚨 FIX 1: THE IRONCLAD SANITIZER
       const notionChildren = notionBlocksData.map((block: any) => {
         let safeText = 'No content generated.'
 
-        // Force the AI's hallucinated objects into a flat string
         if (typeof block.text === 'string') {
           safeText = block.text
         } else if (typeof block.text === 'object' && block.text !== null) {
@@ -78,10 +75,8 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
           safeText = String(block.text || '')
         }
 
-        // Notion crashes if a block is over 2000 characters. Truncate it forcefully.
         if (safeText.length > 2000) safeText = safeText.substring(0, 1995) + '...'
 
-        // Ensure the type is valid, fallback to paragraph if the AI hallucinates a weird type
         const safeType = ['heading_2', 'heading_3', 'paragraph', 'bulleted_list_item'].includes(
           block.type
         )
@@ -117,7 +112,6 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
     }
   })
 
-  // --- PROTOCOL 2: THE NOTION DATABASE READER ---
   ipcMain.handle('read-notion-reports', async () => {
     try {
       const notionKey =
@@ -126,7 +120,6 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
         (import.meta.env as any).VITE_NOTION_DATABASE_ID ||
         (process.env as any).VITE_NOTION_DATABASE_ID
 
-      // 🚨 FIX 2: BYPASS THE BUGGY SDK ENTIRELY USING NATIVE FETCH
       const response = await fetch(`https://api.notion.com/v1/databases/${notionDbId}/query`, {
         method: 'POST',
         headers: {
