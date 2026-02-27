@@ -21,7 +21,7 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
       event.sender.send('oracle-progress', {
         status: 'scanning',
-        file: 'Tavily Neural Search Active...',
+        file: 'IRIS and Tavily Neural Search Active...',
         totalFound: 1
       })
 
@@ -37,7 +37,7 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
       event.sender.send('oracle-progress', {
         status: 'reading',
-        file: 'Llama 3.1 Synthesizing Data...',
+        file: 'Llama 3.1 Instantly Synthesizing Data...',
         totalFound: 2
       })
 
