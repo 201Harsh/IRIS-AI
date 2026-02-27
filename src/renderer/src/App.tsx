@@ -13,6 +13,7 @@ import StockWidget from './Widgets/StockWidget'
 import LiveCodingWidget from './Widgets/LiveCodingWidget'
 import WormholeWidget from './Widgets/WormholeWidget'
 import OracleWidget from './Widgets/RagOrcaleWidget'
+import ResearchWidget from './Widgets/DeepResearch'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -201,6 +202,7 @@ const App = () => {
       <EmailWidget />
       <TerminalOverlay />
       <LiveCodingWidget />
+      <ResearchWidget />
     </div>
   )
 }

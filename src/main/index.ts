@@ -35,6 +35,7 @@ import registerTelekinesis from './logic/telekinesis'
 import registerPermanentMemory from './logic/permanent-memory'
 import registerWormhole from './services/wormhole'
 import registerOracle from './services/RAG-oracle'
+import registerDeepResearch from './services/deep-research'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -126,6 +127,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerDeepResearch({ ipcMain })
   registerOracle({ ipcMain })
   registerWormhole({ ipcMain })
   registerPermanentMemory({ ipcMain, app })

@@ -20,6 +20,7 @@ import {
 import { executeRealityHack } from '@renderer/tools/Hacker-api'
 import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
 import { consultOracle, ingestCodebase } from '@renderer/tools/rag-oracle-tool'
+import { runDeepResearch, runReadNotion } from '@renderer/tools/deepSearch-rag'
 
 const searchFiles = async (fileName: string, searchPath?: string) => {
   try {
@@ -704,7 +705,7 @@ export class GeminiLiveService {
                 {
                   name: 'google_search',
                   description:
-                    'Open a Google Search in the user\'s browser. Use this when the user asks to "search for", "Google", or find information online.',
+                    "ACTION: Opens a web browser tab. Use this ONLY when the user explicitly says 'open google', 'search for X in the browser', or just wants a quick link opened. DO NOT use this for deep research, generating reports, or learning new data.",
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -1364,6 +1365,27 @@ export class GeminiLiveService {
                     },
                     required: ['query']
                   }
+                },
+                {
+                  name: 'deep_research',
+                  description:
+                    "ACTION: Autonomous RAG Agent. Performs a deep web crawl, synthesizes a report using Llama 3, and saves it to Notion. Use this when the user asks to 'research', 'build a report', or needs you to summarize real-world information.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      query: { type: 'STRING', description: 'The exact research question.' }
+                    },
+                    required: ['query']
+                  }
+                },
+                {
+                  name: 'read_notion_reports',
+                  description:
+                    "ACTION: Queries the user's Notion database to read previously saved research reports. Use this when the user asks 'what did we research about X', 'read my Notion', or 'check my reports'.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {}
+                  }
                 }
               ]
             }
@@ -1474,8 +1496,6 @@ export class GeminiLiveService {
             } else if (call.name === 'get_navigation') {
               result = await handleNavigation(call.args.origin, call.args.destination)
             } else if (call.name === 'generate_image') {
-              console.log(`🤖 IRIS is generating image for: ${call.args.prompt}`)
-
               result = await handleImageGeneration(call.args.prompt)
             } else if (call.name === 'read_gallery') {
               result = await readGalleryImages()
@@ -1543,11 +1563,13 @@ export class GeminiLiveService {
             } else if (call.name === 'consult_oracle') {
               result = await consultOracle(call.args.query)
             } else if (call.name === 'ingest_codebase') {
-              console.log(`[SYSTEM] Starting or Resuming ingestion for: ${call.args.dirPath}`)
               result = await ingestCodebase(call.args.dirPath)
             } else if (call.name === 'consult_oracle') {
-              console.log(`[SYSTEM] Consulting Oracle for: ${call.args.query}`)
               result = await consultOracle(call.args.query)
+            } else if (call.name === 'deep_research') {
+              result = await runDeepResearch(call.args.query)
+            } else if (call.name === 'read_notion_reports') {
+              result = await runReadNotion()
             } else {
               result = 'Error: Tool not found.'
             }
