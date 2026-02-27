@@ -1,7 +1,6 @@
 export const runDeepResearch = async (query: string): Promise<string> => {
   try {
     window.dispatchEvent(new CustomEvent('deep-research-start', { detail: { query } }))
-    // @ts-ignore
     const result = await window.electron.ipcRenderer.invoke('execute-deep-research', query)
 
     if (result.success) {
@@ -21,7 +20,6 @@ export const runDeepResearch = async (query: string): Promise<string> => {
 }
 
 export const runReadNotion = async (): Promise<string> => {
-  // @ts-ignore
   const result = await window.electron.ipcRenderer.invoke('read-notion-reports')
   return result.success
     ? `Here are the latest Notion reports:\n${result.data}`
