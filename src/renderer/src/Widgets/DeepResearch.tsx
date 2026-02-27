@@ -84,20 +84,17 @@ export default function ResearchWidget() {
       })
     }
 
-    // Displays the HUD with summary for 6 seconds before unmounting
     setTimeout(() => setIsOpen(false), 6000)
   })
 
   useEffect(() => {
     window.addEventListener('deep-research-start', handleStart)
     window.addEventListener('deep-research-done', handleDone)
-    // @ts-ignore
     window.electron.ipcRenderer.on('oracle-progress', handleProgress)
 
     return () => {
       window.removeEventListener('deep-research-start', handleStart)
       window.removeEventListener('deep-research-done', handleDone)
-      // @ts-ignore
       window.electron.ipcRenderer.removeAllListeners('oracle-progress')
     }
   }, [handleStart, handleProgress, handleDone])
