@@ -1,5 +1,5 @@
 import { IpcMain, app } from 'electron'
-import fs from 'fs' // Native fs module
+import fs from 'fs' 
 import path from 'path'
 import os from 'os'
 import Groq from 'groq-sdk'
@@ -7,9 +7,6 @@ import Groq from 'groq-sdk'
 let pipeline: any = null
 let lancedb: any = null
 
-// ============================================================================
-// YOUR PROVEN PATH RESOLUTION LOGIC
-// ============================================================================
 const getSystemPath = (name: string) => {
   try {
     return app.getPath(name as any)
@@ -51,7 +48,6 @@ async function getActiveDrives(): Promise<string[]> {
   return ['/']
 }
 
-// Global Ignore List
 const IGNORE_FOLDERS = new Set([
   'node_modules',
   'appdata',
@@ -358,7 +354,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
         }
       }
 
-      // RUN BOTH CONCURRENTLY
       await Promise.all([runSemantic(), runNativeCrawler()])
 
       event.sender.send('semantic-progress', {
@@ -367,7 +362,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
         progress: 95
       })
 
-      // COMBINE RESULTS
       const finalOutput = (semanticResultsText + nativeResultsText).trim()
 
       if (finalOutput.length > 0) {
