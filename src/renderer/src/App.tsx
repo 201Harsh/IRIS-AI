@@ -14,6 +14,7 @@ import LiveCodingWidget from './Widgets/LiveCodingWidget'
 import WormholeWidget from './Widgets/WormholeWidget'
 import OracleWidget from './Widgets/RagOrcaleWidget'
 import ResearchWidget from './Widgets/DeepResearch'
+import SemanticWidget from './Widgets/SematicSearch'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -193,6 +194,8 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
+      
+      <SemanticWidget />
       <OracleWidget />
       <WormholeWidget />
       <LeafletMapWidget />

@@ -21,14 +21,7 @@ import { executeRealityHack } from '@renderer/tools/Hacker-api'
 import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
 import { consultOracle, ingestCodebase } from '@renderer/tools/rag-oracle-tool'
 import { runDeepResearch, runReadNotion } from '@renderer/tools/deepSearch-rag'
-
-const searchFiles = async (fileName: string, searchPath?: string) => {
-  try {
-    return await window.electron.ipcRenderer.invoke('search-files', { fileName, searchPath })
-  } catch (err) {
-    return `Error: ${err}`
-  }
-}
+import { runIndexDirectory, runSmartSearch } from '@renderer/tools/semantic-search-api'
 
 const readFile = async (filePath: string) => {
   try {
@@ -575,15 +568,34 @@ export class GeminiLiveService {
             {
               functionDeclarations: [
                 {
-                  name: 'search_files',
-                  description: 'Search for a file path in the system.',
+                  name: 'index_directory',
+                  description:
+                    "ACTION: Reads a specific folder and memorizes its files into the local Vector Database. Run this when the user asks you to 'memorize', 'index', or 'read' a project folder so you can semantically search it later.",
                   parameters: {
                     type: 'OBJECT',
                     properties: {
-                      file_name: { type: 'STRING', description: 'Name of the file.' },
-                      location: { type: 'STRING', description: 'Specific folder (optional).' }
+                      folder_path: {
+                        type: 'STRING',
+                        description: 'The absolute path of the folder to index.'
+                      }
                     },
-                    required: ['file_name']
+                    required: ['folder_path']
+                  }
+                },
+                {
+                  name: 'smart_file_search',
+                  description:
+                    "ACTION: Performs an ultra-fast, deep file search across the user's entire system. It natively handles nested folders and specific locations. Just pass the user's natural language request.",
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      query: {
+                        type: 'STRING',
+                        description:
+                          "The exact natural language request. E.g., 'find my resume in documents folder 1' or 'find the invoice from onedrive'."
+                      }
+                    },
+                    required: ['query']
                   }
                 },
                 {
@@ -1393,7 +1405,7 @@ export class GeminiLiveService {
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } }
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'kore' } }
             }
           },
           inputAudioTranscription: {},
@@ -1418,8 +1430,10 @@ export class GeminiLiveService {
             console.log(`🤖 Tool Called: ${call.name}`, call.args)
             let result
 
-            if (call.name === 'search_files') {
-              result = await searchFiles(call.args.file_name, call.args.location)
+            if (call.name === 'index_directory') {
+              result = await runIndexDirectory(call.args.folder_path)
+            } else if (call.name === 'smart_file_search') {
+              result = await runSmartSearch(call.args.query)
             } else if (call.name === 'read_file') {
               result = await readFile(call.args.file_path)
             } else if (call.name === 'write_file') {
