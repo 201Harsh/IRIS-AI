@@ -1,5 +1,5 @@
 import { IpcMain, app } from 'electron'
-import fs from 'fs' 
+import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import Groq from 'groq-sdk'
@@ -61,7 +61,6 @@ const IGNORE_FOLDERS = new Set([
 ])
 
 export default function registerFileSearch(ipcMain: IpcMain) {
-  // --- PROTOCOL 1: THE INDEXER (Kept intact for Semantic Memory) ---
   ipcMain.handle('index-folder', async (event, folderPath: string) => {
     try {
       event.sender.send('semantic-progress', {
@@ -149,9 +148,7 @@ export default function registerFileSearch(ipcMain: IpcMain) {
             file_name: path.basename(file),
             content_snippet: textChunk.substring(0, 200)
           })
-        } catch (e) {
-          /* skip */
-        }
+        } catch (e) {}
       }
 
       event.sender.send('semantic-progress', {
@@ -173,7 +170,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
     }
   })
 
-  // --- PROTOCOL 2: THE INFINITE QUEUE + SEMANTIC SEARCH ---
   ipcMain.handle('search-files', async (event, { query }) => {
     try {
       event.sender.send('semantic-progress', {
@@ -191,9 +187,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
       let nativeResultsText = ''
       let searchParams = { keywords: [] as string[], root_target: '' }
 
-      // =========================================================
-      // TASK A: SEMANTIC DB SEARCH (Checks file contents)
-      // =========================================================
       const runSemantic = async () => {
         try {
           if (!pipeline) pipeline = (await import('@xenova/transformers')).pipeline
@@ -213,18 +206,12 @@ export default function registerFileSearch(ipcMain: IpcMain) {
               results.map((r: any) => `- ${r.file_path}`).join('\n') +
               '\n\n'
           }
-        } catch (e) {
-          /* DB missing or empty, safely ignore */
-        }
+        } catch (e) {}
       }
 
-      // =========================================================
-      // TASK B: NATIVE BREADTH-FIRST SEARCH (Checks nested folders)
-      // =========================================================
       const runNativeCrawler = async () => {
         const groq = new Groq({ apiKey: groqKey })
 
-        // 🚨 FIX 1: Explicitly tell Llama to NEVER add the word "file" or "document" to keywords
         const prompt = `
           Extract the core search keywords from this user query: "${query}".
           RULES:
@@ -253,7 +240,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
           searchParams.keywords = []
         }
 
-        // Clean array
         searchParams.keywords = searchParams.keywords
           .filter(Boolean)
           .map((kw) => String(kw).toLowerCase().trim())
@@ -294,7 +280,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
           progress: 50
         })
 
-        // THE INFINITE QUEUE LOOP (BREADTH-FIRST SEARCH)
         const foundFiles: string[] = []
         const queue: string[] = [...rootArray]
         const visited = new Set<string>()
@@ -337,7 +322,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
 
               queue.push(fullPath)
             } else if (isFile) {
-              // 🚨 FIX 2: Exact matching. If keywords are ["resume", "pdf", "career"], ALL must exist in the path.
               const isMatch = searchParams.keywords.every((kw: string) => lowerPath.includes(kw))
               if (isMatch) {
                 foundFiles.push(fullPath)
@@ -348,7 +332,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
 
         const uniqueResults = Array.from(new Set(foundFiles))
         if (uniqueResults.length > 0) {
-          // 🚨 FIX 3: Actually assign the text instead of returning early!
           nativeResultsText =
             `⚡ NATIVE DEEP SYSTEM MATCHES:\n` + uniqueResults.slice(0, 15).join('\n')
         }
