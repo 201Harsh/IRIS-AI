@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
@@ -94,7 +94,7 @@ export default function SemanticWidget() {
           exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           // 🚨 CENTERED MASSIVE WIDGET CLASSES HERE 🚨
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] z-[9999] text-white font-sans flex flex-col justify-center"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] z-9999 text-white font-sans flex flex-col justify-center"
         >
           <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
             <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function SemanticWidget() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 mb-6 bg-white/[0.03] py-3 px-4 rounded-lg border border-white/5">
+          <div className="flex items-center gap-4 mb-6 bg-white/3 py-3 px-4 rounded-lg border border-white/5">
             <Search className="w-5 h-5 text-blue-500" />
             <div ref={textRef} className="text-sm text-gray-300 font-mono tracking-wider">
               {statusText}
