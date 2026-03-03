@@ -5,7 +5,6 @@ import fs from 'fs/promises'
 let activeWidgets: BrowserWindow[] = []
 
 export default function registerWidgetMaker() {
-  // --- SPANWER ---
   ipcMain.handle('create-widget', async (_, { htmlCode, width, height }) => {
     try {
       const widgetDir = path.join(app.getPath('userData'), 'DynamicWidgets')
@@ -72,7 +71,6 @@ export default function registerWidgetMaker() {
     }
   })
 
-  // --- DESTROYER (NEW API) ---
   ipcMain.handle('close-widgets', async () => {
     try {
       if (activeWidgets.length === 0) {
@@ -82,7 +80,7 @@ export default function registerWidgetMaker() {
       const count = activeWidgets.length
       activeWidgets.forEach((win) => {
         if (!win.isDestroyed()) {
-          win.close() // This triggers the 'closed' event above, deleting the HTML files too
+          win.close()
         }
       })
 
