@@ -1436,7 +1436,7 @@ export class GeminiLiveService {
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'kore' } }
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } }
             }
           },
           inputAudioTranscription: {},
