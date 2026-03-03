@@ -36,6 +36,7 @@ import registerPermanentMemory from './logic/permanent-memory'
 import registerWormhole from './services/wormhole'
 import registerOracle from './services/RAG-oracle'
 import registerDeepResearch from './services/deep-research'
+import registerWidgetMaker from './auto/widget-manager'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -127,6 +128,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerWidgetMaker()
   registerDeepResearch({ ipcMain })
   registerOracle({ ipcMain })
   registerWormhole({ ipcMain })
