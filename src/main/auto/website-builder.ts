@@ -7,6 +7,7 @@ let previewWin: BrowserWindow | null = null
 
 export default function registerWebsiteBuilder() {
   ipcMain.handle('build-animated-website', async (event, { prompt }) => {
+    console.log(event)
     try {
       previewWin = new BrowserWindow({
         width: 1280,
