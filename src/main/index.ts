@@ -37,6 +37,7 @@ import registerWormhole from './services/wormhole'
 import registerOracle from './services/RAG-oracle'
 import registerDeepResearch from './services/deep-research'
 import registerWidgetMaker from './auto/widget-manager'
+import registerWebsiteBuilder from './auto/website-builder'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -128,6 +129,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerWebsiteBuilder()
   registerWidgetMaker()
   registerDeepResearch({ ipcMain })
   registerOracle({ ipcMain })
