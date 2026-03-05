@@ -21,7 +21,7 @@ import ViewSkeleton from '@renderer/components/ViewSkelrton'
 import DashboardView from '../views/Dashboard'
 import PhoneView from '../views/Phone'
 
-const AppsView = lazy(() => import('../views/APP'))
+// const AppsView = lazy(() => import('../views/APP'))
 const WorkFlowEditorView = lazy(() => import('../views/WorkFlowEditor'))
 const NotesView = lazy(() => import('../views/Notes'))
 const SettingsView = lazy(() => import('../views/Settings'))
