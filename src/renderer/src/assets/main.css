@@ -32,35 +32,29 @@ button {
   scrollbar-width: auto;
 }
 
-/* src/renderer/src/App.css */
-
-/* Target the React Flow controls container */
 .react-flow__controls {
-  background-color: #111113 !important; /* Sidebar background color */
-  border: 1px solid #27272a !important; /* Sidebar border color */
+  background-color: #111113 !important;
+  border: 1px solid #27272a !important;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* Style the buttons inside the controls */
 .react-flow__controls-button {
   background: transparent !important;
   border: none !important;
-  border-bottom: 1px solid #27272a !important; /* Border between buttons */
-  fill: #71717a !important; /* Zinc-500 text/icon color */
+  border-bottom: 1px solid #27272a !important;
+  fill: #71717a !important;
 }
 
-/* Fix last button border */
 .react-flow__controls-button:last-child {
   border-bottom: none !important;
 }
 
-/* Style icons on hover */
 .react-flow__controls-button:hover {
-  background-color: #18181b !important; /* Slightly lighter zinc background */
+  background-color: #18181b !important;
 }
 
 .react-flow__controls-button svg:hover {
-  fill: #a1a1aa !important; /* Lighter zinc icon hover */
+  fill: #a1a1aa !important;
 }
