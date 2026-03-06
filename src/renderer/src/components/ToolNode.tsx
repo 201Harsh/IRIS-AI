@@ -14,6 +14,7 @@ import {
   RiServerLine
 } from 'react-icons/ri'
 import 'react-tooltip/dist/react-tooltip.css'
+import { ListStartIcon } from 'lucide-react'
 
 export const getIcon = (name: string, size = 16) => {
   if (name.includes('mobile') || name.includes('whatsapp'))
@@ -25,12 +26,11 @@ export const getIcon = (name: string, size = 16) => {
   if (name.includes('type') || name.includes('shortcut') || name.includes('sequence'))
     return <RiKeyboardLine size={size} className="text-yellow-400" />
   if (name.includes('volume')) return <RiVolumeUpLine size={size} className="text-pink-400" />
-  // 🚨 NEW: Mail and Wormhole Icons
   if (name.includes('email')) return <RiMailLine size={size} className="text-orange-400" />
   if (name.includes('wormhole')) return <RiServerLine size={size} className="text-purple-400" />
 
-  if (name === 'TRIGGER_VOICE' || name === 'WAIT')
-    return <RiFlashlightLine size={size} className="text-purple-400" />
+  if (name === 'WAIT') return <RiFlashlightLine size={size} className="text-purple-400" />
+  if (name === 'TRIGGER') return <ListStartIcon size={size} className="text-red-400" />
   return <RiSettings4Line size={size} className="text-zinc-400" />
 }
 
@@ -44,7 +44,7 @@ export default function ToolNode({ data, id }: any) {
     setEdges((edges) => edges.filter((e) => e.source !== id && e.target !== id))
   }
 
-  const isTrigger = tool.name === 'TRIGGER_VOICE'
+  const isTrigger = tool.name === 'TRIGGER'
   const isWait = tool.name === 'WAIT'
 
   return (

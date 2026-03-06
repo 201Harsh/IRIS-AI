@@ -63,7 +63,6 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
-  // 1. Fetch apps on mount
   useEffect(() => {
     getAllApps().then((raw) => {
       const cleanData = (Array.isArray(raw) ? raw : []).filter(
@@ -77,7 +76,7 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedTerm(searchTerm)
-      setPage(1) // Reset pagination on new search
+      setPage(1) 
     }, 300)
     return () => clearTimeout(timer)
   }, [searchTerm])
@@ -92,7 +91,7 @@ const AppSelector = ({ value, onChange }: { value: string; onChange: (val: strin
     return 0
   })
 
-  const visibleApps = sortedApps.slice(0, page * 20) // Load 20 at a time
+  const visibleApps = sortedApps.slice(0, page * 15)
 
   const observer = useRef<IntersectionObserver | null>(null)
   const lastElementRef = useCallback(
@@ -200,7 +199,6 @@ export default function ParameterEditorDrawer({ nodeData, updateNodeInputs, clos
 
   return (
     <div className="absolute top-0 right-0 w-80 h-full bg-[#111113] border-l border-[#27272a] shadow-2xl flex flex-col z-50 animate-in slide-in-from-right-8 duration-200">
-      {/* HEADER */}
       <div className="p-4 border-b border-[#27272a] flex justify-between items-center bg-[#18181b]">
         <span className="text-xs font-bold tracking-widest text-emerald-400 uppercase">
           Configure Module

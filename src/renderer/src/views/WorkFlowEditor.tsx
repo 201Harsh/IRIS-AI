@@ -37,7 +37,6 @@ import { runTerminal } from '@renderer/functions/coding-manager-api'
 import { ghostType } from '@renderer/functions/keyboard-manger-api'
 import { draftEmail, readEmails, sendEmail } from '@renderer/functions/gmail-manager-api'
 
-// 🚨 EXPANDED TOOL SCHEMA LIBRARY
 const CATEGORIZED_TOOLS = {
   TRIGGERS: [
     { name: 'TRIGGER', description: 'Starts the workflow.', parameters: {} },
@@ -192,6 +191,7 @@ function Editor() {
   const openParameterEditor = useCallback((nodeId: string) => setSelectedNodeId(nodeId), [])
 
   const loadMacroToCanvas = (macro: any) => {
+    console.log(isSaved)
     setWorkflowName(macro.name)
     setDescription(macro.description)
 
@@ -308,11 +308,9 @@ function Editor() {
   }
 
   const runMacroManually = async () => {
-    // 1. Force save the current state of the canvas
     await saveWorkflow()
     console.log(`🚀 IGNITING MANUAL EXECUTION: ${workflowName}`)
 
-    // 2. Parse the saved neural pattern
     const macroRes = await getMacroSequence(workflowName)
 
     if (!macroRes.success) {
@@ -320,7 +318,6 @@ function Editor() {
       return
     }
 
-    // 3. Pure IF/ELSE Execution Engine
     for (const step of macroRes.steps) {
       console.log(`[MACRO ENGINE] Executing step: ${step.tool}`, step.args)
 
@@ -377,7 +374,7 @@ function Editor() {
       } catch (stepError) {
         console.error(`[MACRO ENGINE] 🔴 Crash on node [${step.tool}]:`, stepError)
         alert(`🔴 Macro Execution Halted! Failed at node: ${step.tool}`)
-        break // 🚨 Stop the sequence immediately if a node fails
+        break 
       }
     }
 
@@ -458,7 +455,6 @@ function Editor() {
             className="bg-[#18181b] border border-[#27272a] px-4 py-2 rounded-lg text-sm text-white outline-none focus:border-emerald-500 font-bold tracking-wide w-64 shadow-inner"
           />
 
-          {/* 🚨 NEW: MANUAL RUN BUTTON */}
           <button
             onClick={runMacroManually}
             className="bg-[#18181b] hover:bg-[#27272a] text-emerald-400 px-5 py-2 rounded-lg text-[11px] font-black tracking-widest transition-all border border-[#27272a] hover:border-emerald-500/50 flex items-center gap-2 cursor-pointer shadow-lg"
