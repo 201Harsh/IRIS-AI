@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FolderDown,
@@ -8,7 +8,9 @@ import {
   TerminalSquare,
   CheckCircle2,
   Zap,
-  ChevronRight
+  ChevronRight,
+  Film,
+  Archive
 } from 'lucide-react'
 
 export default function SmartDropZonesWidget() {
@@ -22,7 +24,7 @@ export default function SmartDropZonesWidget() {
   const terminalRef = useRef<HTMLDivElement>(null)
 
   const addLog = (log: string) => {
-    setLogStream((prev) => [...prev, log].slice(-8)) // Keep last 8 logs
+    setLogStream((prev) => [...prev, log].slice(-10))
   }
 
   useEffect(() => {
@@ -83,8 +85,16 @@ export default function SmartDropZonesWidget() {
       border: 'border-cyan-500/30'
     },
     {
+      id: 'videos',
+      label: 'Videos',
+      icon: Film,
+      color: 'text-yellow-400',
+      bg: 'bg-yellow-500/10',
+      border: 'border-yellow-500/30'
+    },
+    {
       id: 'documents',
-      label: 'Documents',
+      label: 'Docs',
       icon: FileText,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
@@ -97,11 +107,19 @@ export default function SmartDropZonesWidget() {
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
       border: 'border-purple-500/30'
+    },
+    {
+      id: 'misc',
+      label: 'Misc',
+      icon: Archive,
+      color: 'text-pink-400',
+      bg: 'bg-pink-500/10',
+      border: 'border-pink-500/30'
     }
   ]
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-8 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-md p-8 animate-in fade-in duration-200">
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -110,7 +128,6 @@ export default function SmartDropZonesWidget() {
           transition={{ type: 'spring', damping: 25, stiffness: 400 }}
           className="w-full max-w-3xl bg-[#050505] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col relative"
         >
-          {/* Top Progress Bar */}
           <motion.div
             className="absolute top-0 left-0 h-1 bg-white z-10"
             initial={{ width: '0%' }}
@@ -118,7 +135,6 @@ export default function SmartDropZonesWidget() {
             transition={{ ease: 'easeOut', duration: 0.2 }}
           />
 
-          {/* Header */}
           <div className="h-16 bg-white/5 border-b border-white/10 flex items-center justify-between px-8">
             <div className="flex items-center gap-3">
               {status === 'sorting' ? (
@@ -136,20 +152,21 @@ export default function SmartDropZonesWidget() {
           </div>
 
           <div className="p-8 flex flex-col gap-8">
-            {/* Directory Path */}
             <div className="flex items-center gap-3 bg-[#0a0a0a] border border-zinc-800 rounded-lg p-3">
               <TerminalSquare className="w-5 h-5 text-zinc-500" />
               <span className="text-xs font-mono text-zinc-400 truncate">{basePath}</span>
             </div>
 
-            {/* The Visual Folders */}
             <div className="flex justify-center gap-6 py-4">
               {folders.map((folder) => {
                 const isTargeted =
                   targetCategory?.includes(folder.id) ||
                   (folder.id === 'images' && targetCategory?.includes('photo')) ||
                   (folder.id === 'documents' && targetCategory?.includes('pdf')) ||
-                  (folder.id === 'code' && targetCategory?.includes('dev'))
+                  (folder.id === 'code' && targetCategory?.includes('dev')) ||
+                  (folder.id === 'videos' &&
+                    (targetCategory?.includes('video') || targetCategory?.includes('mp4'))) ||
+                  (folder.id === 'misc' && targetCategory?.includes('misc'))
 
                 return (
                   <motion.div
@@ -172,7 +189,6 @@ export default function SmartDropZonesWidget() {
               })}
             </div>
 
-            {/* Active File Banner */}
             {status === 'sorting' && currentFile && (
               <motion.div
                 key={currentFile}
@@ -185,7 +201,6 @@ export default function SmartDropZonesWidget() {
               </motion.div>
             )}
 
-            {/* Terminal Log Stream */}
             <div
               ref={terminalRef}
               className="bg-[#0a0a0a] border border-zinc-800 rounded-xl p-4 h-40 overflow-hidden relative font-mono text-[11px]"

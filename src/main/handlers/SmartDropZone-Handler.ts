@@ -3,7 +3,6 @@ import { mouse, Point, Button } from '@nut-tree-fork/nut-js'
 import fs from 'fs/promises'
 import path from 'path'
 
-// Helper function to make the drag look human (use the one you already have)
 function generateHumanPath(start: Point, end: Point): Point[] {
   const steps = 25
   const pathArray: Point[] = []
@@ -30,7 +29,6 @@ function generateHumanPath(start: Point, end: Point): Point[] {
 }
 
 export default function registerDropZoneControl(ipcMain: IpcMain) {
-  // 1. Physical Ghost Drag Action
   ipcMain.handle('ghost-drag-and-drop', async (_event, { startX, startY, endX, endY }) => {
     try {
       const primaryDisplay = screen.getPrimaryDisplay()
@@ -56,16 +54,13 @@ export default function registerDropZoneControl(ipcMain: IpcMain) {
     }
   })
 
-  // 2. Real File Move Logic
   ipcMain.handle('move-file-to-category', async (_event, { sourcePath, targetFolder }) => {
     try {
       const fileName = path.basename(sourcePath)
       const destPath = path.join(targetFolder, fileName)
 
-      // Ensure target folder exists
       await fs.mkdir(targetFolder, { recursive: true })
 
-      // Move the file
       await fs.rename(sourcePath, destPath)
       return { success: true, destPath }
     } catch (e: any) {
@@ -74,7 +69,6 @@ export default function registerDropZoneControl(ipcMain: IpcMain) {
     }
   })
 
-  // 3. UI Overlay Spawner (Optional: If you want Electron to handle the frameless window)
   let dropZoneWindow: BrowserWindow | null = null
   ipcMain.handle('spawn-drop-zone-ui', async () => {
     if (dropZoneWindow) return
@@ -88,8 +82,6 @@ export default function registerDropZoneControl(ipcMain: IpcMain) {
       skipTaskbar: true,
       webPreferences: { nodeIntegration: true, contextIsolation: false }
     })
-    // You would load your React Drop Zone route here
-    // dropZoneWindow.loadURL('http://localhost:5173/#/drop-zones')
     return true
   })
 
