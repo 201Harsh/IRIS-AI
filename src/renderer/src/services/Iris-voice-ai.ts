@@ -56,6 +56,7 @@ import {
 } from '@renderer/functions/coding-manager-api'
 import { analyzeDirectPhoto, readGalleryImages } from '@renderer/functions/gallery-managet-api'
 import { draftEmail, readEmails, sendEmail } from '@renderer/functions/gmail-manager-api'
+import { playSpotifyMusic } from '@renderer/functions/Sporify-manager'
 
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION (Project JARVIS)
@@ -462,6 +463,22 @@ export class GeminiLiveService {
                       }
                     },
                     required: ['name', 'message', 'delay_minutes']
+                  }
+                },
+                {
+                  name: 'play_spotify_music',
+                  description:
+                    'Search for and instantly play a specific song, artist, or playlist on Spotify.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      song_name: {
+                        type: 'STRING',
+                        description:
+                          'The name of the song and artist to play (e.g., "Starboy by The Weeknd").'
+                      }
+                    },
+                    required: ['song_name']
                   }
                 },
                 {
@@ -1195,6 +1212,8 @@ export class GeminiLiveService {
                 call.args.delay_minutes,
                 call.args.file_path
               )
+            } else if (call.name === 'play_spotify_music') {
+              result = await playSpotifyMusic(call.args.song_name)
             } else if (call.name === 'set_volume') {
               result = await setVolume(call.args.level)
             } else if (call.name === 'take_screenshot') {
