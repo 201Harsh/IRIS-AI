@@ -57,6 +57,7 @@ import {
 import { analyzeDirectPhoto, readGalleryImages } from '@renderer/functions/gallery-managet-api'
 import { draftEmail, readEmails, sendEmail } from '@renderer/functions/gmail-manager-api'
 import { playSpotifyMusic } from '@renderer/functions/Sporify-manager'
+import { executeSmartDropZones } from '@renderer/functions/DropZone-handler-api'
 
 const IRIS_SYSTEM_INSTRUCTION = `
 # 👁️ IRIS — YOUR INTELLIGENT COMPANION (Project JARVIS)
@@ -232,9 +233,9 @@ export class GeminiLiveService {
             {
               functionDeclarations: [
                 {
-                  name: 'index_directory',
+                  name: 'index_Folder',
                   description:
-                    "ACTION: Reads a specific folder and memorizes its files into the local Vector Database. Run this when the user asks you to 'memorize', 'index', or 'read' a project folder so you can semantically search it later.",
+                    "ACTION: Reads a specific folder and memorizes its files into the local Vector Database. Run this when the user asks you to 'memorize', 'index', or 'read' a project folder but remember not a Directory. so you can semantically search it later.",
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -249,7 +250,7 @@ export class GeminiLiveService {
                 {
                   name: 'smart_file_search',
                   description:
-                    "ACTION: Performs an ultra-fast, deep file search across the user's entire system. It natively handles nested folders and specific locations. Just pass the user's natural language request.",
+                    "ACTION: Performs an ultra-fast, deep file search across the user's entire system. It natively handles nested folders and specific locations. Just pass the user's natural language request. only use for Files.",
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -323,7 +324,7 @@ export class GeminiLiveService {
                 {
                   name: 'read_directory',
                   description:
-                    'Scan a directory (folder) to see what files are inside. Use this to check contents of "Desktop", "Downloads", etc. Returns a list of files with metadata (name, type, size).',
+                    'Scan a directory (folder) to see what files are inside. Use this to check contents of "Desktop", "Downloads", etc. Returns a list of files with metadata (name, type, size). remember the Keyword "load Directory"',
                   parameters: {
                     type: 'OBJECT',
                     properties: {
@@ -1135,6 +1136,38 @@ export class GeminiLiveService {
                     },
                     required: ['macro_name']
                   }
+                },
+                {
+                  name: 'smart_drop_zones',
+                  description:
+                    'Visually sorts and physically moves files into categorized folders. Must be used AFTER reading a directory.',
+                  parameters: {
+                    type: 'OBJECT',
+                    properties: {
+                      base_directory: {
+                        type: 'STRING',
+                        description:
+                          'The absolute path of the root folder being sorted (e.g., "C:\\Users\\Harsh\\Downloads").'
+                      },
+                      files_to_sort: {
+                        type: 'ARRAY',
+                        items: {
+                          type: 'OBJECT',
+                          properties: {
+                            file_path: {
+                              type: 'STRING',
+                              description: 'Absolute path to the file.'
+                            },
+                            category: {
+                              type: 'STRING',
+                              description: 'Category bucket: "Images", "Documents", or "Code".'
+                            }
+                          }
+                        }
+                      }
+                    },
+                    required: ['base_directory', 'files_to_sort']
+                  }
                 }
               ]
             }
@@ -1398,6 +1431,11 @@ export class GeminiLiveService {
 
                 result = `[SYSTEM OVERRIDE] Macro "${macroRes.name}" has been successfully executed natively by the system architecture. Confirm execution with the user briefly.`
               }
+            } else if (call.name === 'smart_drop_zones') {
+              result = await executeSmartDropZones(
+                call.args.base_directory,
+                call.args.files_to_sort
+              )
             } else {
               result = 'Error: Tool not found.'
             }

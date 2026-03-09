@@ -15,6 +15,7 @@ import WormholeWidget from './Widgets/WormholeWidget'
 import OracleWidget from './Widgets/RagOrcaleWidget'
 import ResearchWidget from './Widgets/DeepResearch'
 import SemanticWidget from './Widgets/SematicSearch'
+import SmartDropZonesWidget from './Widgets/SmartZoneWidget'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
@@ -194,7 +195,7 @@ const App = () => {
           activeStream={activeStreamRef.current}
         />
       </div>
-      
+      <SmartDropZonesWidget />
       <SemanticWidget />
       <OracleWidget />
       <WormholeWidget />

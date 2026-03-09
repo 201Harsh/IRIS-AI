@@ -39,6 +39,7 @@ import registerDeepResearch from './services/deep-research'
 import registerWidgetMaker from './auto/widget-manager'
 import registerWebsiteBuilder from './auto/website-builder'
 import registerWorkflowManager from './workflow/workflow-manager'
+import registerDropZoneControl from './handlers/SmartDropZone-Handler'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
@@ -130,6 +131,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerDropZoneControl(ipcMain)
   registerWorkflowManager()
   registerWebsiteBuilder()
   registerWidgetMaker()

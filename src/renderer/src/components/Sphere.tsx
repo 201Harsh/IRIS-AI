@@ -57,7 +57,7 @@ const CustomParticleSphere = ({ count = 5000 }) => {
       const iy = i * 3 + 1
       const iz = i * 3 + 2 
 
-      const expansion = 1 + volume * spreadFactors[i] * 0.35
+      const expansion = 1 + volume * spreadFactors[i] * 0.40
 
       currentPos[ix] = originalPositions[ix] * expansion
       currentPos[iy] = originalPositions[iy] * expansion
