@@ -5,7 +5,6 @@ export const executeSmartDropZones = async (
   try {
     console.log(`⚡ Igniting Fast Sort in: ${base_directory}`)
 
-    // 1. Wake up the Framer Motion UI
     window.dispatchEvent(
       new CustomEvent('dropzone-start', { detail: { total: files.length, path: base_directory } })
     )
@@ -14,15 +13,13 @@ export const executeSmartDropZones = async (
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       const fileName = file.file_path.split('\\').pop() || file.file_path.split('/').pop()
-      const targetFolder = `${base_directory}\\IRIS_Sorted\\${file.category}`
+      const targetFolder = `${base_directory}\\${file.category}`
 
-      // 2. Instantly move the file in the background (No mouse)
       await window.electron.ipcRenderer.invoke('move-file-to-category', {
         sourcePath: file.file_path,
         targetFolder
       })
 
-      // 3. Fire high-speed update to the UI
       window.dispatchEvent(
         new CustomEvent('dropzone-update', {
           detail: {
@@ -34,11 +31,9 @@ export const executeSmartDropZones = async (
         })
       )
 
-      // ⚡ Hyper-fast delay just to let the eye register the UI animation
       await new Promise((resolve) => setTimeout(resolve, 150))
     }
 
-    // 4. Shutdown sequence
     window.dispatchEvent(new CustomEvent('dropzone-done'))
     return `✅ Instant sort complete. ${files.length} files routed.`
   } catch (error) {
