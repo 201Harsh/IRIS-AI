@@ -69,9 +69,6 @@ export default function DashboardView({
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chatHistory])
 
-  // ==========================================
-  // 🧠 LOAD HEAVY-DUTY MODELS (Better for low light)
-  // ==========================================
   useEffect(() => {
     const loadModels = async () => {
       try {
@@ -89,9 +86,6 @@ export default function DashboardView({
     loadModels()
   }, [])
 
-  // ==========================================
-  // 👁️ LIVE TACTICAL FACE TRACKING
-  // ==========================================
   useEffect(() => {
     if (
       isVideoOn &&
@@ -105,14 +99,12 @@ export default function DashboardView({
       faceScanInterval.current = setInterval(async () => {
         const video = videoElementRef.current
         const canvas = canvasRef.current
-        // Wait until video has actual dimensions
         if (!video || !canvas || video.readyState !== 4 || video.videoWidth === 0) return
 
         try {
           const vw = video.videoWidth
           const vh = video.videoHeight
 
-          // Sync Canvas to Video
           if (canvas.width !== vw || canvas.height !== vh) {
             canvas.width = vw
             canvas.height = vh
@@ -121,7 +113,6 @@ export default function DashboardView({
           const ctx = canvas.getContext('2d')
           if (!ctx) return
 
-          // Using SSD Mobilenet because it tracks better in dark environments
           const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })
           const detection = await faceapi
             .detectSingleFace(video, options)
@@ -133,13 +124,11 @@ export default function DashboardView({
           if (detection) {
             const { x, y, width, height } = detection.detection.box
 
-            // Mirror X because the CSS scales the video by -1
             const mirroredX = vw - x - width
 
-            // ---- DRAW TACTICAL BOX ----
             ctx.strokeStyle = '#34d399' // emerald-400
             ctx.lineWidth = 4
-            const l = 25 // Corner length
+            const l = 25 
 
             ctx.beginPath()
             ctx.moveTo(mirroredX, y + l)
@@ -156,17 +145,14 @@ export default function DashboardView({
             ctx.lineTo(mirroredX + width, y + height - l) // BR
             ctx.stroke()
 
-            // ---- CALCULATE BIOMETRICS ----
             const expressions = detection.expressions
             const domExp = Object.keys(expressions).reduce((a, b) =>
-              // @ts-ignore
               expressions[a] > expressions[b] ? a : b
             )
             const gender = detection.gender === 'male' ? 'M' : 'F'
             const age = Math.round(detection.age)
             const labelText = ` ID:${gender} | AGE:${age} | ${domExp.toUpperCase()} `
 
-            // ---- DRAW HUD LABEL ----
             ctx.fillStyle = 'rgba(10, 10, 10, 0.85)'
             ctx.fillRect(mirroredX, y - 32, width, 26)
 
@@ -174,15 +160,13 @@ export default function DashboardView({
             ctx.font = 'bold 16px monospace'
             ctx.fillText(labelText, mirroredX + 5, y - 14)
           } else {
-            // HUD Feedback so you know the canvas is actively searching
             ctx.fillStyle = 'rgba(52, 211, 153, 0.8)'
             ctx.font = 'bold 14px monospace'
             ctx.fillText('SCANNING OPTICS...', 20, 30)
           }
         } catch (e) {
-          // Silent frame drop
         }
-      }, 250) // 250ms interval to prevent SSD from eating CPU
+      }, 250)
     } else {
       if (faceScanInterval.current) clearInterval(faceScanInterval.current)
       const ctx = canvasRef.current?.getContext('2d')
@@ -194,7 +178,6 @@ export default function DashboardView({
     }
   }, [isVideoOn, visionMode, modelsLoaded])
 
-  // Attach Video Stream to Desktop View
   const setVideoRef = useCallback(
     (node: HTMLVideoElement | null) => {
       videoElementRef.current = node
@@ -206,7 +189,6 @@ export default function DashboardView({
     [activeStream, isVideoOn, visionMode]
   )
 
-  // Attach Video Stream to Mobile View (No Canvas here to prevent ref hijacking)
   const setMobileVideoRef = useCallback(
     (node: HTMLVideoElement | null) => {
       if (node && activeStream && isVideoOn) {
@@ -223,7 +205,6 @@ export default function DashboardView({
     startVision(nextMode)
   }
 
-  // Core Metrics
   const systemMetrics = [
     {
       icon: <RiCpuLine />,
@@ -250,9 +231,8 @@ export default function DashboardView({
   return (
     <div className="flex-1 p-4 bg-white/2 grid grid-cols-12 gap-4 h-full overflow-hidden relative animate-in fade-in zoom-in duration-300 w-full">
       <div className="hidden lg:flex col-span-3 flex-col gap-4 h-full z-40">
-        {/* 1. FIXED CAMERA CONTAINER */}
         <div
-          className={`${glassPanel} h-[280px] shrink-0 flex flex-col p-1 overflow-hidden relative group`}
+          className={`${glassPanel} h-70 shrink-0 flex flex-col p-1 overflow-hidden relative group`}
         >
           <div className="absolute top-3 left-3 z-30 flex items-center gap-2">
             <span
@@ -290,7 +270,6 @@ export default function DashboardView({
               muted
             />
 
-            {/* 🚨 THE ONLY CANVAS REF IN THE APP */}
             <canvas
               ref={canvasRef}
               className="absolute inset-0 w-full h-full object-cover pointer-events-none z-20"
@@ -305,7 +284,6 @@ export default function DashboardView({
           </div>
         </div>
 
-        {/* 2. NEURAL UPLINK WIDGET */}
         <div className={`${glassPanel} h-28 shrink-0 p-4 flex flex-col justify-between`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <span className="text-[10px] font-bold tracking-widest text-zinc-400 flex items-center gap-1">
@@ -342,7 +320,6 @@ export default function DashboardView({
           </div>
         </div>
 
-        {/* 3. CORE METRICS */}
         <div className={`${glassPanel} flex-1 p-4 flex flex-col gap-3`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <span className="text-[10px] font-bold tracking-widest text-zinc-400">
@@ -366,9 +343,7 @@ export default function DashboardView({
         </div>
       </div>
 
-      {/* 🌐 CENTER ORB & CONTROLS */}
       <div className="col-span-12 lg:col-span-6 relative flex flex-col items-center justify-center">
-        {/* MOBILE VIEW THUMBNAIL */}
         <div
           className={`lg:hidden absolute top-4 right-4 w-32 h-24 ${glassPanel} z-50 overflow-hidden ${isVideoOn ? 'block' : 'hidden'}`}
         >
@@ -379,7 +354,6 @@ export default function DashboardView({
             playsInline
             muted
           />
-          {/* CRITICAL FIX: Removed the canvas from here so it doesn't steal the React Ref! */}
         </div>
 
         <div
@@ -415,7 +389,6 @@ export default function DashboardView({
         </div>
       </div>
 
-      {/* 📝 TRANSCRIPT LOG */}
       <div className="hidden lg:flex col-span-3 flex-col overflow-hidden h-full z-40">
         <div className={`${glassPanel} h-full p-4 flex flex-col`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-2">
