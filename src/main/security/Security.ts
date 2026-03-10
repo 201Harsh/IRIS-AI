@@ -2,18 +2,18 @@ import { ipcMain } from 'electron'
 import Store from 'electron-store'
 import bcrypt from 'bcryptjs'
 
-// 🚨 ESM UNWRAP: This rips the class out of the module wrapper so it doesn't crash
 const StoreClass = (Store as any).default || Store
 const store = new StoreClass()
 
 export default function registerSecurityVault() {
-  // Check if a PIN is already set up on this computer
+  // 🚨 NOW CHECKS BOTH PIN AND FACE INDEPENDENTLY
   ipcMain.handle('check-vault-status', () => {
-    const existingHash = store.get('iris_vault_hash')
-    return !!existingHash // Returns true if a PIN exists
+    const hasPin = !!store.get('iris_vault_hash')
+    const hasFace = !!store.get('iris_vault_face')
+    return { hasPin, hasFace }
   })
 
-  // Set a new PIN (Hashes it before saving)
+  // PIN SETUP & VERIFY
   ipcMain.handle('setup-vault-pin', async (_, pin: string) => {
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(pin, salt)
@@ -21,12 +21,28 @@ export default function registerSecurityVault() {
     return true
   })
 
-  // Verify the entered PIN against the saved hash
   ipcMain.handle('verify-vault-pin', async (_, pin: string) => {
     const hash = store.get('iris_vault_hash') as string
     if (!hash) return false
+    return await bcrypt.compare(pin, hash)
+  })
 
-    const isValid = await bcrypt.compare(pin, hash)
-    return isValid
+  // FACE ID SETUP & VERIFY
+  ipcMain.handle('setup-vault-face', (_, descriptor: number[]) => {
+    store.set('iris_vault_face', descriptor)
+    return true
+  })
+
+  ipcMain.handle('verify-vault-face', (_, descriptor: number[]) => {
+    const savedFace = store.get('iris_vault_face') as number[] | undefined
+    if (!savedFace || savedFace.length !== 128) return false
+
+    let distance = 0
+    for (let i = 0; i < descriptor.length; i++) {
+      distance += Math.pow(descriptor[i] - savedFace[i], 2)
+    }
+    distance = Math.sqrt(distance)
+
+    return distance < 0.55
   })
 }

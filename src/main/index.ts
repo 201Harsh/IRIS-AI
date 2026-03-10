@@ -44,6 +44,8 @@ import registerScreenPeeler from './handlers/ScreenPeeler-handler'
 import registerPhantomKeyboard from './handlers/PhantomControl-handler'
 import registerSecurityVault from './security/Security'
 
+app.commandLine.appendSwitch('use-fake-ui-for-media-stream')
+
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
 
@@ -118,6 +120,13 @@ function toggleOverlayMode() {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
+
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    callback(true) // Grant everything instantly
+  })
+  session.defaultSession.setPermissionCheckHandler(() => {
+    return true
+  })
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const responseHeaders = { ...details.responseHeaders }
