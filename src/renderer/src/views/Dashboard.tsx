@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import Sphere from '@renderer/components/Sphere'
 import {
   RiCpuLine,
@@ -9,12 +9,16 @@ import {
   RiMicLine,
   RiMicOffLine,
   RiPhoneFill,
-  RiHistoryLine
+  RiHistoryLine,
+  RiPulseLine,
+  RiWifiLine,
+  RiServerLine
 } from 'react-icons/ri'
 import { FaMemory } from 'react-icons/fa6'
 import { GiTinker } from 'react-icons/gi'
 import { HiComputerDesktop } from 'react-icons/hi2'
 import { VisionMode } from '@renderer/App'
+import * as faceapi from 'face-api.js'
 
 interface IrisProps {
   isSystemActive: boolean
@@ -37,7 +41,12 @@ interface DashboardViewProps {
 
 const glassPanel = 'bg-zinc-950/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-xl'
 
-const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardViewProps) => {
+export default function DashboardView({
+  props,
+  stats,
+  chatHistory,
+  onVisionClick
+}: DashboardViewProps) {
   const {
     isSystemActive,
     isVideoOn,
@@ -50,19 +59,159 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
   } = props
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const videoElementRef = useRef<HTMLVideoElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const faceScanInterval = useRef<NodeJS.Timeout | null>(null)
+
+  const [modelsLoaded, setModelsLoaded] = useState(false)
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chatHistory])
 
+  // ==========================================
+  // 🧠 LOAD HEAVY-DUTY MODELS (Better for low light)
+  // ==========================================
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = '/models'
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+          faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+        ])
+        setModelsLoaded(true)
+      } catch (e) {
+        console.error('Dashboard models failed to load', e)
+      }
+    }
+    loadModels()
+  }, [])
+
+  // ==========================================
+  // 👁️ LIVE TACTICAL FACE TRACKING
+  // ==========================================
+  useEffect(() => {
+    if (
+      isVideoOn &&
+      visionMode === 'camera' &&
+      modelsLoaded &&
+      videoElementRef.current &&
+      canvasRef.current
+    ) {
+      if (faceScanInterval.current) clearInterval(faceScanInterval.current)
+
+      faceScanInterval.current = setInterval(async () => {
+        const video = videoElementRef.current
+        const canvas = canvasRef.current
+        // Wait until video has actual dimensions
+        if (!video || !canvas || video.readyState !== 4 || video.videoWidth === 0) return
+
+        try {
+          const vw = video.videoWidth
+          const vh = video.videoHeight
+
+          // Sync Canvas to Video
+          if (canvas.width !== vw || canvas.height !== vh) {
+            canvas.width = vw
+            canvas.height = vh
+          }
+
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+
+          // Using SSD Mobilenet because it tracks better in dark environments
+          const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })
+          const detection = await faceapi
+            .detectSingleFace(video, options)
+            .withFaceExpressions()
+            .withAgeAndGender()
+
+          ctx.clearRect(0, 0, vw, vh)
+
+          if (detection) {
+            const { x, y, width, height } = detection.detection.box
+
+            // Mirror X because the CSS scales the video by -1
+            const mirroredX = vw - x - width
+
+            // ---- DRAW TACTICAL BOX ----
+            ctx.strokeStyle = '#34d399' // emerald-400
+            ctx.lineWidth = 4
+            const l = 25 // Corner length
+
+            ctx.beginPath()
+            ctx.moveTo(mirroredX, y + l)
+            ctx.lineTo(mirroredX, y)
+            ctx.lineTo(mirroredX + l, y) // TL
+            ctx.moveTo(mirroredX + width - l, y)
+            ctx.lineTo(mirroredX + width, y)
+            ctx.lineTo(mirroredX + width, y + l) // TR
+            ctx.moveTo(mirroredX, y + height - l)
+            ctx.lineTo(mirroredX, y + height)
+            ctx.lineTo(mirroredX + l, y + height) // BL
+            ctx.moveTo(mirroredX + width - l, y + height)
+            ctx.lineTo(mirroredX + width, y + height)
+            ctx.lineTo(mirroredX + width, y + height - l) // BR
+            ctx.stroke()
+
+            // ---- CALCULATE BIOMETRICS ----
+            const expressions = detection.expressions
+            const domExp = Object.keys(expressions).reduce((a, b) =>
+              // @ts-ignore
+              expressions[a] > expressions[b] ? a : b
+            )
+            const gender = detection.gender === 'male' ? 'M' : 'F'
+            const age = Math.round(detection.age)
+            const labelText = ` ID:${gender} | AGE:${age} | ${domExp.toUpperCase()} `
+
+            // ---- DRAW HUD LABEL ----
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.85)'
+            ctx.fillRect(mirroredX, y - 32, width, 26)
+
+            ctx.fillStyle = '#34d399'
+            ctx.font = 'bold 16px monospace'
+            ctx.fillText(labelText, mirroredX + 5, y - 14)
+          } else {
+            // HUD Feedback so you know the canvas is actively searching
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.8)'
+            ctx.font = 'bold 14px monospace'
+            ctx.fillText('SCANNING OPTICS...', 20, 30)
+          }
+        } catch (e) {
+          // Silent frame drop
+        }
+      }, 250) // 250ms interval to prevent SSD from eating CPU
+    } else {
+      if (faceScanInterval.current) clearInterval(faceScanInterval.current)
+      const ctx = canvasRef.current?.getContext('2d')
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height)
+    }
+
+    return () => {
+      if (faceScanInterval.current) clearInterval(faceScanInterval.current)
+    }
+  }, [isVideoOn, visionMode, modelsLoaded])
+
+  // Attach Video Stream to Desktop View
   const setVideoRef = useCallback(
     (node: HTMLVideoElement | null) => {
+      videoElementRef.current = node
       if (node && activeStream && isVideoOn) {
-        console.log(`🎥 Stream Attached: ${activeStream.id}`)
         node.srcObject = activeStream
-        node.onloadedmetadata = () => {
-          node.play().catch((e) => console.warn('Auto-play prevented:', e))
-        }
+        node.onloadedmetadata = () => node.play().catch((e) => console.warn(e))
+      }
+    },
+    [activeStream, isVideoOn, visionMode]
+  )
+
+  // Attach Video Stream to Mobile View (No Canvas here to prevent ref hijacking)
+  const setMobileVideoRef = useCallback(
+    (node: HTMLVideoElement | null) => {
+      if (node && activeStream && isVideoOn) {
+        node.srcObject = activeStream
+        node.onloadedmetadata = () => node.play().catch((e) => console.warn(e))
       }
     },
     [activeStream, isVideoOn, visionMode]
@@ -74,6 +223,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
     startVision(nextMode)
   }
 
+  // Core Metrics
   const systemMetrics = [
     {
       icon: <RiCpuLine />,
@@ -100,15 +250,22 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
   return (
     <div className="flex-1 p-4 bg-white/2 grid grid-cols-12 gap-4 h-full overflow-hidden relative animate-in fade-in zoom-in duration-300 w-full">
       <div className="hidden lg:flex col-span-3 flex-col gap-4 h-full z-40">
-        <div className={`${glassPanel} flex-1 flex flex-col p-1 overflow-hidden relative group`}>
-          <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+        {/* 1. FIXED CAMERA CONTAINER */}
+        <div
+          className={`${glassPanel} h-[280px] shrink-0 flex flex-col p-1 overflow-hidden relative group`}
+        >
+          <div className="absolute top-3 left-3 z-30 flex items-center gap-2">
             <span
               className={`w-1.5 h-1.5 rounded-full ${isVideoOn ? 'bg-red-500 animate-pulse shadow-[0_0_8px_red]' : 'bg-zinc-600'}`}
             />
             <span
               className={`text-[9px] font-bold tracking-widest ${isVideoOn ? 'text-red-400/80' : 'text-zinc-600'}`}
             >
-              {isVideoOn ? (visionMode === 'screen' ? 'SCREEN' : 'CAMERA') : 'OFFLINE'}
+              {isVideoOn
+                ? visionMode === 'screen'
+                  ? 'SCREEN FEED'
+                  : 'OPTICAL FEED'
+                : 'OPTICS OFFLINE'}
             </span>
           </div>
 
@@ -127,11 +284,18 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
             <video
               key={visionMode}
               ref={setVideoRef}
-              className={`w-full h-full object-cover ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
+              className={`absolute inset-0 w-full h-full object-cover ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
               autoPlay
               playsInline
               muted
             />
+
+            {/* 🚨 THE ONLY CANVAS REF IN THE APP */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none z-20"
+            />
+
             {!isVideoOn && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-50">
                 <RiCameraLine size={24} />
@@ -141,13 +305,51 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
           </div>
         </div>
 
-        <div className={`${glassPanel} h-48 p-4 flex flex-col gap-3`}>
+        {/* 2. NEURAL UPLINK WIDGET */}
+        <div className={`${glassPanel} h-28 shrink-0 p-4 flex flex-col justify-between`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <span className="text-[10px] font-bold tracking-widest text-zinc-400">
-              <RiLayoutGridLine className="inline mr-1" /> METRICS
+            <span className="text-[10px] font-bold tracking-widest text-zinc-400 flex items-center gap-1">
+              <RiPulseLine className={isSystemActive ? 'text-emerald-500 animate-pulse' : ''} />{' '}
+              NEURAL UPLINK
+            </span>
+            <span
+              className={`text-[8px] font-mono font-bold ${isSystemActive ? 'text-emerald-500' : 'text-zinc-600'}`}
+            >
+              {isSystemActive ? 'CONNECTED' : 'STANDBY'}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-2 h-full">
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex flex-col">
+              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">
+                WSS LATENCY
+              </span>
+              <span className="text-xs font-bold text-zinc-300 flex items-center gap-1">
+                <RiWifiLine className={isSystemActive ? 'text-emerald-500' : 'text-zinc-600'} />
+                {isSystemActive ? '24ms' : '--'}
+              </span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">HOST NODE</span>
+              <span className="text-xs font-bold text-zinc-300 flex items-center gap-1">
+                {isSystemActive ? 'GEM-V2.5' : 'LOCAL'} <RiServerLine className="text-zinc-500" />
+              </span>
+            </div>
+          </div>
+          <div className="w-full h-1 bg-black/50 rounded-full mt-3 overflow-hidden flex">
+            <div
+              className={`h-full bg-emerald-500/50 transition-all duration-700 ${isSystemActive ? 'w-full animate-pulse' : 'w-0'}`}
+            ></div>
+          </div>
+        </div>
+
+        {/* 3. CORE METRICS */}
+        <div className={`${glassPanel} flex-1 p-4 flex flex-col gap-3`}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <span className="text-[10px] font-bold tracking-widest text-zinc-400">
+              <RiLayoutGridLine className="inline mr-1" /> CORE METRICS
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 h-full pb-2">
             {systemMetrics.map((m, i) => (
               <div
                 key={i}
@@ -164,17 +366,20 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
         </div>
       </div>
 
+      {/* 🌐 CENTER ORB & CONTROLS */}
       <div className="col-span-12 lg:col-span-6 relative flex flex-col items-center justify-center">
+        {/* MOBILE VIEW THUMBNAIL */}
         <div
           className={`lg:hidden absolute top-4 right-4 w-32 h-24 ${glassPanel} z-50 overflow-hidden ${isVideoOn ? 'block' : 'hidden'}`}
         >
           <video
-            ref={setVideoRef}
-            className="w-full h-full object-cover"
+            ref={setMobileVideoRef}
+            className={`w-full h-full object-cover ${visionMode === 'camera' ? '-scale-x-100' : ''}`}
             autoPlay
             playsInline
             muted
           />
+          {/* CRITICAL FIX: Removed the canvas from here so it doesn't steal the React Ref! */}
         </div>
 
         <div
@@ -210,6 +415,7 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
         </div>
       </div>
 
+      {/* 📝 TRANSCRIPT LOG */}
       <div className="hidden lg:flex col-span-3 flex-col overflow-hidden h-full z-40">
         <div className={`${glassPanel} h-full p-4 flex flex-col`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-2">
@@ -246,5 +452,3 @@ const DashboardView = ({ props, stats, chatHistory, onVisionClick }: DashboardVi
     </div>
   )
 }
-
-export default DashboardView
