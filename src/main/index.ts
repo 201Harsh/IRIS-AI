@@ -40,8 +40,8 @@ import registerWidgetMaker from './auto/widget-manager'
 import registerWebsiteBuilder from './auto/website-builder'
 import registerWorkflowManager from './workflow/workflow-manager'
 import registerDropZoneControl from './handlers/SmartDropZone-Handler'
-import registerScreenPeeler from './handlers/ScreenPeeler-handle'
-import registerPhantomKeyboard from './handlers/PhantomControl-handle'
+import registerScreenPeeler from './handlers/ScreenPeeler-handler'
+import registerPhantomKeyboard from './handlers/PhantomControl-handler'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
