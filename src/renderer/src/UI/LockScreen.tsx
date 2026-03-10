@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import {
   RiShieldKeyholeLine,
   RiFingerprintLine,
-  RiScan2Line,
   RiLockPasswordLine,
   RiCameraLensLine,
   RiAlertLine
@@ -21,7 +20,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const [authMode, setAuthMode] = useState<AuthMode>('face')
   const [pin, setPin] = useState('')
 
-  // Split Setup States
   const [needsPinSetup, setNeedsPinSetup] = useState(false)
   const [needsFaceSetup, setNeedsFaceSetup] = useState(false)
 
@@ -38,9 +36,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const laserRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // @ts-ignore
     if (window.electron?.ipcRenderer) {
-      // @ts-ignore
       window.electron.ipcRenderer
         .invoke('check-vault-status')
         .then((status: { hasPin: boolean; hasFace: boolean }) => {
@@ -95,9 +91,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
     setIsScanning(false)
   }
 
-  // ==========================================
-  // 👁️ BIOMETRIC FACE ENGINE
-  // ==========================================
   const loadNeuralNets = async (isFaceSetup: boolean) => {
     try {
       setAiStatus('LOADING NEURAL NETS...')
@@ -118,7 +111,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
     setIsScanning(true)
 
     scanIntervalRef.current = setInterval(async () => {
-      // Pause scanning if we are currently displaying an error
       if (!videoRef.current || videoRef.current.readyState !== 4 || error) return
 
       try {
@@ -133,7 +125,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
           if (isFaceSetup) {
             setAiStatus('FACE ACQUIRED. ENROLLING BIOMETRICS...')
-            // @ts-ignore
             await window.electron.ipcRenderer.invoke('setup-vault-face', descriptorArray)
             clearInterval(scanIntervalRef.current!)
             setNeedsFaceSetup(false)
@@ -143,7 +134,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
             }, 1000)
           } else {
             setAiStatus('ANALYZING BIOMETRICS...')
-            // @ts-ignore
             const isMatch = await window.electron.ipcRenderer.invoke(
               'verify-vault-face',
               descriptorArray
@@ -158,13 +148,12 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 onUnlock()
               }, 1000)
             } else {
-              // 🚨 FULL RED INTRUDER LOCKDOWN
               setError(true)
               setAiStatus('UNKNOWN ENTITY DETECTED')
               setTimeout(() => {
                 setError(false)
                 setAiStatus('SCANNING FOR AUTHORIZATION...')
-              }, 2500) // Stay red for 2.5 seconds before resuming scan
+              }, 2500)
             }
           }
         } else {
@@ -176,9 +165,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
     }, 800)
   }
 
-  // ==========================================
-  // 🔢 PIN ENGINE
-  // ==========================================
+
   const handlePinChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (error || authMode !== 'pin') return
     const value = e.target.value.replace(/\D/g, '')
@@ -190,11 +177,9 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
   const processPin = async (currentPin: string) => {
     if (needsPinSetup) {
-      // @ts-ignore
       await window.electron.ipcRenderer.invoke('setup-vault-pin', currentPin)
       onUnlock()
     } else {
-      // @ts-ignore
       const isValid = await window.electron.ipcRenderer.invoke('verify-vault-pin', currentPin)
       if (isValid) {
         setTimeout(() => onUnlock(), 300)
@@ -211,7 +196,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
   if (isLoading) return <div className="w-screen h-screen bg-black"></div>
 
-  // Visual text helper
   const headerText = error
     ? 'SECURITY BREACH'
     : isFaceMatched
@@ -225,13 +209,12 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       className="flex flex-col items-center justify-center w-screen h-screen bg-black relative overflow-hidden select-none"
       onClick={() => authMode === 'pin' && inputRef.current?.focus()}
     >
-      {/* 🚨 Dynamic Background (Pulses Red on Error) */}
       <div
         className={`absolute inset-0 transition-colors duration-500 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] ${error ? 'from-red-900/40 via-red-950/10 to-black' : isFaceMatched ? 'from-emerald-900/20 via-black to-black' : 'from-emerald-900/5 via-black to-black'}`}
       ></div>
 
       <div
-        className={`z-10 flex flex-col items-center gap-8 p-12 w-[600px] rounded-3xl backdrop-blur-xl border transition-all duration-300 ${error ? 'border-red-500/80 bg-red-950/40 shadow-[0_0_80px_rgba(239,68,68,0.3)]' : isFaceMatched ? 'border-emerald-500/40 bg-emerald-950/20 shadow-[0_0_50px_rgba(16,185,129,0.3)]' : 'border-emerald-500/10 bg-zinc-950/60 shadow-2xl'}`}
+        className={`z-10 flex flex-col items-center gap-8 p-12 w-150 rounded-3xl backdrop-blur-xl border transition-all duration-300 ${error ? 'border-red-500/80 bg-red-950/40 shadow-[0_0_80px_rgba(239,68,68,0.3)]' : isFaceMatched ? 'border-emerald-500/40 bg-emerald-950/20 shadow-[0_0_50px_rgba(16,185,129,0.3)]' : 'border-emerald-500/10 bg-zinc-950/60 shadow-2xl'}`}
       >
         <div className="text-center space-y-3">
           <h1
@@ -253,9 +236,8 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
           </div>
         </div>
 
-        <div className="min-h-[450px] flex items-center justify-center w-full">
+        <div className="min-h-112.5 flex items-center justify-center w-full">
           <AnimatePresence mode="wait">
-            {/* 👁️ MASSIVE FACE SCANNER VIEW */}
             {authMode === 'face' && (
               <motion.div
                 key="face-view"
@@ -263,7 +245,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
-                className={`relative flex items-center justify-center w-[400px] h-[400px] rounded-2xl border-[3px] overflow-hidden transition-colors duration-300 bg-black ${error ? 'border-red-500/80 shadow-[0_0_50px_rgba(239,68,68,0.4)]' : 'border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.15)]'}`}
+                className={`relative flex items-center justify-center w-100 h-100 rounded-2xl border-[3px] overflow-hidden transition-colors duration-300 bg-black ${error ? 'border-red-500/80 shadow-[0_0_50px_rgba(239,68,68,0.4)]' : 'border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.15)]'}`}
               >
                 <video
                   ref={videoRef}
@@ -273,15 +255,13 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                   playsInline
                 />
 
-                {/* 🚨 GSAP Laser Scanner (Turns Red on Error) */}
                 {isScanning && !isFaceMatched && (
                   <div
                     ref={laserRef}
-                    className={`absolute left-0 w-full h-[3px] z-20 transition-colors duration-300 ${error ? 'bg-red-500 shadow-[0_0_20px_#ef4444,0_0_40px_#ef4444]' : 'bg-emerald-400 shadow-[0_0_20px_#34d399,0_0_40px_#34d399]'}`}
+                    className={`absolute left-0 w-full h-0.75 z-20 transition-colors duration-300 ${error ? 'bg-red-500 shadow-[0_0_20px_#ef4444,0_0_40px_#ef4444]' : 'bg-emerald-400 shadow-[0_0_20px_#34d399,0_0_40px_#34d399]'}`}
                   ></div>
                 )}
 
-                {/* HUD Tactical Corners */}
                 <div
                   className={`absolute top-4 left-4 w-8 h-8 border-t-[3px] border-l-[3px] z-10 transition-colors duration-300 ${error ? 'border-red-500' : 'border-emerald-500'}`}
                 ></div>
@@ -312,7 +292,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
               </motion.div>
             )}
 
-            {/* 🔢 TACTICAL PIN VIEW */}
             {authMode === 'pin' && (
               <motion.div
                 key="pin-view"
@@ -393,7 +372,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
           pattern="\d*"
           value={pin}
           onChange={handlePinChange}
-          className="opacity-0 absolute -left-[9999px]"
+          className="opacity-0 absolute -left-2499.75"
           maxLength={4}
           autoComplete="off"
         />

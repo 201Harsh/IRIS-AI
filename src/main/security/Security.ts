@@ -6,14 +6,12 @@ const StoreClass = (Store as any).default || Store
 const store = new StoreClass()
 
 export default function registerSecurityVault() {
-  // 🚨 NOW CHECKS BOTH PIN AND FACE INDEPENDENTLY
   ipcMain.handle('check-vault-status', () => {
     const hasPin = !!store.get('iris_vault_hash')
     const hasFace = !!store.get('iris_vault_face')
     return { hasPin, hasFace }
   })
 
-  // PIN SETUP & VERIFY
   ipcMain.handle('setup-vault-pin', async (_, pin: string) => {
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(pin, salt)
@@ -27,7 +25,6 @@ export default function registerSecurityVault() {
     return await bcrypt.compare(pin, hash)
   })
 
-  // FACE ID SETUP & VERIFY
   ipcMain.handle('setup-vault-face', (_, descriptor: number[]) => {
     store.set('iris_vault_face', descriptor)
     return true
