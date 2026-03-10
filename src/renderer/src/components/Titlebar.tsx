@@ -26,7 +26,7 @@ const TitleBar = () => {
   const close = () => window.electron.ipcRenderer.send('window-close')
 
   return (
-    <div className="w-full h-24 flex items-center justify-between px-4 bg-zinc-900 border-b border-zinc-800 drag-region select-none z-1000 relative">
+    <div className="w-full h-8 flex items-center justify-between px-4 bg-zinc-900 border-b border-zinc-800 drag-region select-none z-1000 relative">
       {isMac && (
         <div className="flex items-center gap-2 no-drag z-50">
           <button

@@ -42,15 +42,17 @@ import registerWorkflowManager from './workflow/workflow-manager'
 import registerDropZoneControl from './handlers/SmartDropZone-Handler'
 import registerScreenPeeler from './handlers/ScreenPeeler-handler'
 import registerPhantomKeyboard from './handlers/PhantomControl-handler'
+import registerSecurityVault from './security/Security'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 950,
-    height: 670,
+    width: 1280,
+    height: 720,
     show: false,
+    fullscreen: true,
     autoHideMenuBar: true,
     frame: false,
     transparent: true,
@@ -133,6 +135,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerSecurityVault()
   registerPhantomKeyboard()
   registerScreenPeeler()
   registerDropZoneControl(ipcMain)
