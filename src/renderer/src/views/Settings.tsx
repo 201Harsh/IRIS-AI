@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import gsap from 'gsap'
 import { GiArtificialIntelligence } from 'react-icons/gi'
 import {
   RiKey2Line,
@@ -8,148 +11,249 @@ import {
   RiTimerFlashLine,
   RiTempHotLine,
   RiDatabase2Line,
+  RiLockPasswordLine,
+  RiScan2Line,
+  RiAddLine,
+  RiRecordCircleLine
 } from 'react-icons/ri'
 
-const SettingsView = ({ glassPanel }: { glassPanel: string }) => (
-  <div className="flex-1 p-4 md:p-8 lg:p-12 flex flex-col gap-8 animate-in fade-in zoom-in duration-300 w-full overflow-y-auto scrollbar-small bg-black min-h-screen text-emerald-50">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-emerald-500/20 pb-6">
-      <div className="flex items-center gap-6">
-        <div className="p-4 bg-emerald-950/30 rounded-2xl border border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.15)]">
-          <GiArtificialIntelligence size={40} className="text-emerald-400" />
-        </div>
-        <div>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
-            System Settings
-          </h2>
-          <p className="text-xs md:text-sm text-emerald-400/70 font-mono mt-1 tracking-wide flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            System Online
-          </p>
-        </div>
-      </div>
-      <div className="text-right hidden md:block">
-        <p className="text-[10px] text-emerald-500/50 font-mono tracking-widest">UPTIME</p>
-        <p className="text-lg font-mono text-emerald-400">42h 12m</p>
-      </div>
-    </div>
+const SettingsView = ({ glassPanel }: { glassPanel: string }) => {
+  const barsRef = useRef<(HTMLDivElement | null)[]>([])
 
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      {[
-        { label: 'CPU USAGE', value: '42%', icon: RiCpuLine, width: '42%' },
-        { label: 'LATENCY', value: '14ms', icon: RiTimerFlashLine, width: '14%' },
-        { label: 'TEMPERATURE', value: '68°C', icon: RiTempHotLine, width: '68%' },
-        { label: 'RAM USAGE', value: '8.4 GB', icon: RiDatabase2Line, width: '75%' }
-      ].map((stat, i) => (
-        <div
-          key={i}
-          className="bg-zinc-950/80 border border-emerald-900/40 p-4 rounded-xl shadow-lg relative overflow-hidden group hover:border-emerald-500/50 transition-colors"
+  // GSAP Animation for Telemetry Bars
+  useEffect(() => {
+    barsRef.current.forEach((bar, i) => {
+      if (bar) {
+        const width: any = bar.getAttribute('data-width')
+        gsap.fromTo(
+          bar,
+          { width: '0%' },
+          { width: width, duration: 1.5, ease: 'power3.out', delay: 0.2 + i * 0.1 }
+        )
+      }
+    })
+  }, [])
+
+  // Framer Motion Stagger Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 }
+    }
+  }
+
+  const itemVariants: any = {
+    hidden: { opacity: 0, y: 15 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 300, damping: 24 }
+    }
+  }
+
+  const inputClass =
+    'flex items-center bg-black/50 border border-white/5 rounded-lg px-4 py-3 focus-within:border-white/20 focus-within:bg-zinc-900/50 transition-all duration-300 w-full group'
+
+  return (
+    <div className="flex-1 p-6 md:p-10 lg:p-16 flex flex-col items-center bg-black min-h-screen text-zinc-100 overflow-y-auto scrollbar-small">
+      {/* Centered Max-Width Container for Professional Look */}
+      <motion.div
+        className="w-full max-w-5xl flex flex-col gap-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        {/* ⚡ HEADER SECTION */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6"
         >
-          <div className="flex justify-between items-start mb-4">
-            <stat.icon
-              size={20}
-              className="text-emerald-500/70 group-hover:text-emerald-400 transition-colors"
-            />
-            <span className="text-emerald-400 font-mono text-lg font-bold">{stat.value}</span>
+          <div className="flex items-center gap-5">
+            <div className="p-3 bg-zinc-900/50 rounded-xl border border-white/10 shadow-sm flex items-center justify-center">
+              <GiArtificialIntelligence size={32} className="text-zinc-100" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tight text-white">Command Center</h2>
+              <p className="text-xs text-zinc-500 font-mono mt-1 tracking-widest flex items-center gap-2 uppercase">
+                <RiRecordCircleLine className="text-zinc-400 animate-pulse" size={12} />
+                System Online & Secure
+              </p>
+            </div>
           </div>
-          <p className="text-[9px] md:text-[10px] text-emerald-100 font-mono tracking-widest mb-2">
-            {stat.label}
-          </p>
-          <div className="w-full h-1 bg-emerald-950/50 rounded-full overflow-hidden">
+          <div className="text-left md:text-right">
+            <p className="text-[9px] text-zinc-600 font-mono tracking-widest uppercase">
+              System Uptime
+            </p>
+            <p className="text-sm font-mono text-zinc-300">42h 12m 04s</p>
+          </div>
+        </motion.div>
+
+        {/* 📊 TELEMETRY WIDGETS */}
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'CPU LOAD', value: '42%', icon: RiCpuLine, width: '42%' },
+            { label: 'WSS LATENCY', value: '14ms', icon: RiTimerFlashLine, width: '14%' },
+            { label: 'CORE TEMP', value: '68°C', icon: RiTempHotLine, width: '68%' },
+            { label: 'RAM USAGE', value: '8.4 GB', icon: RiDatabase2Line, width: '75%' }
+          ].map((stat, i) => (
             <div
-              className="h-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)] transition-all duration-1000"
-              style={{ width: stat.width }}
-            ></div>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-      <div
-        className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
-      >
-        <div className="flex justify-between items-end">
-          <span className="text-xs md:text-sm font-bold text-emerald-100 flex items-center gap-2 tracking-wide">
-            <RiUserLine className="text-emerald-400" size={18} /> User Name
-          </span>
-        </div>
-        <div className="flex items-center bg-black border border-emerald-500/30 rounded-lg px-4 py-3 focus-within:border-emerald-400 focus-within:shadow-[0_0_15px_rgba(52,211,153,0.2)] transition-all">
-          <input
-            type="text"
-            placeholder="Enter your name..."
-            className="bg-transparent border-none outline-none text-sm text-emerald-400 w-full placeholder:text-emerald-900"
-          />
-        </div>
-      </div>
-
-      <div
-        className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
-      >
-        <div className="flex justify-between items-end">
-          <span className="text-xs md:text-sm font-bold text-emerald-100 flex items-center gap-2 tracking-wide">
-            <RiCpuLine className="text-emerald-400" size={18} /> AI Model
-          </span>
-        </div>
-        <div className="flex items-center bg-black border border-emerald-500/30 rounded-lg px-4 py-3 focus-within:border-emerald-400 focus-within:shadow-[0_0_15px_rgba(52,211,153,0.2)] transition-all">
-          <select className="bg-transparent border-none outline-none text-sm text-emerald-400 w-full cursor-pointer appearance-none">
-            <option value="gemini-1.5-pro" className="bg-zinc-950 text-emerald-400">
-              Gemini 1.5 Pro
-            </option>
-            <option value="gemini-1.5-flash" className="bg-zinc-950 text-emerald-400">
-              Gemini 1.5 Flash
-            </option>
-            <option value="iris-custom" className="bg-zinc-950 text-emerald-400">
-              IRIS Local Model
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div
-        className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
-      >
-        <div className="flex justify-between items-end">
-          <span className="text-xs md:text-sm font-bold text-emerald-100 flex items-center gap-2 tracking-wide">
-            <RiUserVoiceLine className="text-emerald-400" size={18} /> Voice Profile
-          </span>
-        </div>
-        <div className="flex gap-4">
-          {['FEMALE', 'MALE'].map((s) => (
-            <button
-              key={s}
-              className={`flex-1 py-3 md:py-4 text-xs font-bold border rounded-lg transition-all tracking-wide ${
-                s === 'FEMALE'
-                  ? 'bg-emerald-950/50 border-emerald-400 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.2)]'
-                  : 'bg-black border-emerald-900/50 text-emerald-700 hover:border-emerald-400/50 hover:text-emerald-400'
-              }`}
+              key={i}
+              className="bg-zinc-950 border border-white/5 p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden group hover:bg-zinc-900/80 transition-colors duration-500"
             >
-              {s}
-            </button>
+              <div className="flex justify-between items-start mb-6">
+                <stat.icon
+                  size={18}
+                  className="text-zinc-500 group-hover:text-zinc-300 transition-colors"
+                />
+                <span className="text-zinc-100 font-mono text-base">{stat.value}</span>
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 font-mono tracking-widest mb-3 uppercase">
+                  {stat.label}
+                </p>
+                <div className="w-full h-[3px] bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    ref={(el: any) => (barsRef.current[i] = el)}
+                    data-width={stat.width}
+                    className="h-full bg-zinc-300 rounded-full"
+                    style={{ width: '0%' }}
+                  ></div>
+                </div>
+              </div>
+            </div>
           ))}
-        </div>
-      </div>
+        </motion.div>
 
-      <div
-        className={`${glassPanel} p-6 md:p-8 flex flex-col gap-6 bg-zinc-950/80 border border-emerald-900/30 hover:border-emerald-400/40 transition-all duration-300 rounded-xl`}
-      >
-        <div className="flex justify-between items-end">
-          <span className="text-xs md:text-sm font-bold text-emerald-100 flex items-center gap-2 tracking-wide">
-            <RiKey2Line className="text-emerald-400" size={18} /> Custom API Key
-          </span>
+        {/* 🎛️ CORE SETTINGS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+          {/* 1. USER IDENTITY */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-zinc-950 border border-white/5 p-7 rounded-2xl flex flex-col gap-5 hover:border-white/10 transition-all"
+          >
+            <div className="flex justify-between items-end">
+              <span className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                <RiUserLine className="text-zinc-500" size={16} /> User Designation
+              </span>
+            </div>
+            <div className={inputClass}>
+              <input
+                type="text"
+                placeholder="Enter operator name..."
+                className="bg-transparent border-none outline-none text-sm text-zinc-200 w-full placeholder:text-zinc-600"
+              />
+              <button className="text-zinc-600 hover:text-zinc-200 transition-colors ml-2">
+                <RiSave3Line size={18} />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* 2. VOICE PROFILE */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-zinc-950 border border-white/5 p-7 rounded-2xl flex flex-col gap-5 hover:border-white/10 transition-all"
+          >
+            <div className="flex justify-between items-end">
+              <span className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                <RiUserVoiceLine className="text-zinc-500" size={16} /> OS Voice Profile
+              </span>
+            </div>
+            <div className="flex gap-3 h-[46px]">
+              {['FEMALE', 'MALE'].map((s) => (
+                <button
+                  key={s}
+                  className={`flex-1 flex items-center justify-center text-[11px] font-bold rounded-lg transition-all tracking-widest ${
+                    s === 'FEMALE'
+                      ? 'bg-zinc-200 text-black shadow-sm'
+                      : 'bg-black/50 border border-white/5 text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* 3. API KEY OVERRIDE */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-zinc-950 border border-white/5 p-7 rounded-2xl flex flex-col gap-5 hover:border-white/10 transition-all"
+          >
+            <div className="flex justify-between items-end">
+              <span className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                <RiKey2Line className="text-zinc-500" size={16} /> Gemini Neural Uplink (API Key)
+              </span>
+            </div>
+            <div className={inputClass}>
+              <input
+                type="password"
+                placeholder="••••••••••••••••••••••••••"
+                className="bg-transparent border-none outline-none text-sm font-mono text-zinc-200 w-full placeholder:text-zinc-700"
+              />
+              <button className="text-zinc-600 hover:text-zinc-200 transition-colors ml-2">
+                <RiSave3Line size={18} />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* 4. MASTER PIN RESET */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-zinc-950 border border-white/5 p-7 rounded-2xl flex flex-col gap-5 hover:border-white/10 transition-all"
+          >
+            <div className="flex justify-between items-end">
+              <span className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                <RiLockPasswordLine className="text-zinc-500" size={16} /> Update Master PIN
+              </span>
+            </div>
+            <div className={inputClass}>
+              <input
+                type="password"
+                maxLength={4}
+                pattern="\d*"
+                placeholder="Enter new 4-digit PIN..."
+                className="bg-transparent border-none outline-none text-sm font-mono text-zinc-200 w-full placeholder:text-zinc-700 tracking-[0.3em]"
+              />
+              <button className="text-zinc-600 hover:text-zinc-200 transition-colors ml-2">
+                <RiSave3Line size={18} />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* 5. BIOMETRIC REGISTRY */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-zinc-950 border border-white/5 p-7 rounded-2xl flex flex-col gap-6 hover:border-white/10 transition-all md:col-span-2"
+          >
+            <div className="flex justify-between items-center border-b border-white/5 pb-4">
+              <span className="text-sm font-medium text-zinc-200 flex items-center gap-2">
+                <RiScan2Line className="text-zinc-500" size={16} /> Biometric Vault Access
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono tracking-widest bg-white/5 px-2 py-1 rounded-md">
+                1 FACE ENROLLED
+              </span>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
+              <p className="text-xs text-zinc-500 leading-relaxed max-w-xl">
+                Register additional biometric profiles to grant vault access to trusted operators.
+                Facial descriptors are mathematically encrypted and stored strictly offline.
+              </p>
+
+              <button className="w-full md:w-auto px-6 py-3 rounded-lg bg-zinc-100 text-black font-semibold tracking-widest text-[11px] flex items-center justify-center gap-2 hover:bg-white transition-all duration-300 group/btn">
+                <RiAddLine
+                  size={16}
+                  className="group-hover/btn:rotate-90 transition-transform duration-300"
+                />
+                ENROLL NEW FACE
+              </button>
+            </div>
+          </motion.div>
         </div>
-        <div className="flex items-center bg-black border border-emerald-500/30 rounded-lg px-4 py-3 focus-within:border-emerald-400 focus-within:shadow-[0_0_15px_rgba(52,211,153,0.2)] transition-all">
-          <input
-            type="password"
-            placeholder="Enter API Key..."
-            className="bg-transparent border-none outline-none text-sm text-emerald-400 w-full placeholder:text-emerald-900"
-          />
-          <button className="text-emerald-800 hover:text-emerald-400 transition-all">
-            <RiSave3Line size={20} />
-          </button>
-        </div>
-      </div>
+      </motion.div>
     </div>
-  </div>
-)
+  )
+}
 
 export default SettingsView
