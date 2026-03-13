@@ -17,7 +17,7 @@ import {
   RiRecordCircleLine
 } from 'react-icons/ri'
 
-const SettingsView = ({ glassPanel }: { glassPanel: string }) => {
+const SettingsView = () => {
   const barsRef = useRef<(HTMLDivElement | null)[]>([])
 
   // GSAP Animation for Telemetry Bars
