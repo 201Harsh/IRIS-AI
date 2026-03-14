@@ -36,7 +36,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const [personality, setPersonality] = useState('')
   const [userName, setUserName] = useState(localStorage.getItem('iris_user_name') || 'Harsh Pandey')
 
-  // API Keys State
   const [geminiKey, setGeminiKey] = useState(localStorage.getItem('iris_custom_api_key') || '')
   const [groqKey, setGroqKey] = useState(localStorage.getItem('iris_groq_api_key') || '')
   const [hfKey, setHfKey] = useState(localStorage.getItem('iris_hf_api_key') || '')
@@ -55,11 +54,9 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    // @ts-ignore
     window.electron.ipcRenderer.invoke('get-personality').then((res) => {
       if (res) setPersonality(res)
     })
-    // @ts-ignore
     window.electron.ipcRenderer
       .invoke('check-vault-status')
       .then((res) => setFaceCount(res.faceCount || 0))
@@ -81,7 +78,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   }
 
   const savePersonality = async () => {
-    // @ts-ignore
     await window.electron.ipcRenderer.invoke('set-personality', personality)
     alert('Personality Matrix Saved Securely to OS.')
   }
@@ -106,7 +102,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
     .filter((w) => w.length > 0).length
 
   const unlockSecurityModule = async () => {
-    // @ts-ignore
     const isValid = await window.electron.ipcRenderer.invoke('verify-vault-pin', authPin)
     if (isValid) {
       setIsSecurityUnlocked(true)
@@ -119,7 +114,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
   const updateMasterPin = async () => {
     if (newPin.length !== 4) return
-    // @ts-ignore
     await window.electron.ipcRenderer.invoke('setup-vault-pin', newPin)
     setNewPin('')
     alert('Master PIN Updated Successfully.')
@@ -152,7 +146,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
             setEnrollStatus('FACE ACQUIRED. ENCRYPTING...')
             const descriptorArray = Array.from(detection.descriptor)
 
-            // @ts-ignore
             await window.electron.ipcRenderer.invoke('setup-vault-face', descriptorArray)
 
             stream.getTracks().forEach((t) => t.stop())
@@ -234,7 +227,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
         <div className="relative min-h-125 pb-12 mt-2">
           <AnimatePresence mode="wait">
-            {/* --- GENERAL TAB --- */}
             {activeTab === 'general' && (
               <motion.div
                 key="general"
@@ -333,7 +325,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
               </motion.div>
             )}
 
-            {/* --- API KEYS TAB --- */}
             {activeTab === 'keys' && (
               <motion.div
                 key="keys"
@@ -357,7 +348,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Gemini */}
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase flex items-center gap-2">
                         <RiBrainLine size={14} /> Gemini Pro Core
@@ -372,7 +362,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                         />
                       </div>
                     </div>
-                    {/* Groq */}
+
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase flex items-center gap-2">
                         <RiCpuLine size={14} /> Groq Fast Inferencing
@@ -387,7 +377,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                         />
                       </div>
                     </div>
-                    {/* Hugging Face */}
+
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase flex items-center gap-2">
                         <RiCloudLine size={14} /> Hugging Face Vision
@@ -402,7 +392,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                         />
                       </div>
                     </div>
-                    {/* Notion */}
+
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase flex items-center gap-2">
                         <RiDatabase2Line size={14} /> Notion Integrations
@@ -417,7 +407,7 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
                         />
                       </div>
                     </div>
-                    {/* Tailvy */}
+
                     <div className="flex flex-col gap-2 md:col-span-2">
                       <label className="text-[10px] text-zinc-400 font-mono tracking-widest uppercase flex items-center gap-2">
                         <RiPlugLine size={14} /> Tailvy Builder Agent
@@ -446,7 +436,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
               </motion.div>
             )}
 
-            {/* --- SECURITY VAULT TAB --- */}
             {activeTab === 'security' && (
               <motion.div
                 key="security"
