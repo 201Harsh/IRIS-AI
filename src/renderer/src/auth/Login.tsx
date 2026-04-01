@@ -40,8 +40,8 @@ export default function LoginPage({ onLoginSuccess }: LoginProps) {
     setSuccess(null)
 
     if (!FormData.email || !FormData.password) {
-      setError('Please fill in all fields.')
-      return
+      setError("Please fill in all fields.");
+      return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -54,6 +54,8 @@ export default function LoginPage({ onLoginSuccess }: LoginProps) {
 
     try {
       const response = await AxiosInstance.post('/users/login', FormData)
+
+      console.log(response)
 
       if (response.status === 200) {
         setSuccess('Login successful! Redirecting to System Ignition...')
