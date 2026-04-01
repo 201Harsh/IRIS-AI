@@ -11,7 +11,6 @@ type QueueItem = {
 
 const AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_KEY
-  // Removed withCredentials since we are strictly using localStorage now, not cookies.
 })
 
 AxiosInstance.interceptors.request.use((config) => {
@@ -67,22 +66,18 @@ AxiosInstance.interceptors.response.use(
       isRefreshing = true
 
       try {
-        // 1. Grab the Refresh Token from Local Storage
         const currentRefreshToken = localStorage.getItem('iris_cloud_token')
 
         if (!currentRefreshToken) {
           throw new Error('No refresh token found in local storage.')
         }
 
-        // 2. We use a standard axios call here to avoid infinite interceptor loops
-        // We pass the refreshToken in the body. YOUR BACKEND MUST BE UPDATED TO READ THIS!
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_KEY}/users/refresh-token`, {
           refreshToken: currentRefreshToken
         })
 
         const newAccessToken = res.data.accessToken
 
-        // 3. If your backend rotates the refresh token, save the new one!
         if (res.data.refreshToken) {
           localStorage.setItem('iris_cloud_token', res.data.refreshToken)
         }
@@ -98,7 +93,6 @@ AxiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null)
 
-        // 4. Complete wipe on failure to ensure the gatekeeper locks them out
         useAuthStore.getState().logout()
         localStorage.removeItem('iris_cloud_token')
         window.location.hash = '#/login' // Force redirect to login
