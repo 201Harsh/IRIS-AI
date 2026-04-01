@@ -70,6 +70,7 @@ export default function LoginPage({ onLoginSuccess }: LoginProps) {
         }, 1500)
       }
     } catch (error: any) {
+        console.log(error.response.data)
       if (error.response && error.response.data) {
         setError(
           typeof error.response.data === 'string'

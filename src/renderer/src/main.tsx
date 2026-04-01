@@ -3,7 +3,6 @@ import './assets/main.css'
 import React, { StrictMode, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// ⚠️ IMPORTANT: Verify these 4 paths exactly match your folder structure!
 import App from './App'
 import LockScreen from './UI/LockScreen'
 import LoginPage from './auth/Login'
@@ -12,7 +11,6 @@ import SetupPage from './auth/Setup'
 // Electron IPC Bridge Check
 const electronAPI = (window as any).electron?.ipcRenderer
 
-// --- SIMPLE ERROR BOUNDARY ---
 class SystemErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; errorMsg: string }
@@ -50,14 +48,12 @@ const RootApp = () => {
   useEffect(() => {
     const checkSystemState = async () => {
       try {
-        // 1. Check Cloud Auth (JWT)
         const jwt = localStorage.getItem('iris_cloud_token')
         if (!jwt) {
           setAuthState('login')
           return
         }
 
-        // 2. Check Secure Local Keys via Electron IPC
         if (electronAPI) {
           const keysExist = await electronAPI.invoke('check-keys-exist')
           if (!keysExist) {
@@ -68,7 +64,6 @@ const RootApp = () => {
           console.warn('Electron IPC not detected. Running in pure web mode.')
         }
 
-        // 3. Default to Locked state for biometric/PIN entry
         setAuthState('locked')
       } catch (error) {
         console.error('System Check Failed:', error)
@@ -78,7 +73,6 @@ const RootApp = () => {
 
     checkSystemState()
 
-    // Listen for Google OAuth deep link callbacks
     if (electronAPI) {
       electronAPI.on('oauth-callback', (_event: any, url: string) => {
         try {
@@ -86,7 +80,7 @@ const RootApp = () => {
           const token = urlObj.searchParams.get('token')
           if (token) {
             localStorage.setItem('iris_cloud_token', token)
-            checkSystemState() // Re-evaluate state
+            checkSystemState()
           }
         } catch (e) {
           console.error('Failed to parse OAuth URL', e)
@@ -95,7 +89,6 @@ const RootApp = () => {
     }
   }, [])
 
-  // Show this while checking tokens
   if (authState === 'loading') {
     return (
       <div className="h-screen w-screen bg-[#050505] flex items-center justify-center text-[#10b981] font-mono text-sm tracking-widest uppercase">
@@ -107,7 +100,6 @@ const RootApp = () => {
   return (
     <div className="flex flex-col h-screen w-screen bg-[#050505] overflow-hidden relative border border-[#10b981]/20 rounded-xl">
       <div className="flex-1 relative overflow-hidden">
-        {/* Pass the state control down to the components */}
         {authState === 'login' && <LoginPage onLoginSuccess={() => setAuthState('setup')} />}
         {authState === 'setup' && <SetupPage onSetupComplete={() => setAuthState('locked')} />}
         {authState === 'locked' && <LockScreen onUnlock={() => setAuthState('app')} />}
