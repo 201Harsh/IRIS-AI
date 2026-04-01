@@ -10,7 +10,6 @@ type QueueItem = {
 }
 
 const AxiosInstance = axios.create({
-  // VITE FIX: Use import.meta.env instead of process.env
   baseURL: import.meta.env.VITE_BACKEND_KEY,
   withCredentials: true
 })
