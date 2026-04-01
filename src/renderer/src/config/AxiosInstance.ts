@@ -49,7 +49,8 @@ AxiosInstance.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest?._retry &&
-      !originalRequest?.url?.includes('/refresh-token')
+      !originalRequest?.url?.includes('/refresh-token') &&
+      !originalRequest?.url?.includes('/users/login')
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
