@@ -14,7 +14,6 @@ import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-// --- IPC HANDLER IMPORTS ---
 import registerIpcHandlers from './logic/iris-memory-save'
 import registerSystemHandlers from './logic/get-system-info'
 import registerFileSearch from './logic/file-search'
@@ -111,7 +110,9 @@ function createWindow(): void {
 }
 
 app.on('second-instance', (event, commandLine) => {
-  if (!event) return
+  if (!event){
+    console.log("No Event Triggered!!")
+  }
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore()
     mainWindow.focus()
