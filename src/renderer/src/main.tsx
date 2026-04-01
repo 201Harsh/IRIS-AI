@@ -10,10 +10,10 @@ import LoginPage from './auth/Login'
 import SetupPage from './auth/Setup'
 import { useAuthStore } from './store/auth-store'
 import AxiosInstance from './config/AxiosInstance'
+import AuthInitializer from './auth/AuthToken'
 
 const electronAPI = (window as any).electron?.ipcRenderer
 
-// --- 1. ERROR BOUNDARY ---
 class SystemErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; errorMsg: string }
@@ -40,8 +40,6 @@ class SystemErrorBoundary extends React.Component<
   }
 }
 
-// --- 2. THE SECURITY GATEKEEPER ---
-// We keep track of session unlock state in memory so it resets when the app is closed
 let isSessionUnlocked = false
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -49,24 +47,20 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Zustand store actions
   const accessToken = useAuthStore((state) => state.accessToken)
   const logout = useAuthStore((state) => state.logout)
 
   useEffect(() => {
     const verifyAccess = async () => {
       try {
-        // 1. Check if they have a token locally
         if (!accessToken && !localStorage.getItem('iris_cloud_token')) {
           navigate('/login', { replace: true })
           return
         }
 
-        // 2. Ping your backend to ensure the token isn't dead/banned
         const userRes = await AxiosInstance.get('/users/me')
         if (userRes.status !== 200) throw new Error('Cloud Auth Failed')
 
-        // 3. Check if local hardware API keys exist in safeStorage
         if (electronAPI) {
           const keysExist = await electronAPI.invoke('check-keys-exist')
           if (!keysExist) {
@@ -75,13 +69,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
           }
         }
 
-        // 4. Check if they have passed the Biometric/PIN LockScreen for this session
         if (!isSessionUnlocked && location.pathname !== '/lock') {
           navigate('/lock', { replace: true })
           return
         }
 
-        // If all checks pass, render the protected component
         setStatus('authorized')
       } catch (error) {
         console.error('Security Check Failed:', error)
@@ -104,19 +96,16 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   return children
 }
 
-// --- 3. PUBLIC ROUTE GUARD (Redirects logged-in users away from /login) ---
 const PublicRoute = ({ children }: { children: JSX.Element }) => {
   const accessToken =
     useAuthStore((state) => state.accessToken) || localStorage.getItem('iris_cloud_token')
   return accessToken ? <Navigate to="/" replace /> : children
 }
 
-// --- 4. THE ROUTER APP ---
 const AppRouter = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Deep Link Listener for Google OAuth
     if (electronAPI) {
       electronAPI.on('oauth-callback', (_event: any, url: string) => {
         try {
@@ -137,7 +126,6 @@ const AppRouter = () => {
 
   return (
     <Routes>
-      {/* PUBLIC ROUTES */}
       <Route
         path="/login"
         element={
@@ -147,10 +135,8 @@ const AppRouter = () => {
         }
       />
 
-      {/* SETUP API KEYS */}
       <Route path="/setup" element={<SetupPage onSetupComplete={() => navigate('/lock')} />} />
 
-      {/* LOCK SCREEN */}
       <Route
         path="/lock"
         element={
@@ -165,7 +151,6 @@ const AppRouter = () => {
         }
       />
 
-      {/* THE MAIN APP (Dashboard, AI, Widgets) */}
       <Route
         path="/"
         element={
@@ -181,12 +166,11 @@ const AppRouter = () => {
   )
 }
 
-// --- 5. ROOT RENDER ---
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SystemErrorBoundary>
-      {/* HashRouter wraps everything for Electron compatibility */}
       <HashRouter>
+        <AuthInitializer />
         <AppRouter />
       </HashRouter>
     </SystemErrorBoundary>
