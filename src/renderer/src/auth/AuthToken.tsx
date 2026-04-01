@@ -1,25 +1,37 @@
-'use client'
-
-import AxiosInstance from '@renderer/config/AxiosInstance'
-import { useAuthStore } from '@renderer/store/auth-store'
 import { useEffect } from 'react'
+import { useAuthStore } from '../store/auth-store'
+import AxiosInstance from '../config/AxiosInstance'
 
 export default function AuthInitializer() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken)
-  const setIsAuthInitialized = useAuthStore((s) => s.setIsAuthInitialized)
+  const setIsAuthInitialized = useAuthStore((s: any) => s.setIsAuthInitialized)
 
   useEffect(() => {
     const init = async () => {
       try {
-        const res = await AxiosInstance.post('/users/refresh-token')
+        const storedRefreshToken = localStorage.getItem('iris_cloud_token')
+
+        if (!storedRefreshToken) {
+          setAccessToken(null)
+          return
+        }
+
+        const res = await AxiosInstance.post('/users/refresh-token', {
+          refreshToken: storedRefreshToken
+        })
 
         const accessToken = res.data.accessToken
-
         setAccessToken(accessToken)
+
+        if (res.data.refreshToken) {
+          localStorage.setItem('iris_cloud_token', res.data.refreshToken)
+        }
       } catch (err) {
+        console.error('Auth Initializer failed to refresh token:', err)
         setAccessToken(null)
+        localStorage.removeItem('iris_cloud_token')
       } finally {
-        setIsAuthInitialized(true)
+        if (setIsAuthInitialized) setIsAuthInitialized(true)
       }
     }
 

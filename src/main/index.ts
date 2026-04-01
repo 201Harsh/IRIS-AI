@@ -110,11 +110,14 @@ function createWindow(): void {
 }
 
 app.on('second-instance', (event, commandLine) => {
+  if (!event) {
+    console.log('No Event Triggered!!')
+  }
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore()
     mainWindow.focus()
-    const url = commandLine.pop()
-    if (url && url.startsWith('iris://')) {
+    const url = commandLine.find((arg) => arg.startsWith('iris://'))
+    if (url) {
       mainWindow.webContents.send('oauth-callback', url)
     }
   }
@@ -152,25 +155,46 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
   ipcMain.handle('secure-save-keys', async (_, { groqKey, geminiKey }) => {
-    if (!safeStorage.isEncryptionAvailable()) {
-      throw new Error('OS encryption not available on this system.')
+    try {
+      let groqEncrypted, geminiEncrypted
+
+      if (safeStorage.isEncryptionAvailable()) {
+        groqEncrypted = safeStorage.encryptString(groqKey).toString('base64')
+        geminiEncrypted = safeStorage.encryptString(geminiKey).toString('base64')
+      } else {
+        console.warn('⚠️ safeStorage unavailable. Using Dev-Mode Base64 fallback.')
+        groqEncrypted = Buffer.from(groqKey).toString('base64')
+        geminiEncrypted = Buffer.from(geminiKey).toString('base64')
+      }
+
+      const secureData = {
+        groq: groqEncrypted,
+        gemini: geminiEncrypted
+      }
+
+      fs.writeFileSync(secureConfigPath, JSON.stringify(secureData))
+      return { success: true }
+    } catch (error: any) {
+      console.error('Failed to save keys:', error)
+      return { success: false, error: error.message }
     }
-    const secureData = {
-      groq: safeStorage.encryptString(groqKey).toString('base64'),
-      gemini: safeStorage.encryptString(geminiKey).toString('base64')
-    }
-    fs.writeFileSync(secureConfigPath, JSON.stringify(secureData))
-    return { success: true }
   })
 
   ipcMain.handle('secure-get-keys', async () => {
     if (!fs.existsSync(secureConfigPath)) return null
     try {
       const data = JSON.parse(fs.readFileSync(secureConfigPath, 'utf8'))
-      return {
-        groqKey: safeStorage.decryptString(Buffer.from(data.groq, 'base64')),
-        geminiKey: safeStorage.decryptString(Buffer.from(data.gemini, 'base64'))
+      let groqKey, geminiKey
+
+      if (safeStorage.isEncryptionAvailable()) {
+        groqKey = safeStorage.decryptString(Buffer.from(data.groq, 'base64'))
+        geminiKey = safeStorage.decryptString(Buffer.from(data.gemini, 'base64'))
+      } else {
+        groqKey = Buffer.from(data.groq, 'base64').toString('utf8')
+        geminiKey = Buffer.from(data.gemini, 'base64').toString('utf8')
       }
+
+      return { groqKey, geminiKey }
     } catch (err) {
       console.error('Failed to decrypt keys', err)
       return null

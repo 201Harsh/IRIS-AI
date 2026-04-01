@@ -14,12 +14,12 @@ import {
   RiImageLine
 } from 'react-icons/ri'
 import { getSystemStatus } from '@renderer/services/system-info'
-import { VisionMode } from '@renderer/App'
 import { getHistory } from '@renderer/services/iris-ai-brain'
 import ViewSkeleton from '@renderer/components/ViewSkelrton'
 
 import DashboardView from '../views/Dashboard'
 import PhoneView from '../views/Phone'
+import { VisionMode } from '@renderer/MainRoute'
 
 // const AppsView = lazy(() => import('../views/APP'))
 const WorkFlowEditorView = lazy(() => import('../views/WorkFlowEditor'))

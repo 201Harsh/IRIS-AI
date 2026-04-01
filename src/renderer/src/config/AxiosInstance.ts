@@ -10,8 +10,7 @@ type QueueItem = {
 }
 
 const AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_KEY,
-  withCredentials: true
+  baseURL: import.meta.env.VITE_BACKEND_KEY
 })
 
 AxiosInstance.interceptors.request.use((config) => {
@@ -36,7 +35,6 @@ const processQueue = (error: any, token: string | null = null) => {
       prom.resolve(token)
     }
   })
-
   queue = []
 }
 
@@ -68,9 +66,21 @@ AxiosInstance.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const res = await AxiosInstance.post('/users/refresh-token')
+        const currentRefreshToken = localStorage.getItem('iris_cloud_token')
 
-        const newAccessToken = (res.data as any).accessToken
+        if (!currentRefreshToken) {
+          throw new Error('No refresh token found in local storage.')
+        }
+
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_KEY}/users/refresh-token`, {
+          refreshToken: currentRefreshToken
+        })
+
+        const newAccessToken = res.data.accessToken
+
+        if (res.data.refreshToken) {
+          localStorage.setItem('iris_cloud_token', res.data.refreshToken)
+        }
 
         useAuthStore.getState().setAccessToken(newAccessToken)
 
@@ -84,6 +94,8 @@ AxiosInstance.interceptors.response.use(
         processQueue(err, null)
 
         useAuthStore.getState().logout()
+        localStorage.removeItem('iris_cloud_token')
+        window.location.hash = '#/login'
 
         return Promise.reject(err)
       } finally {

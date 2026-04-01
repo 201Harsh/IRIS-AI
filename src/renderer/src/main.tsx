@@ -1,12 +1,15 @@
 import './assets/main.css'
 
-import React, { StrictMode, useState, useEffect } from 'react'
+import React, { JSX, StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 
-import App from './App'
+import MainRoute from './MainRoute'
 import LockScreen from './UI/LockScreen'
 import LoginPage from './auth/Login'
-import SetupPage from './auth/Setup'
+import { useAuthStore } from './store/auth-store'
+import AxiosInstance from './config/AxiosInstance'
+import AuthInitializer from './auth/AuthToken'
 
 const electronAPI = (window as any).electron?.ipcRenderer
 
@@ -26,9 +29,6 @@ class SystemErrorBoundary extends React.Component<
       return (
         <div className="h-screen w-screen bg-[#050505] flex flex-col items-center justify-center text-red-500 font-mono p-6 text-center">
           <h1 className="text-2xl font-bold mb-4">CRITICAL SYSTEM FAILURE</h1>
-          <p className="text-sm text-red-400 mb-2">
-            React Render Tree Crashed. Check DevTools (Ctrl+Shift+I).
-          </p>
           <div className="p-4 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-300 max-w-2xl wrap-break-word">
             {this.state.errorMsg}
           </div>
@@ -39,79 +39,134 @@ class SystemErrorBoundary extends React.Component<
   }
 }
 
-const RootApp = () => {
-  const [authState, setAuthState] = useState<'loading' | 'login' | 'setup' | 'locked' | 'app'>(
-    'loading'
-  )
+let isSessionUnlocked = false
+
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const [status, setStatus] = useState<'checking' | 'authorized'>('checking')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const logout = useAuthStore((state) => state.logout)
 
   useEffect(() => {
-    const checkSystemState = async () => {
+    const verifyAccess = async () => {
       try {
-        const jwt = localStorage.getItem('iris_cloud_token')
-        if (!jwt) {
-          setAuthState('login')
+        if (!accessToken && !localStorage.getItem('iris_cloud_token')) {
+          navigate('/login', { replace: true })
           return
         }
 
-        if (electronAPI) {
-          const keysExist = await electronAPI.invoke('check-keys-exist')
-          if (!keysExist) {
-            setAuthState('setup')
-            return
-          }
-        } else {
-          console.warn('Electron IPC not detected. Running in pure web mode.')
+        const userRes = await AxiosInstance.get('/users/me')
+        if (userRes.status !== 200) throw new Error('Cloud Auth Failed')
+
+
+        if (!isSessionUnlocked && location.pathname !== '/lock') {
+          navigate('/lock', { replace: true })
+          return
         }
 
-        setAuthState('locked')
+        setStatus('authorized')
       } catch (error) {
-        console.error('System Check Failed:', error)
-        setAuthState('login')
+        console.error('Security Check Failed:', error)
+        logout()
+        navigate('/login', { replace: true })
       }
     }
 
-    checkSystemState()
+    verifyAccess()
+  }, [navigate, location.pathname, accessToken, logout])
 
+  if (status === 'checking') {
+    return (
+      <div className="h-screen w-screen bg-[#050505] flex items-center justify-center text-[#10b981] font-mono text-sm tracking-widest uppercase">
+        Verifying Security Clearance...
+      </div>
+    )
+  }
+
+  return children
+}
+
+const PublicRoute = ({ children }: { children: JSX.Element }) => {
+  const accessToken =
+    useAuthStore((state) => state.accessToken) || localStorage.getItem('iris_cloud_token')
+  return accessToken ? <Navigate to="/" replace /> : children
+}
+
+const AppRouter = () => {
+  const navigate = useNavigate()
+
+  useEffect(() => {
     if (electronAPI) {
       electronAPI.on('oauth-callback', (_event: any, url: string) => {
         try {
-          const urlObj = new URL(url)
-          const token = urlObj.searchParams.get('token')
-          if (token) {
-            localStorage.setItem('iris_cloud_token', token)
-            checkSystemState()
+          const urlObj = new URL(url.replace('iris://', 'http://localhost/'))
+
+          const refreshToken = urlObj.searchParams.get('refreshToken')
+          const accessToken = urlObj.searchParams.get('accessToken')
+
+          if (refreshToken && accessToken) {
+            localStorage.setItem('iris_cloud_token', refreshToken)
+            useAuthStore.getState().setAccessToken(accessToken)
+
+            navigate('/')
           }
         } catch (e) {
           console.error('Failed to parse OAuth URL', e)
         }
       })
     }
-  }, [])
-
-  if (authState === 'loading') {
-    return (
-      <div className="h-screen w-screen bg-[#050505] flex items-center justify-center text-[#10b981] font-mono text-sm tracking-widest uppercase">
-        Initializing Core Systems...
-      </div>
-    )
-  }
+    return () => electronAPI?.removeAllListeners('oauth-callback')
+  }, [navigate])
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#050505] overflow-hidden relative border border-[#10b981]/20 rounded-xl">
-      <div className="flex-1 relative overflow-hidden">
-        {authState === 'login' && <LoginPage onLoginSuccess={() => setAuthState('setup')} />}
-        {authState === 'setup' && <SetupPage onSetupComplete={() => setAuthState('locked')} />}
-        {authState === 'locked' && <LockScreen onUnlock={() => setAuthState('app')} />}
-        {authState === 'app' && <App />}
-      </div>
-    </div>
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+
+
+      <Route
+        path="/lock"
+        element={
+          <ProtectedRoute>
+            <LockScreen
+              onUnlock={() => {
+                isSessionUnlocked = true
+                navigate('/')
+              }}
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <MainRoute />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SystemErrorBoundary>
-      <RootApp />
+      <HashRouter>
+        <AuthInitializer />
+        <AppRouter />
+      </HashRouter>
     </SystemErrorBoundary>
   </StrictMode>
 )
