@@ -51,8 +51,6 @@ import registerLockSystem from './security/lock-system'
 
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream')
 
-// --- REGISTER DEEP LINK PROTOCOL ---
-// This allows Google OAuth to redirect to iris://
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
     app.setAsDefaultProtocolClient('iris', process.execPath, [path.resolve(process.argv[1])])
@@ -61,7 +59,6 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient('iris')
 }
 
-// Force Single Instance Lock for Deep Linking
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
   app.quit()
@@ -70,7 +67,6 @@ if (!gotTheLock) {
 let mainWindow: BrowserWindow | null = null
 let isOverlayMode = false
 
-// --- SECURE KEY STORAGE PATH ---
 const secureConfigPath = join(app.getPath('userData'), 'iris_secure_vault.json')
 
 function createWindow(): void {
@@ -114,12 +110,10 @@ function createWindow(): void {
   }
 }
 
-// --- HANDLE DEEP LINKS (WINDOWS/LINUX) ---
 app.on('second-instance', (event, commandLine) => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore()
     mainWindow.focus()
-    // Extract the URL from command line
     const url = commandLine.pop()
     if (url && url.startsWith('iris://')) {
       mainWindow.webContents.send('oauth-callback', url)
