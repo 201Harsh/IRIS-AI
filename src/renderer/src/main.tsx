@@ -7,6 +7,7 @@ import App from './App'
 import LockScreen from './UI/LockScreen'
 import LoginPage from './auth/Login'
 import SetupPage from './auth/Setup'
+import AuthInitializer from './auth/AuthToken'
 
 const electronAPI = (window as any).electron?.ipcRenderer
 
@@ -111,6 +112,7 @@ const RootApp = () => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SystemErrorBoundary>
+      <AuthInitializer />
       <RootApp />
     </SystemErrorBoundary>
   </StrictMode>
