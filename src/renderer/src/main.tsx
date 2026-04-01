@@ -144,7 +144,7 @@ const AppRouter = () => {
             <LockScreen
               onUnlock={() => {
                 isSessionUnlocked = true
-                navigate('/') // Go to the main app!
+                navigate('/') 
               }}
             />
           </ProtectedRoute>
