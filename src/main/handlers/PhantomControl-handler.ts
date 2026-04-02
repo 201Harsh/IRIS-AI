@@ -1,7 +1,16 @@
-import { ipcMain, BrowserWindow, app, screen, globalShortcut, clipboard } from 'electron'
+import {
+  ipcMain,
+  BrowserWindow,
+  app,
+  screen,
+  globalShortcut,
+  clipboard,
+  safeStorage
+} from 'electron'
 import { keyboard, Key } from '@nut-tree-fork/nut-js'
 import path from 'path'
 import fs from 'fs/promises'
+import fsSync from 'fs'
 
 let phantomWindow: BrowserWindow | null = null
 
@@ -129,6 +138,16 @@ export default function registerPhantomKeyboard() {
               streamOutput.textContent += text;
               streamOutput.scrollTop = streamOutput.scrollHeight; // Auto-scroll to bottom
             });
+
+            // Listen for missing API key alerts
+            ipcRenderer.on('phantom-error', (event, errorMsg) => {
+              loader.style.display = 'none';
+              icon.style.display = 'block';
+              streamOutput.style.display = 'block';
+              streamOutput.style.color = '#ef4444'; // Red for error
+              streamOutput.textContent = errorMsg;
+              ipcRenderer.send('phantom-resize', 150); 
+            });
           </script>
         </body>
         </html>
@@ -186,8 +205,32 @@ export default function registerPhantomKeyboard() {
   ipcMain.on('phantom-execute-stream', async (event, promptText) => {
     if (!event) return
     try {
-      const apiKey = (import.meta.env as any).VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-      if (!apiKey) throw new Error('API key missing.')
+      // 1. DYNAMICALLY READ FROM THE OS VAULT, NOT .ENV
+      let apiKey = ''
+      const secureConfigPath = path.join(app.getPath('userData'), 'iris_secure_vault.json')
+
+      if (fsSync.existsSync(secureConfigPath)) {
+        try {
+          const data = JSON.parse(fsSync.readFileSync(secureConfigPath, 'utf8'))
+          if (safeStorage.isEncryptionAvailable()) {
+            apiKey = safeStorage.decryptString(Buffer.from(data.gemini, 'base64'))
+          } else {
+            apiKey = Buffer.from(data.gemini, 'base64').toString('utf8')
+          }
+        } catch (e) {
+          console.error('Failed to read secure vault for Phantom Key:', e)
+        }
+      }
+
+      if (!apiKey || apiKey.trim() === '') {
+        if (phantomWindow) {
+          phantomWindow.webContents.send(
+            'phantom-error',
+            'CRITICAL: Missing Gemini API Key.\nPlease launch the main IRIS Dashboard and update your Command Center Vault.'
+          )
+        }
+        return
+      }
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?alt=sse&key=${apiKey}`,
@@ -250,17 +293,17 @@ export default function registerPhantomKeyboard() {
 
       console.log('👻 Phantom Streaming Complete. Injecting via Clipboard.')
 
-      // 1. Wait a moment for the user to see the completed code
+      // Wait a moment for the user to see the completed code
       await sleep(400)
       if (phantomWindow) phantomWindow.close()
 
-      // 2. Wait for the window to vanish so the IDE regains focus
+      // Wait for the window to vanish so the IDE regains focus
       await sleep(150)
 
-      // 3. Backup old clipboard
+      // Backup old clipboard
       const originalClipboard = clipboard.readText()
 
-      // 4. Inject the perfect formatted code
+      // Inject the perfect formatted code
       clipboard.writeText(fullGeneratedText)
 
       const isMac = process.platform === 'darwin'
@@ -270,13 +313,15 @@ export default function registerPhantomKeyboard() {
       await keyboard.pressKey(modifier, Key.V)
       await keyboard.releaseKey(Key.V, modifier)
 
-      // 5. Restore old clipboard seamlessly
+      // Restore old clipboard seamlessly
       setTimeout(() => {
         clipboard.writeText(originalClipboard)
       }, 500)
     } catch (error) {
       console.error('Phantom Streaming Execution Failed:', error)
-      if (phantomWindow) phantomWindow.close()
+      if (phantomWindow) {
+        phantomWindow.webContents.send('phantom-error', `Execution Failed: ${String(error)}`)
+      }
     }
   })
 }
