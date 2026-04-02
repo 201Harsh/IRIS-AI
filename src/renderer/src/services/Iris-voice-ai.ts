@@ -249,7 +249,7 @@ ${JSON.stringify(history)}
       const setupMsg = {
         setup: {
           model: this.model,
-          system_instruction: {
+          systemInstruction: {
             parts: [{ text: finalSystemInstruction }]
           },
           tools: [
