@@ -26,14 +26,30 @@ export default function LiveCodingWidget() {
     const handleStartCoding = async (e: any) => {
       const { prompt, file_name } = e.detail
       setFilename(file_name)
-      setCode('// Initializing IRIS Neural Forge...\n')
       setIsVisible(true)
       setIsGenerating(true)
 
+      // 1. EXTRACT KEY FROM LOCAL STORAGE
+      const geminiKey = localStorage.getItem('iris_custom_api_key') || ''
+
+      // 2. HANDLE MISSING KEY GRACEFULLY IN THE UI
+      if (!geminiKey.trim()) {
+        setCode(
+          '// ❌ SYSTEM ERROR: Missing Gemini API Key.\n// Please configure it in the Command Center Vault (Settings Tab).'
+        )
+        setIsGenerating(false)
+        return
+      }
+
+      setCode('// Initializing IRIS Neural Forge...\n')
+
+      // 3. PASS KEY TO IPC DYNAMICALLY
       const result = await window.electron.ipcRenderer.invoke('start-live-coding', {
         prompt,
-        filename: file_name
+        filename: file_name,
+        geminiKey
       })
+
       if (result.success) setFilePath(result.filePath)
       setIsGenerating(false)
     }
@@ -75,14 +91,14 @@ export default function LiveCodingWidget() {
             {!isGenerating && filePath && (
               <button
                 onClick={() => window.electron.ipcRenderer.invoke('open-in-vscode', filePath)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded text-xs font-mono text-emerald-300 transition"
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded text-xs font-mono text-emerald-300 transition cursor-pointer"
               >
                 <ExternalLink className="w-3 h-3" /> OPEN IN VS CODE
               </button>
             )}
             <button
               onClick={() => setIsVisible(false)}
-              className="p-1 hover:bg-red-500/20 text-zinc-500 hover:text-red-400 rounded transition"
+              className="p-1 hover:bg-red-500/20 text-zinc-500 hover:text-red-400 rounded transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
