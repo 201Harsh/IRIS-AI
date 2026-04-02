@@ -89,15 +89,13 @@ export class GeminiLiveService {
   }
 
   async connect(): Promise<void> {
-    // 1. EXTRACT & SANITIZE API KEY
     if (window.electron?.ipcRenderer) {
       const secureKeys = await window.electron.ipcRenderer.invoke('secure-get-keys')
-      this.apiKey = secureKeys?.geminiKey || localStorage.getItem('iris_custom_api_key') || ''
+      this.apiKey = secureKeys?.geminiKey || localStorage?.getItem('iris_custom_api_key') || ''
     } else {
       this.apiKey = localStorage.getItem('iris_custom_api_key') || ''
     }
 
-    // CRITICAL: Strip hidden newlines or spaces that destroy WebSocket URLs
     this.apiKey = this.apiKey.trim()
 
     if (!this.apiKey || this.apiKey === '') {
@@ -110,7 +108,6 @@ export class GeminiLiveService {
     }
 
     try {
-      // 2. ENFORCE TIMEOUT ON AXIOS TO PREVENT HANGING
       const res = await AxiosInstance.get('/users/me', { timeout: 3000 })
       console.log(res.data.user.name)
       if (res.data) {
