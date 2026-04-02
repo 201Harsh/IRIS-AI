@@ -5,10 +5,12 @@ import {
   screen,
   globalShortcut,
   desktopCapturer,
-  nativeImage
+  nativeImage,
+  safeStorage
 } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
+import fsSync from 'fs'
 
 import clipboardy from 'clipboardy'
 import Prism from 'prismjs'
@@ -366,8 +368,26 @@ export default function registerScreenPeeler() {
       let detectedLanguage = 'javascript'
 
       try {
-        const apiKey = (import.meta.env as any).VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-        if (!apiKey) throw new Error('GEMINI_API_KEY is missing from environment variables.')
+        // 1. DYNAMICALLY READ FROM THE OS VAULT
+        let apiKey = ''
+        const secureConfigPath = path.join(app.getPath('userData'), 'iris_secure_vault.json')
+
+        if (fsSync.existsSync(secureConfigPath)) {
+          try {
+            const data = JSON.parse(fsSync.readFileSync(secureConfigPath, 'utf8'))
+            if (safeStorage.isEncryptionAvailable()) {
+              apiKey = safeStorage.decryptString(Buffer.from(data.gemini, 'base64'))
+            } else {
+              apiKey = Buffer.from(data.gemini, 'base64').toString('utf8')
+            }
+          } catch (e) {
+            console.error('Failed to read secure vault for Peeler Key:', e)
+          }
+        }
+
+        if (!apiKey || apiKey.trim() === '') {
+          throw new Error('Missing Gemini API Key. Please update it in the Command Center Vault.')
+        }
 
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
@@ -442,4 +462,3 @@ export default function registerScreenPeeler() {
     }
   })
 }
-
