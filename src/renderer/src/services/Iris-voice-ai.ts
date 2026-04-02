@@ -109,7 +109,6 @@ export class GeminiLiveService {
 
     try {
       const res = await AxiosInstance.get('/users/me', { timeout: 3000 })
-      console.log(res.data.user.name)
       if (res.data) {
         cloudUser.name = res.data?.user?.name || cloudUser.name
         cloudUser.email = res.data?.user?.email || cloudUser.email
