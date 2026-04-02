@@ -1,7 +1,5 @@
 import { InferenceClient } from '@huggingface/inference'
 
-const HF_API_KEY = import.meta.env.VITE_IMAGE_AI_API_KEY1 || 'hf_xxx'
-
 export const handleImageGeneration = async (prompt: string) => {
   const loadingEvent = new CustomEvent('image-gen', {
     detail: { prompt: prompt, loading: true, url: '' }
@@ -9,8 +7,12 @@ export const handleImageGeneration = async (prompt: string) => {
   window.dispatchEvent(loadingEvent)
 
   try {
-    if (HF_API_KEY.includes('xxx')) {
-      throw new Error('Missing API Key. Please update ImageGen.ts with your HF Token.')
+    const HF_API_KEY = localStorage.getItem('iris_hf_api_key') || ''
+
+    if (!HF_API_KEY.trim()) {
+      throw new Error(
+        'Missing Hugging Face API Key. Please enter it in the Command Center Vault (Settings Tab).'
+      )
     }
 
     const client = new InferenceClient(HF_API_KEY)
@@ -33,7 +35,7 @@ export const handleImageGeneration = async (prompt: string) => {
     })
     window.dispatchEvent(successEvent)
 
-    return `Visual generated successfully using SDXL.`
+    return `Visual generated successfully using FLUX.`
   } catch (e: any) {
     console.error('Inference Failed:', e)
 
