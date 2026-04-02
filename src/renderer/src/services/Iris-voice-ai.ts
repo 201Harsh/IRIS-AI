@@ -1610,7 +1610,7 @@ ${JSON.stringify(history)}
         this.socket.send(
           JSON.stringify({
             realtimeInput: {
-              mediaChunks: [{ mimeType: 'audio/pcm', data: base64Audio }]
+              mediaChunks: [{ mimeType: 'audio/pcm;rate=16000', data: base64Audio }]
             }
           })
         )
