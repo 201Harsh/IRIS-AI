@@ -58,8 +58,15 @@ const MainRoute = () => {
         await irisService.connect()
         setIsSystemActive(true)
         setIsMicMuted(false)
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'Connection failed')
+      } catch (err: any) {
+        console.error(err)
+        if (err.message === 'NO_API_KEY') {
+          alert(
+            '⚠️ CRITICAL ERROR: Gemini API Key is missing. Please enter it in the Command Center Vault (Settings Tab).'
+          )
+        } else {
+          alert(`Connection failed: ${err.message}`)
+        }
         setIsSystemActive(false)
       }
     } else {
