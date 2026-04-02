@@ -19,7 +19,7 @@ import TitleBar from './components/Titlebar'
 
 export type VisionMode = 'camera' | 'screen' | 'none'
 
-const Index = () => {
+const IndexRoot = () => {
   const [isOverlay, setIsOverlay] = useState(false)
 
   const [isSystemActive, setIsSystemActive] = useState(false)
@@ -218,4 +218,4 @@ const Index = () => {
   )
 }
 
-export default Index
+export default IndexRoot

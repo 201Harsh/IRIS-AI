@@ -1,9 +1,8 @@
-import MainRoute from '.'
 
 const App = () => {
   return (
     <>
-      <MainRoute />
+      <Index />
     </>
   )
 }
