@@ -58,6 +58,7 @@ const IndexRoot = () => {
         await irisService.connect()
         setIsSystemActive(true)
         setIsMicMuted(false)
+        irisService.setMute(false)
       } catch (err: any) {
         console.error(err)
         if (err.message === 'NO_API_KEY') {
@@ -73,6 +74,7 @@ const IndexRoot = () => {
       irisService.disconnect()
       setIsSystemActive(false)
       setIsMicMuted(true)
+      irisService.setMute(true)
       stopVision()
     }
   }
