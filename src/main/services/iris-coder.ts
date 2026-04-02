@@ -8,19 +8,16 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
   const PROJECTS_DIR = path.resolve(app.getPath('userData'), 'Projects')
   if (!fs.existsSync(PROJECTS_DIR)) fs.mkdirSync(PROJECTS_DIR, { recursive: true })
 
-  // 1. EXTRACT geminiKey FROM THE PAYLOAD
   ipcMain.handle('start-live-coding', async (event, { prompt, filename, geminiKey }) => {
     try {
       const filePath = path.join(PROJECTS_DIR, filename)
 
       fs.writeFileSync(filePath, '// Boss, connection established. Waiting for AI stream...\n')
 
-      // 2. STRICT ERROR CHECKING
       if (!geminiKey || geminiKey.trim() === '') {
         throw new Error('Missing Gemini API Key. Please configure it in the Command Center Vault.')
       }
 
-      // 3. INITIALIZE WITH DYNAMIC KEY
       const ai = new GoogleGenAI({ apiKey: geminiKey })
 
       const response = await ai.models.generateContentStream({
