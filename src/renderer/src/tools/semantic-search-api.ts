@@ -19,7 +19,17 @@ export const runSmartSearch = async (query: string) => {
     window.dispatchEvent(
       new CustomEvent('semantic-start', { detail: { mode: 'Search', target: query } })
     )
-    const result = await window.electron.ipcRenderer.invoke('search-files', { query })
+
+    const groqKey = localStorage.getItem('iris_groq_api_key') || ''
+
+    if (!groqKey.trim()) {
+      throw new Error(
+        'Missing Groq API Key. Please update it in the Command Center Vault (Settings Tab).'
+      )
+    }
+
+    const result = await window.electron.ipcRenderer.invoke('search-files', { query, groqKey })
+
     window.dispatchEvent(
       new CustomEvent('semantic-done', { detail: { success: !result.includes('❌'), result } })
     )
