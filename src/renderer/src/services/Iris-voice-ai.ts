@@ -89,15 +89,18 @@ export class GeminiLiveService {
   }
 
   async connect(): Promise<void> {
+    // 1. EXTRACT & SANITIZE API KEY
     if (window.electron?.ipcRenderer) {
       const secureKeys = await window.electron.ipcRenderer.invoke('secure-get-keys')
       this.apiKey = secureKeys?.geminiKey || localStorage.getItem('iris_custom_api_key') || ''
     } else {
       this.apiKey = localStorage.getItem('iris_custom_api_key') || ''
-      console.log(this.apiKey)
     }
 
-    if (!this.apiKey || this.apiKey.trim() === '') {
+    // CRITICAL: Strip hidden newlines or spaces that destroy WebSocket URLs
+    this.apiKey = this.apiKey.trim()
+
+    if (!this.apiKey || this.apiKey === '') {
       throw new Error('NO_API_KEY')
     }
 
@@ -105,14 +108,19 @@ export class GeminiLiveService {
       name: localStorage.getItem('iris_user_name') || 'Harsh Pandey',
       email: 'Not linked'
     }
+
     try {
-      const res = await AxiosInstance.get('/users/me')
-      if (res.data?.data) {
-        cloudUser.name = res.data.data.username || cloudUser.name
-        cloudUser.email = res.data.data.email || cloudUser.email
+      // 2. ENFORCE TIMEOUT ON AXIOS TO PREVENT HANGING
+      const res = await AxiosInstance.get('/users/me', { timeout: 3000 })
+      console.log(res.data.user.name)
+      if (res.data) {
+        cloudUser.name = res.data?.user?.name || cloudUser.name
+        cloudUser.email = res.data?.user?.email || cloudUser.email
       }
     } catch (e) {
-      console.warn('Could not fetch cloud user profile. Using local cache.')
+      console.warn(
+        'Could not fetch cloud user profile within time limit. Booting with local cache.'
+      )
     }
 
     const history = await getHistory()
@@ -226,13 +234,18 @@ ${JSON.stringify(history)}
             turnComplete: true
           }
         }
-
         this.socket.send(JSON.stringify(overrideMsg))
       }
     })
 
     this.socket.onopen = async () => {
       console.log('🟢 IRIS Connected')
+
+      // 3. EXPLICITLY RESUME AUDIO CONTEXT
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        await this.audioContext.resume()
+      }
+
       this.isConnected = true
       this.nextStartTime = 0
 
@@ -1219,6 +1232,13 @@ ${JSON.stringify(history)}
     this.socket.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data instanceof Blob ? await event.data.text() : event.data)
+
+        // 4. UN-MUTE GOOGLE CLOUD ERRORS
+        if (data.error) {
+          console.error('❌ Google Gemini WS Error:', data.error)
+          return
+        }
+
         const serverContent = data.serverContent
 
         if (data.toolCall) {
@@ -1515,7 +1535,9 @@ ${JSON.stringify(history)}
             }
           }
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error('❌ WebSocket Parse Error:', err, event.data)
+      }
     }
 
     this.socket.onclose = (event) => {
@@ -1589,6 +1611,7 @@ ${JSON.stringify(history)}
       this.workletNode.connect(this.audioContext.destination)
     } catch (err) {
       console.error('Mic Error:', err)
+      alert('Microphone access denied or failed to initialize.')
     }
   }
 
