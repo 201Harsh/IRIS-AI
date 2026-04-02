@@ -72,7 +72,7 @@ export class GeminiLiveService {
   private isMicMuted: boolean = false
 
   private nextStartTime: number = 0
-  public model: string = 'models/gemini-3.1-flash-live-preview'
+  public model: string = 'models/gemini-2.5-flash-native-audio-preview-12-2025'
 
   private aiResponseBuffer: string = ''
   private userInputBuffer: string = ''
