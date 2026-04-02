@@ -59,6 +59,7 @@ import { draftEmail, readEmails, sendEmail } from '@renderer/functions/gmail-man
 import { playSpotifyMusic } from '@renderer/functions/Sporify-manager'
 import { executeSmartDropZones } from '@renderer/functions/DropZone-handler-api'
 import { executeLockSystem } from '@renderer/handlers/LockSystem-handler'
+import AxiosInstance from '@renderer/config/AxiosInstance'
 
 export class GeminiLiveService {
   public socket: WebSocket | null = null
@@ -80,7 +81,7 @@ export class GeminiLiveService {
   private lastAppList: string[] = []
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_IRIS_AI_API_KEY || 'your_api_key-here'
+    this.apiKey = ''
   }
 
   setMute(muted: boolean) {
@@ -88,7 +89,33 @@ export class GeminiLiveService {
   }
 
   async connect(): Promise<void> {
-    if (!this.apiKey) return console.error('❌ No API Key')
+    // 1. DYNAMICALLY FETCH API KEY (Prioritize OS Secure Vault, fallback to localStorage)
+    if (window.electron?.ipcRenderer) {
+      const secureKeys = await window.electron.ipcRenderer.invoke('secure-get-keys')
+      this.apiKey = secureKeys?.geminiKey || localStorage.getItem('iris_custom_api_key') || ''
+    } else {
+      this.apiKey = localStorage.getItem('iris_custom_api_key') || ''
+    }
+
+    // If still no key, throw a hard error so MainRoute.tsx can catch it and show an alert
+    if (!this.apiKey || this.apiKey.trim() === '') {
+      throw new Error('NO_API_KEY')
+    }
+
+    // 2. FETCH CLOUD USER DATA (Silent fallback if offline)
+    let cloudUser = {
+      name: localStorage.getItem('iris_user_name') || 'Harsh Pandey',
+      email: 'Not linked'
+    }
+    try {
+      const res = await AxiosInstance.get('/users/me')
+      if (res.data?.data) {
+        cloudUser.name = res.data.data.username || cloudUser.name
+        cloudUser.email = res.data.data.email || cloudUser.email
+      }
+    } catch (e) {
+      console.warn('Could not fetch cloud user profile. Using local cache.')
+    }
 
     const history = await getHistory()
     const sysStats = await getSystemStatus()
@@ -118,7 +145,7 @@ ${activePersonality}
 - **💻 Master Coding Helper:** You are an elite 10x developer. Help User write clean, optimized, and bug-free code. Debug errors like a pro.
 
 ## ⛓️ MULTI-TASKING & TOOL CHAINING (CRITICAL)
-You are capable of complex, multi-step workflows. If Harsh gives a complex command, call the tools in sequence.
+You are capable of complex, multi-step workflows. If the user gives a complex command, call the tools in sequence.
 - **Example:** "Iris, find my code and send it to Harsh on WhatsApp."
   1. Call 'read_directory' or 'search_files'.
   2. Once you have the info, call 'send_whatsapp' with the content.
@@ -143,7 +170,8 @@ If the user says "Click on [Object]", "Click the button", or "Select that":
     const contextPrompt = `
 ---
 # 🌍 REAL-TIME CONTEXT
-- **User:** Harsh Pandey
+- **User Name:** ${cloudUser.name}
+- **User Email:** ${cloudUser.email}
 - **Current Physical Location:** ${locStr}
 - **Timezone:** ${locTimezone}
 - **OS:** ${sysStats?.os.type || 'Unknown'}
