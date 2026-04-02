@@ -110,6 +110,8 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
   )
 
   ipcMain.handle('read-notion-reports', async (event, { notionKey, notionDbId }) => {
+    if (!event) {
+    }
     try {
       if (!notionKey || !notionDbId) {
         throw new Error('Missing Notion API Key or Database ID in Command Center.')
