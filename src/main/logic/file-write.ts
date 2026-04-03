@@ -9,7 +9,6 @@ export default function registerFileWrite(ipcMain: IpcMain) {
 
       const targetPath = isAbsolutePath ? fileName : path.join(app.getPath('desktop'), fileName)
 
-      console.log(`✍️ Writing to: ${targetPath}`)
 
       await fs.writeFile(targetPath, content, 'utf-8')
       return `Success. File saved to: ${targetPath}`
