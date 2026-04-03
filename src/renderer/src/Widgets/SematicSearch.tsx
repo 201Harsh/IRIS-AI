@@ -74,12 +74,10 @@ export default function SemanticWidget() {
   useEffect(() => {
     window.addEventListener('semantic-start', handleStart)
     window.addEventListener('semantic-done', handleDone)
-    // @ts-ignore
     window.electron.ipcRenderer.on('semantic-progress', handleProgress)
     return () => {
       window.removeEventListener('semantic-start', handleStart)
       window.removeEventListener('semantic-done', handleDone)
-      // @ts-ignore
       window.electron.ipcRenderer.removeAllListeners('semantic-progress')
     }
   }, [handleStart, handleProgress, handleDone])
@@ -93,7 +91,6 @@ export default function SemanticWidget() {
           animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
           exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          // 🚨 CENTERED MASSIVE WIDGET CLASSES HERE 🚨
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] z-9999 text-white font-sans flex flex-col justify-center"
         >
           <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
