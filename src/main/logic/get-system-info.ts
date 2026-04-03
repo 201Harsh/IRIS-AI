@@ -57,12 +57,12 @@ export default function registerSystemHandlers(ipcMain: IpcMain) {
       const appsArray = Array.isArray(rawData) ? rawData : [rawData]
 
       return appsArray
-        .filter((a: any) => a && a.Name && a.AppID) // Must have Name & ID
+        .filter((a: any) => a && a.Name && a.AppID) 
         .map((a: any) => ({
           name: a.Name.trim(),
           id: a.AppID.trim()
         }))
-        .sort((a, b) => a.name.localeCompare(b.name)) // Sort A-Z
+        .sort((a, b) => a.name.localeCompare(b.name)) 
     } catch (e) {
       console.error('App Fetch Error:', e)
       return []
@@ -80,7 +80,7 @@ export default function registerSystemHandlers(ipcMain: IpcMain) {
         free: (freeMem / 1024 ** 3).toFixed(1) + ' GB',
         usedPercentage: (((totalMem - freeMem) / totalMem) * 100).toFixed(1)
       },
-      temperature: 50, // Mock temp as Node can't read sensors easily without native modules
+      temperature: 50,
       os: {
         type: 'Windows 11',
         uptime: (os.uptime() / 3600).toFixed(1) + 'h'
