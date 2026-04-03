@@ -5,7 +5,6 @@ export const lockSystemSchema = {
 }
 
 export const executeLockSystem = async () => {
-  console.log('🔒 Executing Tactical Lockdown...')
 
   if (window.electron?.ipcRenderer) {
     window.electron.ipcRenderer.send('trigger-lockdown')
