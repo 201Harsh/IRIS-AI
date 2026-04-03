@@ -15,8 +15,8 @@ asarUnpack:
 win:
   executableName: iris-ai
   target:
-    - target: nsis # Generates the professional Setup Wizard (.exe)
-    - target: msi # Generates the MSI installer (.msi)
+    - target: nsis 
+    - target: msi 
 
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
