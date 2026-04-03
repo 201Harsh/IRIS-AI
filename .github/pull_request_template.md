@@ -53,3 +53,4 @@ Before:
 After:
 [React UI] -> [IPC invoke] -> [Validated Payload] -> [New State]
 ```
+
