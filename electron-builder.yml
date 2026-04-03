@@ -14,20 +14,29 @@ asarUnpack:
 
 win:
   executableName: iris-ai
+  icon: build/icon.ico # <-- THIS FIXES THE MISSING ICON ON THE FILE ITSELF
   target:
-    - target: nsis 
-    - target: msi 
+    - target: nsis
+    - target: msi
 
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
 
-  oneClick: false 
-  allowToChangeInstallationDirectory: true 
-  createDesktopShortcut: always 
-  createStartMenuShortcut: true 
-  runAfterFinish: true 
+  # --- THE NEON EMERALD THEME CONFIG ---
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerSidebar: build/installerSidebar.bmp # The left panel image!
+  uninstallerSidebar: build/installerSidebar.bmp
+  installerHeaderIcon: build/icon.ico # Small logo in the top right
+
+  # --- MULTI-STEP WIZARD ---
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  runAfterFinish: true
 
 msi:
   oneClick: false
