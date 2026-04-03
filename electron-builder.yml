@@ -27,7 +27,7 @@ nsis:
   allowToChangeInstallationDirectory: true 
   createDesktopShortcut: always 
   createStartMenuShortcut: true 
-  runAfterFinish: true # Step: Launch after closing installer
+  runAfterFinish: true 
 
 msi:
   oneClick: false
