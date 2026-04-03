@@ -14,7 +14,6 @@ if (process.contextIsolated) {
     })
     contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
-    console.error('Preload Error:', error)
   }
 } else {
   // @ts-ignore (define in dts)

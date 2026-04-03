@@ -23,7 +23,6 @@ const saveState = async (state: ScanState) => {
     await fs.mkdir(getStateDir(), { recursive: true })
     await fs.writeFile(getStateFilePath(state.dirPath), JSON.stringify(state, null, 2))
   } catch (e) {
-    console.error('Failed to save scan state:', e)
   }
 }
 
@@ -190,7 +189,6 @@ export default function registerOracle({ ipcMain }: { ipcMain: IpcMain }) {
           })
           await sleep(3500)
         } catch (apiError) {
-          console.error(`Skipping ${fileName} due to API Error.`)
           await sleep(5000)
         }
       }
