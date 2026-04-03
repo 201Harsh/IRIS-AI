@@ -11,7 +11,6 @@ const runCommand = (cmd: string): Promise<string> => {
 }
 
 export default function registerFileScanner(ipcMain: IpcMain) {
-  console.log('🔵 [Main] Registering File Scanner...')
 
   ipcMain.removeHandler('get-running-apps')
 
@@ -35,7 +34,6 @@ export default function registerFileScanner(ipcMain: IpcMain) {
 
       return [] 
     } catch (e) {
-      console.error('App Scan Error:', e)
       return []
     }
   })

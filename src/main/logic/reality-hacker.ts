@@ -28,7 +28,6 @@ export default function registerRealityHacker(ipcMain: IpcMain) {
 
       await new Promise((resolve) => setTimeout(resolve, 3000))
 
-      // 🟩 1. THE OMNIPRESENT IRIS THEME (UNIVERSAL)
       if (mode === 'emerald_theme' || mode === 'both') {
         const themeScript = `
           const style = document.createElement('style');
@@ -101,7 +100,6 @@ export default function registerRealityHacker(ipcMain: IpcMain) {
         await hackerWindow.webContents.executeJavaScript(themeScript)
       }
 
-      // 💥 2. THE SMART ROUTING VIRUS (EXPANDED)
       if ((mode === 'rewrite' || mode === 'both') && customText) {
         const rewriteScript = `
           const hostname = window.location.hostname;
@@ -236,7 +234,6 @@ export default function registerRealityHacker(ipcMain: IpcMain) {
 
       return { success: true }
     } catch (error: any) {
-      console.error('Hacker Protocol Failed:', error)
       return { success: false, error: error.message }
     }
   })

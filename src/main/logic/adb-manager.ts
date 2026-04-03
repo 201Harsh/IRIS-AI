@@ -32,7 +32,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
       await fs.writeFile(historyPath, JSON.stringify(history, null, 2))
     } catch (e) {
-      console.error('Failed to save device history', e)
     }
   }
 
@@ -280,7 +279,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
       return { success: false, error: 'Invalid direction.' }
     } catch (e: any) {
-      console.error(e)
       return { success: false, error: e.message }
     }
   })
@@ -368,7 +366,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
         try {
           await execAsync(`adb ${target} shell svc bluetooth ${action}`, { timeout: 5000 })
         } catch (e) {
-          console.log('svc bluetooth failed (Code 137). Triggering fallback cmd...')
           await execAsync(`adb ${target} shell cmd bluetooth_manager ${action}`, { timeout: 5000 })
         }
         return { success: true }
@@ -407,7 +404,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
 
       if (cleanSetting === 'flashlight' || cleanSetting === 'torch') {
-        // Step 1: Wake up the screen
         await execAsync(`adb ${target} shell input keyevent KEYCODE_WAKEUP`)
 
         await execAsync(`adb ${target} shell cmd statusbar expand-settings`)
@@ -421,7 +417,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
 
       return { success: false, error: `I don't know how to toggle: ${setting}` }
     } catch (e: any) {
-      console.error('Hardware Toggle Error:', e)
       return { success: false, error: e.message }
     }
   })

@@ -9,7 +9,7 @@ import {
 } from 'react-icons/ri'
 import { GiPowerButton } from 'react-icons/gi'
 import { irisService } from '@renderer/services/Iris-voice-ai'
-import { VisionMode } from '../App'
+import { VisionMode } from '@renderer/IndexRoot'
 
 interface OverlayProps {
   isSystemActive: boolean
@@ -36,7 +36,6 @@ const MiniOverlay = ({
   const analyzerRef = useRef<AnalyserNode | null>(null)
   const dataArrayRef = useRef<Uint8Array | any | null>(null)
 
-  // 1. Audio Visualizer
   useEffect(() => {
     if (isSystemActive && irisService.analyser) {
       analyzerRef.current = irisService.analyser
@@ -55,23 +54,20 @@ const MiniOverlay = ({
     }
   }, [isSystemActive])
 
-  // 2. Vision Handling (Toggle Logic)
   const handleVisionClick = (mode: 'camera' | 'screen') => {
     if (isVideoOn && visionMode === mode) {
-      stopVision() // Click active mode -> Turn Off
+      stopVision()
     } else {
-      startVision(mode) // Click new/inactive mode -> Start/Switch
+      startVision(mode)
     }
   }
 
   const expand = () => {
-    // @ts-ignore
     window.electron.ipcRenderer.send('toggle-overlay')
   }
 
   return (
     <div className="w-full h-full flex items-center justify-between px-3 bg-zinc-950/90 backdrop-blur-xl rounded-full border border-emerald-500/30 drag-region overflow-hidden">
-      {/* STATUS DOT */}
       <div className="flex items-center gap-3 no-drag">
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 ${isSystemActive ? (isTalking ? 'border-emerald-500 bg-emerald-500/20 shadow-[0_0_15px_#10b981]' : 'border-emerald-500/50 bg-emerald-900/20') : 'border-zinc-700 bg-zinc-900'}`}
@@ -82,9 +78,7 @@ const MiniOverlay = ({
         </div>
       </div>
 
-      {/* CONTROLS */}
       <div className="flex items-center gap-2 no-drag">
-        {/* Mic */}
         <button
           onClick={toggleMic}
           disabled={!isSystemActive}
@@ -93,7 +87,6 @@ const MiniOverlay = ({
           {isMicMuted ? <RiMicOffLine size={18} /> : <RiMicLine size={18} />}
         </button>
 
-        {/* Power */}
         <button
           onClick={toggleSystem}
           className={`p-3 rounded-full border transition-all duration-500 shadow-lg mx-1 ${isSystemActive ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-zinc-800 border-zinc-600 text-zinc-500 hover:text-red-400'}`}
@@ -101,7 +94,6 @@ const MiniOverlay = ({
           <GiPowerButton size={20} className={isSystemActive ? 'animate-pulse' : ''} />
         </button>
 
-        {/* Camera Toggle */}
         <button
           onClick={() => handleVisionClick('camera')}
           disabled={!isSystemActive}
@@ -111,7 +103,6 @@ const MiniOverlay = ({
           <RiCameraLine size={18} />
         </button>
 
-        {/* Screen Toggle */}
         <button
           onClick={() => handleVisionClick('screen')}
           disabled={!isSystemActive}
@@ -122,7 +113,6 @@ const MiniOverlay = ({
         </button>
       </div>
 
-      {/* EXPAND */}
       <div className="pl-4 border-l border-emerald-500/20 no-drag flex items-center gap-2">
         <button
           onClick={expand}

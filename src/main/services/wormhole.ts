@@ -24,7 +24,6 @@ export default function registerWormhole({ ipcMain }: { ipcMain: IpcMain }) {
         password: null
       }
     } catch (err) {
-      console.error('Cloudflare Wormhole Error:', err)
       return { success: false, error: String(err) }
     }
   })

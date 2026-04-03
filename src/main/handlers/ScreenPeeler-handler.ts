@@ -149,7 +149,6 @@ export default function registerScreenPeeler() {
         fs.unlink(filePath).catch(() => {})
       })
     } catch (error) {
-      console.error('Peeler Forge Error:', error)
     }
   }
 
@@ -380,7 +379,6 @@ export default function registerScreenPeeler() {
               apiKey = Buffer.from(data.gemini, 'base64').toString('utf8')
             }
           } catch (e) {
-            console.error('Failed to read secure vault for Peeler Key:', e)
           }
         }
 
@@ -429,7 +427,6 @@ export default function registerScreenPeeler() {
         }
 
         await executeClipboardyWrite(extractedCode)
-        console.log('📋 Auto-Copied to OS Clipboard via Gemini 2.5.')
 
         const grammar = Prism.languages[detectedLanguage] || Prism.languages.javascript
         const highlightedHTML = Prism.highlight(extractedCode, grammar, detectedLanguage)
@@ -449,7 +446,6 @@ export default function registerScreenPeeler() {
           )
         }
       } catch (error: any) {
-        console.error('Extraction failed:', error)
         if (resultWindow && !resultWindow.isDestroyed()) {
           resultWindow.webContents.executeJavaScript(
             `window.injectError('${error.message || 'Engine Failure'}');`
@@ -457,7 +453,6 @@ export default function registerScreenPeeler() {
         }
       }
     } catch (error) {
-      console.error('Peeler Crash:', error)
     }
   })
 }

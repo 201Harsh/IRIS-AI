@@ -36,7 +36,6 @@ export default function registerIrisCoder({ ipcMain, app }: { ipcMain: IpcMain; 
       fs.writeFileSync(filePath, fullCode)
       return { success: true, filePath }
     } catch (err) {
-      console.error('Coding Error:', err)
       event.sender.send('live-code-chunk', `\n\n❌ [SYSTEM FAILURE]: ${String(err)}`)
       return { success: false, error: String(err) }
     }

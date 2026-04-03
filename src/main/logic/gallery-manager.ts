@@ -37,7 +37,6 @@ export default function registerGalleryHandlers(ipcMain: IpcMain) {
         })
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     } catch (error) {
-      console.error('❌ Gallery Load Error:', error)
       return []
     }
   })
@@ -57,11 +56,9 @@ export default function registerGalleryHandlers(ipcMain: IpcMain) {
       const buffer = Buffer.from(data, 'base64')
 
       fs.writeFileSync(filePath, buffer)
-      console.log(`🖼️ Saved: ${fileName}`)
 
       return { success: true, path: filePath }
     } catch (error: any) {
-      console.error('❌ Save Error:', error)
       return { success: false, error: error.message }
     }
   })
@@ -100,7 +97,6 @@ export default function registerGalleryHandlers(ipcMain: IpcMain) {
       }
       return { canceled: true }
     } catch (error: any) {
-      console.error('Export Error:', error)
       return { success: false, error: error.message }
     }
   })

@@ -1,6 +1,5 @@
 export const sendWhatsAppMessage = async (name: string, message: string, filePath?: string) => {
   try {
-    console.log(`🚀 Sending to ${name}`)
 
     if (filePath) {
       await window.electron.ipcRenderer.invoke('copy-file-to-clipboard', filePath)
@@ -55,13 +54,10 @@ export const scheduleWhatsAppMessage = async (
     return await sendWhatsAppMessage(name, message, filePath)
   }
 
-  console.log(
-    `⏰ Scheduling message for ${name} in ${delayMinutes} mins (File: ${filePath ? 'Yes' : 'No'})`
-  )
+ 
 
   setTimeout(
     () => {
-      console.log(`⏰ Executing scheduled message for ${name}`)
       window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'type', text: '' }])
 
       sendWhatsAppMessage(name, message, filePath)
@@ -71,3 +67,4 @@ export const scheduleWhatsAppMessage = async (
 
   return `✅ Scheduled! I will send the message to ${name} in ${delayMinutes} minutes.`
 }
+

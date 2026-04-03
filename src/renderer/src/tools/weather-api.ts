@@ -40,7 +40,6 @@ export const fetchWeather = async (city: string) => {
 
     return `The current weather in ${finalData.city} is ${finalData.temperature}°C with ${finalData.condition} conditions. Wind speed is ${finalData.windSpeed} km/h.`
   } catch (error: any) {
-    console.error('Weather API Error:', error)
     return `Failed to get weather: ${error.message}`
   }
 }

@@ -61,7 +61,6 @@ export default function registerTelekinesis({ ipcMain }: { ipcMain: IpcMain }) {
       }
       return { success: true }
     } catch (err) {
-      console.error('Telekinesis Failed:', err)
       return { success: false, error: String(err) }
     }
   })

@@ -41,15 +41,14 @@ export default function registerDropZoneControl(ipcMain: IpcMain) {
 
       await mouse.setPosition(start)
       await new Promise((r) => setTimeout(r, 200))
-      await mouse.pressButton(Button.LEFT) // Grab
+      await mouse.pressButton(Button.LEFT)
       await new Promise((r) => setTimeout(r, 100))
-      await mouse.move(pathPoints) // Drag
+      await mouse.move(pathPoints) 
       await new Promise((r) => setTimeout(r, 100))
-      await mouse.releaseButton(Button.LEFT) // Drop
+      await mouse.releaseButton(Button.LEFT)
 
       return true
     } catch (e) {
-      console.error('Drag failed:', e)
       return false
     }
   })
@@ -64,7 +63,6 @@ export default function registerDropZoneControl(ipcMain: IpcMain) {
       await fs.rename(sourcePath, destPath)
       return { success: true, destPath }
     } catch (e: any) {
-      console.error('File move failed:', e)
       return { success: false, error: e.message }
     }
   })

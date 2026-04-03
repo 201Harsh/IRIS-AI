@@ -83,7 +83,6 @@ export default function registerWebAgent(ipcMain: IpcMain) {
         return `I've opened ${smartRoute.source} for you.`
       }
 
-      console.log('🕵️ Shadow Agent: Fetching Context...')
       browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
@@ -134,7 +133,6 @@ export default function registerWebAgent(ipcMain: IpcMain) {
 
       return `I've opened the link. Here is a quick summary:\n${summary.substring(0, 500)}...`
     } catch (error: any) {
-      console.error('❌ Agent Error:', error.message)
       if (browser) await browser.close()
       return "I opened the browser, but couldn't read the content."
     }

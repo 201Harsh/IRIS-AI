@@ -69,7 +69,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
         setStatus('authorized')
       } catch (error) {
-        console.error('Security Check Failed:', error)
         logout()
         navigate('/login', { replace: true })
       }
@@ -114,7 +113,6 @@ const AppRouter = () => {
             navigate('/')
           }
         } catch (e) {
-          console.error('Failed to parse OAuth URL', e)
         }
       })
     }

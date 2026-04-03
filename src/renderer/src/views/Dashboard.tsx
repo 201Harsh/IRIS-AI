@@ -80,7 +80,6 @@ export default function DashboardView({
         ])
         setModelsLoaded(true)
       } catch (e) {
-        console.error('Dashboard models failed to load', e)
       }
     }
     loadModels()
@@ -126,23 +125,23 @@ export default function DashboardView({
 
             const mirroredX = vw - x - width
 
-            ctx.strokeStyle = '#34d399' // emerald-400
+            ctx.strokeStyle = '#34d399'
             ctx.lineWidth = 4
             const l = 25 
 
             ctx.beginPath()
             ctx.moveTo(mirroredX, y + l)
             ctx.lineTo(mirroredX, y)
-            ctx.lineTo(mirroredX + l, y) // TL
+            ctx.lineTo(mirroredX + l, y) 
             ctx.moveTo(mirroredX + width - l, y)
             ctx.lineTo(mirroredX + width, y)
-            ctx.lineTo(mirroredX + width, y + l) // TR
+            ctx.lineTo(mirroredX + width, y + l) 
             ctx.moveTo(mirroredX, y + height - l)
             ctx.lineTo(mirroredX, y + height)
-            ctx.lineTo(mirroredX + l, y + height) // BL
+            ctx.lineTo(mirroredX + l, y + height)
             ctx.moveTo(mirroredX + width - l, y + height)
             ctx.lineTo(mirroredX + width, y + height)
-            ctx.lineTo(mirroredX + width, y + height - l) // BR
+            ctx.lineTo(mirroredX + width, y + height - l)
             ctx.stroke()
 
             const expressions = detection.expressions
@@ -183,7 +182,7 @@ export default function DashboardView({
       videoElementRef.current = node
       if (node && activeStream && isVideoOn) {
         node.srcObject = activeStream
-        node.onloadedmetadata = () => node.play().catch((e) => console.warn(e))
+        node.onloadedmetadata = () => node.play().catch((e) => {})
       }
     },
     [activeStream, isVideoOn, visionMode]
@@ -193,7 +192,7 @@ export default function DashboardView({
     (node: HTMLVideoElement | null) => {
       if (node && activeStream && isVideoOn) {
         node.srcObject = activeStream
-        node.onloadedmetadata = () => node.play().catch((e) => console.warn(e))
+        node.onloadedmetadata = () => node.play().catch((e) => {})
       }
     },
     [activeStream, isVideoOn, visionMode]

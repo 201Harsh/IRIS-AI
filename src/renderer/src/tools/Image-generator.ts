@@ -23,7 +23,6 @@ export const handleImageGeneration = async (prompt: string) => {
     })
 
     const imageUrl = URL.createObjectURL(imageBlob)
-    console.log('✅ Generated URL:', imageUrl)
 
     const successEvent = new CustomEvent('image-gen', {
       detail: {
@@ -37,7 +36,6 @@ export const handleImageGeneration = async (prompt: string) => {
 
     return `Visual generated successfully using FLUX.`
   } catch (e: any) {
-    console.error('Inference Failed:', e)
 
     let errorMessage = e.message
 

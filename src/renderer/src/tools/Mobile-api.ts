@@ -48,7 +48,6 @@ export const swipeMobileScreen = async (direction: string) => {
       return `Failed to swipe. Reason: ${res.error}`
     }
   } catch (error) {
-    console.error(error)
     return `System Error: Mobile bridge offline.`
   }
 }
@@ -58,7 +57,6 @@ export const fetchMobileInfo = async () => {
     const result = await window.electron.ipcRenderer.invoke('get-mobile-info-ai')
     return result
   } catch (e) {
-    console.error(e)
     return 'System Error: Mobile telemetry bridge is offline.'
   }
 }
@@ -117,7 +115,6 @@ export const toggleMobileHardware = async (setting: string, state: boolean) => {
       return `Failed to toggle ${setting}. Reason: ${res.error}`
     }
   } catch (error) {
-    console.log(error)
     return `System Error: Mobile bridge offline.`
   }
 }

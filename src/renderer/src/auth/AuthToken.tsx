@@ -27,7 +27,6 @@ export default function AuthInitializer() {
           localStorage.setItem('iris_cloud_token', res.data.refreshToken)
         }
       } catch (err) {
-        console.error('Auth Initializer failed to refresh token:', err)
         setAccessToken(null)
         localStorage.removeItem('iris_cloud_token')
       } finally {

@@ -103,7 +103,6 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
         return { success: true, url: (newPage as any).url, summary: extractedSummary }
       } catch (error) {
-        console.error(error)
         return { success: false, error: String(error) }
       }
     }
@@ -111,7 +110,6 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
   ipcMain.handle('read-notion-reports', async (event, { notionKey, notionDbId }) => {
     if (!event) {
-      console.error('No event object provided in read-notion-reports handler.')
     }
     try {
       if (!notionKey || !notionDbId) {
@@ -144,7 +142,6 @@ export default function registerDeepResearch({ ipcMain }: { ipcMain: IpcMain }) 
 
       return { success: true, data: results || 'No reports found.' }
     } catch (error) {
-      console.error(error)
       return { success: false, error: String(error) }
     }
   })

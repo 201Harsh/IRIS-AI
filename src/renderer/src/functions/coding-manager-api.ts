@@ -16,11 +16,9 @@ const activateCodingMode = async () => {
     const targetX = Math.round(screen.width * 0.35)
     const targetY = Math.round(screen.height * 0.3)
 
-    console.log(`🎯 Aiming for YouTube Video at (${targetX}, ${targetY})...`)
 
     await window.electron.ipcRenderer.invoke('ghost-click-coordinate', { x: targetX, y: targetY })
   } catch (e) {
-    console.error('Screen calculation failed, defaulting to center click.')
     await window.electron.ipcRenderer.invoke('ghost-sequence', [{ type: 'click' }])
   }
 

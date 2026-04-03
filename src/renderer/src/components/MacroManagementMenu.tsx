@@ -23,7 +23,6 @@ export default function MacroManagementMenu({ loadMacroToCanvas }: MacroMenuProp
       const res = await (window as any).electron.ipcRenderer.invoke('load-workflows')
       if (res.success) setWorkflows(res.workflows || [])
     } catch (e) {
-      console.error('Failed to load patterns', e)
     }
   }
 

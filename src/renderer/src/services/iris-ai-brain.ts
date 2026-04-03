@@ -34,7 +34,6 @@ export const saveCoreMemory = async (fact: string): Promise<string> => {
     }
     return '❌ System failure: Could not save to permanent memory.'
   } catch (error) {
-    console.error('Memory Save Error:', error)
     return `❌ System failure: ${String(error)}`
   }
 }
@@ -48,7 +47,6 @@ export const retrieveCoreMemory = async (): Promise<string> => {
     }
     return 'The permanent memory bank is currently empty.'
   } catch (error) {
-    console.error('Memory Retrieve Error:', error)
     return `❌ System failure: ${String(error)}`
   }
 }

@@ -49,7 +49,6 @@ const GalleryView = () => {
       const data = await window.electron.ipcRenderer.invoke('get-gallery')
       if (Array.isArray(data)) setAllImages(data)
     } catch (e) {
-      console.error('Gallery Fetch Error:', e)
     }
   }
 
@@ -243,7 +242,6 @@ const GalleryView = () => {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-9999 bg-black/90 flex items-center justify-center"
           >
-            {/* CLOSE BUTTON */}
             <button
               onClick={() => setSelectedImage(null)}
               className="cursor-pointer absolute top-6 right-6 p-3 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full text-zinc-400 transition-all border border-white/5 z-50"

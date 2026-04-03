@@ -1,17 +1,16 @@
 import { IpcMain } from 'electron'
 import { exec } from 'child_process'
 
-// 🛡️ CRITICAL SYSTEM PROCESSES (DO NOT KILL)
 const PROTECTED_PROCESSES = [
-  'explorer.exe', // The Desktop / Taskbar
-  'dwm.exe', // Desktop Window Manager
-  'svchost.exe', // Service Host
-  'lsass.exe', // Local Security Authority
-  'csrss.exe', // Client Server Runtime
-  'wininit.exe', // Windows Initialization
-  'winlogon.exe', // Windows Logon
-  'services.exe', // Services
-  'taskmgr.exe', // Task Manager (Optional, but usually good to keep)
+  'explorer.exe', 
+  'dwm.exe', 
+  'svchost.exe', 
+  'lsass.exe',
+  'csrss.exe',
+  'wininit.exe', 
+  'winlogon.exe', 
+  'services.exe', 
+  'taskmgr.exe', 
   'system',
   'registry'
 ]
@@ -82,14 +81,12 @@ const PROCESS_NAMES: Record<string, string> = {
   settings: 'SystemSettings.exe',
   'task manager': 'Taskmgr.exe',
   photos: 'Microsoft.Photos.exe',
-  explorer: 'explorer.exe', // ⚠️ The dangerous one
+  explorer: 'explorer.exe',
   files: 'explorer.exe'
 }
 
 export default function registerAppLauncher(ipcMain: IpcMain) {
-  console.log('🚀 [Main] Registering App Launcher & Terminator...')
 
-  // --- OPEN APP ---
   ipcMain.removeHandler('open-app')
   ipcMain.handle('open-app', async (_event, appName: string) => {
     return new Promise((resolve) => {
@@ -104,29 +101,24 @@ export default function registerAppLauncher(ipcMain: IpcMain) {
     })
   })
 
-  // --- CLOSE APP (FIXED) ---
   ipcMain.removeHandler('close-app')
   ipcMain.handle('close-app', async (_event, appName: string) => {
     return new Promise((resolve) => {
       const lowerName = appName.toLowerCase().trim()
       let processName = PROCESS_NAMES[lowerName]
 
-      // If not found in map, assume it's an exe
       if (!processName) {
         processName = appName.endsWith('.exe') ? appName : `${appName}.exe`
       }
 
-      // 🛑 SECURITY CHECK: Prevent killing system shell
       if (PROTECTED_PROCESSES.includes(processName.toLowerCase())) {
-        console.warn(`⚠️ Blocked attempt to kill system process: ${processName}`)
         resolve({
           success: false,
           error: `Security Protocol: I cannot close '${appName}' (System Critical Process). Doing so would crash your PC.`
         })
-        return // Stop execution here
+        return
       }
 
-      // Proceed with termination
       const cmd = `taskkill /IM "${processName}" /F /T`
 
       exec(cmd, (error) => {
@@ -141,7 +133,6 @@ export default function registerAppLauncher(ipcMain: IpcMain) {
 }
 
 function executeCommand(command: string, appName: string, resolve: any) {
-  console.log(`🚀 IRIS Launching Direct: ${command}`)
   exec(command, (error) => {
     if (error) {
       launchViaPowerShell(appName, resolve)
@@ -155,7 +146,6 @@ function launchViaPowerShell(appName: string, resolve: any) {
   const psCommand = `powershell -Command "Get-StartApps | Where-Object { $_.Name -like '*${appName}*' } | Select-Object -First 1 -ExpandProperty AppID"`
 
   exec(psCommand, (err, stdout) => {
-    if (err) console.warn(`PowerShell search failed for ${appName}:`, err)
 
     const appId = stdout.trim()
 

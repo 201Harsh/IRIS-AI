@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 export const handleOpenMap = async (location: string) => {
-  console.log(`🗺️ Opening Map for: ${location}`)
 
   try {
     const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
@@ -27,7 +26,6 @@ export const handleOpenMap = async (location: string) => {
 }
 
 export const handleNavigation = async (origin: string, destination: string) => {
-  console.log(`🗺️ Calculating Route: ${origin} ➡ ${destination}`)
 
   try {
     const res1 = await axios.get(

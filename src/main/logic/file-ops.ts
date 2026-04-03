@@ -3,7 +3,6 @@ import fs from 'fs/promises'
 
 export default function registerFileOps(ipcMain: IpcMain) {
   ipcMain.handle('file-ops', async (_event, { operation, sourcePath, destPath }) => {
-    console.log(`⚡ File Op: ${operation} on ${sourcePath} -> ${destPath || 'N/A'}`)
 
     try {
       switch (operation) {
@@ -25,7 +24,6 @@ export default function registerFileOps(ipcMain: IpcMain) {
           return `Error: Unknown operation '${operation}'`
       }
     } catch (err) {
-      console.error(err)
       return `System Error: ${err}`
     }
   })

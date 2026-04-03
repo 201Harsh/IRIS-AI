@@ -136,7 +136,6 @@ export default function registerGmailHandlers(ipcMain: IpcMain) {
         uiData: uiDataArray
       }
     } catch (e: any) {
-      console.error('Gmail Read Error:', e)
       return { speechText: `❌ Gmail Error: ${e.message}`, uiData: [] }
     }
   })

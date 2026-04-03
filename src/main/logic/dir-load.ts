@@ -44,7 +44,6 @@ const getSystemPath = (name: any) => {
   try {
     return app.getPath(name)
   } catch (e) {
-    console.warn(`⚠️ Electron failed to resolve '${name}'. Using fallback.`)
     const home = os.homedir()
     switch (name) {
       case 'desktop':
@@ -89,7 +88,6 @@ export default function registerDirLoader(ipcMain: IpcMain) {
         targetPath = path.join(os.homedir(), rawInput)
       }
 
-      console.log(`📂 IRIS Scanning: '${targetPath}'`)
 
       try {
         const stats = await fs.stat(targetPath)
@@ -155,7 +153,6 @@ export default function registerDirLoader(ipcMain: IpcMain) {
         content: results
       })
     } catch (err) {
-      console.error(err)
       return `System Error: ${err}`
     }
   })

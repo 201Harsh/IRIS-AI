@@ -69,7 +69,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
         const newNotifs = currentNotifs.filter((n) => !knownNotifs.current.includes(n))
 
         if (newNotifs.length > 0) {
-          console.log('🚨 NEW NOTIFICATION DETECTED:', newNotifs[0])
           window.dispatchEvent(
             new CustomEvent('ai-force-speak', {
               detail: `System Alert: The user just received a new mobile notification. Announce it out loud briefly: "${newNotifs[0]}"`
@@ -79,7 +78,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
         }
       }
     } catch (e) {
-      console.error('Notification Poll Error:', e)
     }
   }
 

@@ -105,7 +105,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
           geminiKey
         })
       } catch (e) {
-        console.error('Vault save failed, but local storage is set.', e)
       }
     }
 

@@ -21,7 +21,6 @@ export const getSystemStatus = async (): Promise<SystemStats | null> => {
   try {
     return await window.electron.ipcRenderer.invoke('get-system-stats')
   } catch (error) {
-    console.error('Stats Error:', error)
     return null
   }
 }
@@ -31,7 +30,6 @@ export const getAllApps = async (): Promise<AppItem[]> => {
     const apps = await window.electron.ipcRenderer.invoke('get-installed-apps')
     return Array.isArray(apps) ? apps : []
   } catch (error) {
-    console.error('App Fetch Error:', error)
     return []
   }
 }

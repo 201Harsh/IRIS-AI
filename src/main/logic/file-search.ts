@@ -209,7 +209,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
       }
 
       const runNativeCrawler = async () => {
-        // 3. INITIALIZE GROQ WITH THE KEY PASSED FROM LOCALSTORAGE
         const groq = new Groq({ apiKey: groqKey })
 
         const prompt = `
@@ -353,7 +352,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
         return `No files found matching [ ${searchParams.keywords.join(', ')} ]`
       }
     } catch (err) {
-      console.error(err)
       return `❌ System Error: ${String(err)}`
     }
   })

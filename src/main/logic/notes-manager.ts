@@ -18,10 +18,8 @@ export default function registerNotesHandlers(ipcMain: IpcMain) {
       const fileContent = `# ${title}\n\n${content}`
 
       fs.writeFileSync(filePath, fileContent, 'utf-8')
-      console.log(`📝 Note Saved: ${fileName}`)
       return { success: true, path: filePath }
     } catch (error: any) {
-      console.error('Save Note Error:', error)
       return { success: false, error: error.message }
     }
   })

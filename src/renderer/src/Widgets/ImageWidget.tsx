@@ -17,7 +17,6 @@ export default function ImageWidget() {
 
       setPrompt(prompt)
 
-      // 1. Loading State
       if (loading) {
         setIsVisible(true)
         setLoading(true)
@@ -27,7 +26,6 @@ export default function ImageWidget() {
         return
       }
 
-      // 2. Error State
       if (error) {
         setHasError(true)
         setLoading(false)
@@ -67,7 +65,6 @@ export default function ImageWidget() {
       reader.onloadend = async () => {
         const base64data = reader.result
 
-        console.log('💾 Auto-saving to Gallery...')
         await window.electron.ipcRenderer.invoke('save-image-to-gallery', {
           title: currentPrompt,
           base64Data: base64data
@@ -77,7 +74,6 @@ export default function ImageWidget() {
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return
-      console.error('Auto-Save Failed:', err)
       setHasError(true)
       setDebugMsg('Failed to download/save image.')
       setLoading(false)

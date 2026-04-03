@@ -13,7 +13,6 @@ export const deployWormhole = async (port: number): Promise<string> => {
 
     return '❌ Failed to open wormhole. Check if the port is valid.'
   } catch (error) {
-    console.error('Wormhole Deployment Error:', error)
     return `❌ System failure: ${String(error)}`
   }
 }
@@ -24,7 +23,6 @@ export const closeWormhole = async (): Promise<string> => {
     window.dispatchEvent(new CustomEvent('wormhole-closed'))
     return '✅ Wormhole closed securely. Port is no longer exposed.'
   } catch (error) {
-    console.error('Wormhole Close Error:', error)
     return `❌ System failure: ${String(error)}`
   }
 }

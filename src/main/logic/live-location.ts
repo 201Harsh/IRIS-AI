@@ -17,7 +17,6 @@ export default function registerLocationHandlers(ipcMain: IpcMain) {
 
   ipcMain.handle('get-live-location', async () => {
     try {
-      console.log('🌍 Activating Windows Hardware Location Service...')
 
       const psCommand = `Add-Type -AssemblyName System.Device; $w = New-Object System.Device.Location.GeoCoordinateWatcher; $w.Start(); $t = 0; while($w.Position.Location.IsUnknown -and $t -lt 15) { Start-Sleep -Milliseconds 300; $t++ }; if(!$w.Position.Location.IsUnknown) { Write-Output "$($w.Position.Location.Latitude),$($w.Position.Location.Longitude)" }`
 
@@ -25,7 +24,6 @@ export default function registerLocationHandlers(ipcMain: IpcMain) {
 
       if (osLocation && osLocation.includes(',')) {
         const [lat, lon] = osLocation.split(',')
-        console.log(`📍 Hardware Lock Acquired: ${lat}, ${lon}`)
 
         const geoRes = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
@@ -43,9 +41,7 @@ export default function registerLocationHandlers(ipcMain: IpcMain) {
         }
       }
 
-      console.warn(
-        '⚠️ Hardware location failed (Is Windows Location turned on?). Falling back to IP routing...'
-      )
+      
 
       const ipRes = await fetch('http://ip-api.com/json/')
       const ipData = await ipRes.json()
@@ -64,7 +60,6 @@ export default function registerLocationHandlers(ipcMain: IpcMain) {
 
       return null
     } catch (error) {
-      console.error('Location Engine Error:', error)
       return null
     }
   })

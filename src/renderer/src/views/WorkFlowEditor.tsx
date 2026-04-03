@@ -200,7 +200,6 @@ function Editor() {
   const openParameterEditor = useCallback((nodeId: string) => setSelectedNodeId(nodeId), [])
 
   const loadMacroToCanvas = (macro: any) => {
-    console.log(isSaved)
     setWorkflowName(macro.name)
     setDescription(macro.description)
 
@@ -309,16 +308,13 @@ function Editor() {
       if (res.success) {
         setIsSaved(true)
       } else {
-        console.error('Backend Save Error:', res.error)
       }
     } catch (err) {
-      console.error('IPC Error:', err)
     }
   }
 
   const runMacroManually = async () => {
     await saveWorkflow()
-    console.log(`🚀 IGNITING MANUAL EXECUTION: ${workflowName}`)
 
     const macroRes = await getMacroSequence(workflowName)
 
@@ -328,11 +324,9 @@ function Editor() {
     }
 
     for (const step of macroRes.steps) {
-      console.log(`[MACRO ENGINE] Executing step: ${step.tool}`, step.args)
 
       try {
         if (step.tool === 'TRIGGER' || step.tool === 'TRIGGER_VOICE') {
-          console.log('[MACRO ENGINE] ⚡ Sequence Initiated.')
         } else if (step.tool === 'WAIT') {
           await new Promise((resolve) =>
             setTimeout(resolve, Number(step.args.milliseconds) || 1000)
@@ -399,16 +393,13 @@ function Editor() {
         } else if (step.tool === 'take_screenshot') {
           await takeScreenshot()
         } else {
-          console.warn(`[MACRO ENGINE] ⚠️ Unknown tool: ${step.tool}`)
         }
       } catch (stepError) {
-        console.error(`[MACRO ENGINE] 🔴 Crash on node [${step.tool}]:`, stepError)
         alert(`🔴 Macro Execution Halted! Failed at node: ${step.tool}`)
         break
       }
     }
 
-    console.log(`✅ MACRO "${macroRes.name}" COMPLETED SUCCESSFULLY.`)
   }
 
   return (

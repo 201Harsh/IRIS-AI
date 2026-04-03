@@ -33,10 +33,8 @@ const IndexRoot = () => {
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // @ts-ignore
     window.electron.ipcRenderer.on('overlay-mode', (_e, mode) => setIsOverlay(mode))
     return () => {
-      // @ts-ignore
       window.electron.ipcRenderer.removeAllListeners('overlay-mode')
     }
   }, [])
@@ -60,7 +58,6 @@ const IndexRoot = () => {
         setIsMicMuted(false)
         irisService.setMute(false)
       } catch (err: any) {
-        console.error(err)
         if (err.message === 'NO_API_KEY') {
           alert(
             '⚠️ CRITICAL ERROR: Gemini API Key is missing. Please enter it in the Command Center Vault (Settings Tab).'
@@ -128,7 +125,6 @@ const IndexRoot = () => {
 
       stream.getVideoTracks()[0].onended = () => stopVision()
     } catch (e) {
-      console.error('Vision Error:', e)
       stopVision()
     }
   }

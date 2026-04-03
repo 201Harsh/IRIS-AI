@@ -25,7 +25,6 @@ export default function registerPermanentMemory({ ipcMain, app }: { ipcMain: Ipc
       fs.writeFileSync(FILE_PATH, JSON.stringify(memoryBank, null, 2))
       return true
     } catch (err) {
-      console.error('Failed to save core memory:', err)
       return false
     }
   })
@@ -38,7 +37,6 @@ export default function registerPermanentMemory({ ipcMain, app }: { ipcMain: Ipc
       }
       return []
     } catch (err) {
-      console.error('Failed to retrieve core memory:', err)
       return []
     }
   })

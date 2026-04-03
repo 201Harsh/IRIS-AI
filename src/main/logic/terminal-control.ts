@@ -3,7 +3,6 @@ import { spawn } from 'child_process'
 import path from 'path'
 
 export default function registerSystemControl(ipcMain: IpcMain) {
-  console.log('💻 [Main] Registering Terminal Streamer...')
 
   const sanitizePath = (inputPath: string) => {
     let clean = path.normalize(inputPath)
@@ -14,7 +13,6 @@ export default function registerSystemControl(ipcMain: IpcMain) {
   ipcMain.handle('run-shell-command', async (_event, { command, cwd }) => {
     return new Promise((resolve) => {
       const safeCwd = cwd ? sanitizePath(cwd) : undefined
-      console.log(`💻 Executing: "${command}" in ${safeCwd || 'Root'}`)
 
       const win = BrowserWindow.getAllWindows()[0]
 
