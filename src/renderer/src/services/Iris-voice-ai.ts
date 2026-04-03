@@ -114,9 +114,7 @@ export class GeminiLiveService {
         cloudUser.email = res.data?.user?.email || cloudUser.email
       }
     } catch (e) {
-      console.warn(
-        'Could not fetch cloud user profile within time limit. Booting with local cache.'
-      )
+      
     }
 
     const history = await getHistory()
@@ -235,7 +233,6 @@ ${JSON.stringify(history)}
     })
 
     this.socket.onopen = async () => {
-      console.log('🟢 IRIS Connected')
 
       if (this.audioContext && this.audioContext.state === 'suspended') {
         await this.audioContext.resume()
@@ -1244,7 +1241,6 @@ ${JSON.stringify(history)}
         const data = JSON.parse(event.data instanceof Blob ? await event.data.text() : event.data)
 
         if (data.error) {
-          console.error('❌ Google Gemini WS Error:', data.error)
           return
         }
 
@@ -1255,7 +1251,6 @@ ${JSON.stringify(history)}
           const functionResponses: any[] = []
 
           for (const call of functionCalls) {
-            console.log(`🤖 Tool Called: ${call.name}`, call.args)
             let result
 
             if (call.name === 'index_directory') {
@@ -1427,7 +1422,6 @@ ${JSON.stringify(history)}
                 result = macroRes.error
               } else {
                 for (const step of macroRes.steps) {
-                  console.log(`[MACRO ENGINE] Executing: ${step.tool}`, step.args)
 
                   try {
                     if (step.tool === 'WAIT') {
@@ -1482,7 +1476,6 @@ ${JSON.stringify(history)}
                       await takeScreenshot()
                     }
                   } catch (stepError) {
-                    console.error(`[MACRO ENGINE] Failed on step ${step.tool}:`, stepError)
                     break
                   }
                 }
@@ -1545,13 +1538,10 @@ ${JSON.stringify(history)}
           }
         }
       } catch (err) {
-        console.error('❌ WebSocket Parse Error:', err, event.data)
       }
     }
 
     this.socket.onclose = (event) => {
-      console.log(event)
-      console.log(`🔴 IRIS Disconnected. Code: ${event.code}`)
       this.disconnect()
     }
   }
@@ -1619,7 +1609,6 @@ ${JSON.stringify(history)}
       source.connect(this.workletNode)
       this.workletNode.connect(this.audioContext.destination)
     } catch (err) {
-      console.error('Mic Error:', err)
       alert('Microphone access denied or failed to initialize.')
     }
   }
