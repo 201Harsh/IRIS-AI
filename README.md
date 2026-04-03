@@ -14,7 +14,7 @@
   <a href="https://github.com/201Harsh/IRIS-AI/graphs/contributors">
     <img src="https://img.shields.io/github/contributors/201Harsh/IRIS-AI?style=for-the-badge&color=10b981&logo=users&logoColor=white" alt="Contributors">
   </a>
-  <a href="https://github.com/201Harsh/IRIS-AI/releases">
+  <a href="https://github.com/201Harsh/IRIS-AI/releases/tag/v1.0.0">
     <img src="https://img.shields.io/github/downloads/201Harsh/IRIS-AI/total?style=for-the-badge&color=10b981&logo=download&logoColor=white" alt="Downloads">
   </a>
 </div>
