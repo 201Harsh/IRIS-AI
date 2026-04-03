@@ -13,6 +13,8 @@
       "@renderer/*": [
         "./src/renderer/src/*"
       ]
-    }
+    },
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }
