@@ -122,7 +122,6 @@ OUTPUT ONLY RAW HTML.`
 
       return { success: true, filePath }
     } catch (err) {
-      console.error('Live Forge Error:', err)
       return { success: false, error: String(err) }
     }
   })

@@ -61,12 +61,11 @@ export default function registerWidgetMaker() {
 
       widgetWin.on('closed', () => {
         activeWidgets = activeWidgets.filter((w) => w !== widgetWin)
-        fs.unlink(filePath).catch(() => console.log('Cleanup: Temp file removed.'))
+        fs.unlink(filePath).catch(() => {})
       })
 
       return { success: true }
     } catch (error) {
-      console.error('Widget Forge Error:', error)
       return { success: false, error: String(error) }
     }
   })

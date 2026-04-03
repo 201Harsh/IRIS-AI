@@ -184,7 +184,6 @@ export default function registerPhantomKeyboard() {
         fs.unlink(filePath).catch(() => {})
       })
     } catch (error) {
-      console.error('Phantom Forge Error:', error)
     }
   }
 

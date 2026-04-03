@@ -111,7 +111,6 @@ function createWindow(): void {
 
 app.on('second-instance', (event, commandLine) => {
   if (!event) {
-    console.log('No Event Triggered!!')
   }
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore()
@@ -162,7 +161,6 @@ app.whenReady().then(() => {
         groqEncrypted = safeStorage.encryptString(groqKey).toString('base64')
         geminiEncrypted = safeStorage.encryptString(geminiKey).toString('base64')
       } else {
-        console.warn('⚠️ safeStorage unavailable. Using Dev-Mode Base64 fallback.')
         groqEncrypted = Buffer.from(groqKey).toString('base64')
         geminiEncrypted = Buffer.from(geminiKey).toString('base64')
       }
@@ -175,7 +173,6 @@ app.whenReady().then(() => {
       fs.writeFileSync(secureConfigPath, JSON.stringify(secureData))
       return { success: true }
     } catch (error: any) {
-      console.error('Failed to save keys:', error)
       return { success: false, error: error.message }
     }
   })
@@ -196,7 +193,6 @@ app.whenReady().then(() => {
 
       return { groqKey, geminiKey }
     } catch (err) {
-      console.error('Failed to decrypt keys', err)
       return null
     }
   })
