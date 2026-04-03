@@ -407,7 +407,6 @@ export default function registerAdbHandlers(ipcMain: IpcMain) {
       }
 
       if (cleanSetting === 'flashlight' || cleanSetting === 'torch') {
-        // Step 1: Wake up the screen
         await execAsync(`adb ${target} shell input keyevent KEYCODE_WAKEUP`)
 
         await execAsync(`adb ${target} shell cmd statusbar expand-settings`)
