@@ -91,7 +91,6 @@ export default function registerGhostControl(ipcMain: IpcMain) {
       const cmd = `powershell -command "Set-Clipboard -Path '${filePath}'"`
       exec(cmd, (error) => {
         if (error) {
-          console.error('File copy failed:', error)
           resolve(false)
         } else resolve(true)
       })
@@ -155,7 +154,6 @@ export default function registerGhostControl(ipcMain: IpcMain) {
 
       return true
     } catch (e) {
-      console.error('Click failed:', e)
       return false
     }
   })

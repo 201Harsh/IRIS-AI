@@ -6,7 +6,6 @@ const runCommand = (cmd: string): Promise<string> => {
   return new Promise((resolve) => {
     exec(cmd, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout) => {
       if (error) {
-        console.warn('Command Warning:', error.message)
       }
       resolve(stdout ? stdout.trim() : '')
     })
@@ -50,7 +49,6 @@ export default function registerSystemHandlers(ipcMain: IpcMain) {
       try {
         rawData = JSON.parse(jsonOutput)
       } catch (parseError) {
-        console.error('JSON Parse Error:', parseError)
         return []
       }
 
@@ -64,7 +62,6 @@ export default function registerSystemHandlers(ipcMain: IpcMain) {
         }))
         .sort((a, b) => a.name.localeCompare(b.name)) 
     } catch (e) {
-      console.error('App Fetch Error:', e)
       return []
     }
   })
