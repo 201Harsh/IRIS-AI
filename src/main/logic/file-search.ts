@@ -352,7 +352,6 @@ export default function registerFileSearch(ipcMain: IpcMain) {
         return `No files found matching [ ${searchParams.keywords.join(', ')} ]`
       }
     } catch (err) {
-      console.error(err)
       return `❌ System Error: ${String(err)}`
     }
   })
