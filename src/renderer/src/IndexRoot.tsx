@@ -58,7 +58,6 @@ const IndexRoot = () => {
         setIsMicMuted(false)
         irisService.setMute(false)
       } catch (err: any) {
-        console.error(err)
         if (err.message === 'NO_API_KEY') {
           alert(
             '⚠️ CRITICAL ERROR: Gemini API Key is missing. Please enter it in the Command Center Vault (Settings Tab).'
@@ -126,7 +125,6 @@ const IndexRoot = () => {
 
       stream.getVideoTracks()[0].onended = () => stopVision()
     } catch (e) {
-      console.error('Vision Error:', e)
       stopVision()
     }
   }
