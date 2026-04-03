@@ -1541,7 +1541,7 @@ ${JSON.stringify(history)}
       }
     }
 
-    this.socket.onclose = (event) => {
+    this.socket.onclose = () => {
       this.disconnect()
     }
   }
