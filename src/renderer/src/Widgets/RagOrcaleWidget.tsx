@@ -56,7 +56,6 @@ export default function OracleWidget() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout
-    // 🚨 THE FIX: Removed the redundant !== 'cancelled' check
     if ((status === 'scanning' || status === 'ingesting') && startTime) {
       interval = setInterval(() => setElapsedMs(Date.now() - startTime), 1000)
     }
