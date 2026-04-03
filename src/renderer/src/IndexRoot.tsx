@@ -33,10 +33,8 @@ const IndexRoot = () => {
   const aiIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // @ts-ignore
     window.electron.ipcRenderer.on('overlay-mode', (_e, mode) => setIsOverlay(mode))
     return () => {
-      // @ts-ignore
       window.electron.ipcRenderer.removeAllListeners('overlay-mode')
     }
   }, [])
