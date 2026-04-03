@@ -6,9 +6,9 @@ tasks:
     command: npm run dev
 
 ports:
-  - port: 5173 # Default Vite Renderer Port
+  - port: 5173 
     onOpen: ignore
-  - port: 6080 # Gitpod VNC web client (This is where the desktop app UI shows up)
+  - port: 6080 
     onOpen: open-preview
 
 github:
