@@ -1,0 +1,10 @@
+
+<svg width="1200" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="400" fill="#0a0a0a"/>
+  <text x="50%" y="45%" font-size="60" fill="#e11d48" text-anchor="middle" font-family="Arial">
+    IRIS
+  </text>
+  <text x="50%" y="60%" font-size="24" fill="#ffffff" text-anchor="middle" font-family="Arial">
+    Autonomous Neural OS Agent
+  </text>
+</svg>
