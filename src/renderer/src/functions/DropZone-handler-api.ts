@@ -8,7 +8,7 @@ export const executeSmartDropZones = async (
     window.dispatchEvent(
       new CustomEvent('dropzone-start', { detail: { total: files.length, path: base_directory } })
     )
-    await new Promise((resolve) => setTimeout(resolve, 300)) // Quick beat for UI to pop in
+    await new Promise((resolve) => setTimeout(resolve, 300))
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
