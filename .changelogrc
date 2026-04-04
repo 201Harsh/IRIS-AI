@@ -28,7 +28,26 @@
     {
       "title": "📚 Documentation",
       "grep": "^docs"
+    },
+    {
+      "title": "🚨 Security",
+      "grep": "^security"
+    },
+    {
+      "title": "🧪 Tests",
+      "grep": "^test"
+    },
+    {
+      "title": "🎨 Style",
+      "grep": "^style"
+    },
+    {
+      "title": "🚀 Release",
+      "grep": "^release"
+    },
+    {
+      "title": "🔧 Miscellaneous",
+      "grep": "^misc"
     }
   ]
 }
-
