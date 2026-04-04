@@ -24,7 +24,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@google-cloud/local-auth": "^3.0.1",
-    "@google/genai": "^1.43.0",
+    "@google/genai": "^1.48.0",
     "@gsap/react": "^2.1.2",
     "@huggingface/inference": "^4.13.12",
     "@monaco-editor/react": "^4.7.0",
