@@ -48,6 +48,10 @@
     {
       "title": "🔧 Miscellaneous",
       "grep": "^misc"
+    },
+    {
+      "title": "➕ Additions",
+      "grep": "^add"
     }
   ]
 }
