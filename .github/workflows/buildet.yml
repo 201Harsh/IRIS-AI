@@ -1,14 +1,15 @@
-name: Build and Release IRIS AI
+name: Build IRIS AI (Test Only)
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch: 
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
 
 jobs:
   build-windows:
-    name: Build Windows Release
+    name: Build & Verify
     runs-on: windows-latest
 
     steps:
@@ -24,7 +25,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Compile and Publish
+      - name: Compile Application
+        # This tests the build process. Once this step finishes successfully,
+        # the workflow ends and the virtual machine (with the .exe) is destroyed.
         run: npm run build:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
