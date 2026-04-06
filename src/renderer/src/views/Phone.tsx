@@ -15,7 +15,9 @@ import {
   RiHome5Line,
   RiHistoryLine,
   RiAddLine,
-  RiTerminalLine
+  RiTerminalLine,
+  RiFileCopyLine,
+  RiCheckLine
 } from 'react-icons/ri'
 
 const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
@@ -25,6 +27,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   const [uiMode, setUiMode] = useState<'history' | 'manual'>('history')
   const [errorMsg, setErrorMsg] = useState('')
   const [deviceHistory, setDeviceHistory] = useState<any[]>([])
+  const [copied, setCopied] = useState(false) // Added state for the copy button
 
   const screenRef = useRef<HTMLImageElement>(null)
   const isStreaming = useRef(false)
@@ -148,6 +151,13 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
     }
   }
 
+  // Handle the copy action for the daemon command
+  const handleCopyCommand = () => {
+    navigator.clipboard.writeText('adb tcpip 5555')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   useEffect(() => {
     let interval: any
     if (status === 'connected') {
@@ -221,7 +231,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
 
   if (status !== 'connected' && uiMode === 'manual') {
     return (
-      // Changed to items-start, added overflow-y-auto and pb-24 for robust scrolling and padding
       <div className="flex-1 flex flex-col lg:flex-row items-start justify-center gap-8 p-6 md:p-12 animate-in fade-in duration-300 bg-[#050505] min-h-[100dvh] overflow-y-auto text-emerald-50 pb-24">
         {/* Left Column: Connection Form */}
         <div className="w-full lg:w-1/3 max-w-md flex flex-col gap-6 shrink-0">
@@ -370,9 +379,24 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                     Open your PC's Command Prompt / Terminal and execute the following command to
                     open the port:
                   </p>
-                  <code className="block w-full bg-zinc-950 border border-emerald-900/30 text-emerald-400 text-sm p-4 rounded-xl tracking-widest font-mono">
-                    adb tcpip 5555
-                  </code>
+
+                  {/* Updated Code Block with Copy Button */}
+                  <div className="relative group w-full">
+                    <code className="block w-full bg-zinc-950 border border-emerald-900/30 text-emerald-400 text-sm p-4 pr-14 rounded-xl tracking-widest font-mono">
+                      adb tcpip 5555
+                    </code>
+                    <button
+                      onClick={handleCopyCommand}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-emerald-600 hover:text-emerald-400 hover:bg-emerald-900/30 rounded-lg transition-all"
+                      title="Copy command"
+                    >
+                      {copied ? (
+                        <RiCheckLine size={20} className="text-emerald-400" />
+                      ) : (
+                        <RiFileCopyLine size={20} />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
