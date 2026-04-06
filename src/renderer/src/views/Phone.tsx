@@ -192,7 +192,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                 className="w-55 h-110 bg-black border-8 border-zinc-900 rounded-[3rem] relative flex flex-col p-2 group hover:border-emerald-500/50 transition-all duration-500 shadow-2xl hover:shadow-[0_0_40px_rgba(16,185,129,0.2)]"
               >
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-zinc-900 rounded-full z-20 group-hover:bg-emerald-900/50 transition-colors"></div>
-                <div className="flex-1 bg-gradient-to-b from-zinc-900 to-black rounded-[2.2rem] overflow-hidden flex flex-col items-center justify-center p-6 relative">
+                <div className="flex-1 bg-linear-to-b from-zinc-900 to-black rounded-[2.2rem] overflow-hidden flex flex-col items-center justify-center p-6 relative">
                   <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/10 transition-colors duration-500"></div>
                   <RiSmartphoneLine
                     size={64}
@@ -230,7 +230,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
 
   if (status !== 'connected' && uiMode === 'manual') {
     return (
-      <div className="flex-1 flex flex-col lg:flex-row items-start justify-center gap-8 p-6 md:p-12 animate-in fade-in duration-300 bg-[#050505] min-h-[100dvh] overflow-y-auto text-emerald-50 pb-24">
+      <div className="flex-1 flex flex-col lg:flex-row items-start justify-center gap-8 p-6 md:p-12 animate-in fade-in duration-300 bg-[#050505] min-h-dvh overflow-y-auto text-emerald-50 pb-24">
         <div className="w-full lg:w-1/3 max-w-md flex flex-col gap-6 shrink-0">
           <div className="p-6 bg-black border border-emerald-900/40 rounded-2xl shadow-lg flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -494,7 +494,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
       </div>
 
       <div className="w-1/3 flex justify-center relative">
-        <div className="w-full max-w-[320px] h-[650px] bg-black rounded-[3rem] border-[12px] border-[#1a1a1a] shadow-[0_0_50px_rgba(168,85,247,0.1)] relative overflow-hidden flex flex-col">
+        <div className="w-full max-w-[320px] h-162.5 bg-black rounded-[3rem] border-12 border-[#1a1a1a] shadow-[0_0_50px_rgba(168,85,247,0.1)] relative overflow-hidden flex flex-col">
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full z-20 flex items-center justify-end px-3 gap-2 shadow-md">
             <div className="w-2 h-2 rounded-full bg-purple-500/50"></div>
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -504,7 +504,7 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
         </div>
       </div>
 
-      <div className="w-1/4 flex flex-col h-[650px] relative">
+      <div className="w-1/4 flex flex-col h-162.5 relative">
         <div className="bg-[#111] border border-white/5 rounded-2xl p-6 flex flex-col h-full shadow-lg">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/5">
             <div className="p-2 bg-purple-500/10 rounded-lg">
