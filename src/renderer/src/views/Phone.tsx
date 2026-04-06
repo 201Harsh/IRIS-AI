@@ -377,7 +377,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
                     open the port:
                   </p>
 
-                  {/* Updated Code Block with Copy Button */}
                   <div className="relative group w-full">
                     <code className="block w-full bg-zinc-950 border border-emerald-900/30 text-emerald-400 text-sm p-4 pr-14 rounded-xl tracking-widest font-mono">
                       adb tcpip 5555
