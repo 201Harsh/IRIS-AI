@@ -152,6 +152,7 @@ function toggleOverlayMode() {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
+  autoUpdater.checkForUpdatesAndNotify();
 
   ipcMain.handle('secure-save-keys', async (_, { groqKey, geminiKey }) => {
     try {
