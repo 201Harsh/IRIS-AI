@@ -158,7 +158,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
               >
                 <div className="overflow-hidden">
                   <h3
-                    className={`text-xs font-bold truncate ${selectedNote?.filename === note.filename && !isEditorOpen ? 'text-emerald-100' : 'text-zinc-300'}`}
+                    className={`text-xs font-bold truncate ${selectedNote?.filename === note.filename && !isEditorOpen ? 'text-emerald-100' : 'text-zinc-200'}`}
                   >
                     {note.title.toUpperCase()}
                   </h3>
@@ -207,7 +207,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
               placeholder="Write your note in Markdown..."
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none resize-none text-sm font-mono text-zinc-300 placeholder-zinc-700 leading-relaxed p-2 scrollbar-small"
+              className="flex-1 bg-transparent border-none outline-none resize-none text-sm font-mono text-zinc-100 placeholder-zinc-700 leading-relaxed p-2 scrollbar-small"
             />
 
             <div className="flex justify-end pt-4">
@@ -250,7 +250,7 @@ const NotesView = ({ glassPanel }: { glassPanel?: string }) => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-700 gap-4">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-200 gap-4">
             <RiFileTextLine size={48} className="opacity-20" />
             <span className="text-xs tracking-widest opacity-50">
               SELECT A DATA NODE OR CREATE NEW
