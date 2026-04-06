@@ -21,7 +21,7 @@ import {
 import { executeRealityHack } from '@renderer/tools/Hacker-api'
 import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
 import { consultOracle, ingestCodebase } from '@renderer/tools/rag-oracle-tool'
-import { runDeepResearch, runReadNotion } from '@renderer/tools/deepSearch-rag'
+import { runDeepResearch } from '@renderer/tools/deepSearch-rag'
 import { runIndexDirectory, runSmartSearch } from '@renderer/tools/semantic-search-api'
 import { closeWidgets, createWidget } from '@renderer/tools/widget-creator'
 import { buildAnimatedWebsite } from '@renderer/code/website-builder-api'
@@ -113,9 +113,7 @@ export class GeminiLiveService {
         cloudUser.name = res.data?.user?.name || cloudUser.name
         cloudUser.email = res.data?.user?.email || cloudUser.email
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
 
     const history = await getHistory()
     const sysStats = await getSystemStatus()
@@ -233,7 +231,6 @@ ${JSON.stringify(history)}
     })
 
     this.socket.onopen = async () => {
-
       if (this.audioContext && this.audioContext.state === 'suspended') {
         await this.audioContext.resume()
       }
@@ -1407,8 +1404,6 @@ ${JSON.stringify(history)}
               result = await consultOracle(call.args.query)
             } else if (call.name === 'deep_research') {
               result = await runDeepResearch(call.args.query)
-            } else if (call.name === 'read_notion_reports') {
-              result = await runReadNotion()
             } else if (call.name === 'create_widget') {
               result = await createWidget(call.args.html_code, call.args.width, call.args.height)
             } else if (call.name === 'close_widgets') {
@@ -1422,7 +1417,6 @@ ${JSON.stringify(history)}
                 result = macroRes.error
               } else {
                 for (const step of macroRes.steps) {
-
                   try {
                     if (step.tool === 'WAIT') {
                       await new Promise((resolve) =>
@@ -1537,8 +1531,7 @@ ${JSON.stringify(history)}
             }
           }
         }
-      } catch (err) {
-      }
+      } catch (err) {}
     }
 
     this.socket.onclose = () => {
