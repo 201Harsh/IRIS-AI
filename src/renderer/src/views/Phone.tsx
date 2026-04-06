@@ -231,7 +231,6 @@ const PhoneView = ({ glassPanel }: { glassPanel?: string }) => {
   if (status !== 'connected' && uiMode === 'manual') {
     return (
       <div className="flex-1 flex flex-col lg:flex-row items-start justify-center gap-8 p-6 md:p-12 animate-in fade-in duration-300 bg-[#050505] min-h-[100dvh] overflow-y-auto text-emerald-50 pb-24">
-        {/* Left Column: Connection Form */}
         <div className="w-full lg:w-1/3 max-w-md flex flex-col gap-6 shrink-0">
           <div className="p-6 bg-black border border-emerald-900/40 rounded-2xl shadow-lg flex items-center justify-between">
             <div className="flex items-center gap-4">
