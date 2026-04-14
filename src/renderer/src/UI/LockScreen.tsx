@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   RiShieldKeyholeLine,
-  RiShieldCheckLine, // New icon for success
+  RiShieldCheckLine,
   RiFingerprintLine,
   RiLockPasswordLine,
   RiCameraLensLine,
@@ -9,7 +9,7 @@ import {
   RiDatabase2Line,
   RiCpuLine,
   RiWifiLine,
-  RiLoader4Line // New icon for spinning
+  RiLoader4Line
 } from 'react-icons/ri'
 import * as faceapi from 'face-api.js'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -34,7 +34,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const [aiStatus, setAiStatus] = useState('INITIALIZING OPTICS...')
   const [isScanning, setIsScanning] = useState(false)
 
-  // --- NEW: Cinematic Hold State ---
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [decryptProgress, setDecryptProgress] = useState(0)
 
@@ -122,14 +121,12 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
     }
   }
 
-  // --- NEW: Universal Success Handler ---
   const triggerAccessGranted = () => {
     setIsAuthorized(true)
     setError(false)
     stopCamera() // Instantly shut off the webcam light
     setAiStatus('IDENTITY VERIFIED. DECRYPTING VAULT...')
 
-    // Rapid progress bar animation
     let progress = 0
     const progressInterval = setInterval(() => {
       progress += Math.floor(Math.random() * 15) + 5
@@ -140,11 +137,9 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       setDecryptProgress(progress)
     }, 150)
 
-    // Phase changes for text
     setTimeout(() => setAiStatus('ESTABLISHING NEURAL UPLINK...'), 1200)
     setTimeout(() => setAiStatus('WORKSPACE READY. REDIRECTING.'), 2200)
 
-    // Final redirect
     setTimeout(() => {
       onUnlock()
     }, 2800) // 2.8 second cinematic hold
@@ -244,7 +239,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       className="flex flex-col items-center justify-center w-screen h-screen bg-[#030303] relative overflow-hidden select-none font-sans"
       onClick={() => authMode === 'pin' && !isAuthorized && inputRef.current?.focus()}
     >
-      {/* Ambient Background Glow */}
       <div
         className={`absolute inset-0 transition-colors duration-700 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] ${
           error
@@ -256,7 +250,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none mix-blend-screen opacity-50" />
 
-      {/* OS Top Bar */}
       <div className="absolute top-0 w-full h-12 border-b border-white/5 bg-black/40 backdrop-blur-md flex items-center justify-between px-8 z-50 text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
         <div className="flex items-center gap-6">
           <span className="flex items-center gap-2">
@@ -282,7 +275,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
         </div>
       </div>
 
-      {/* Main Auth Container */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -295,7 +287,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
               : 'border-white/10 bg-black/40 shadow-2xl'
         }`}
       >
-        {/* Header Area */}
         <div className="text-center space-y-4 w-full">
           <h1
             className={`text-2xl font-black tracking-[0.3em] transition-colors duration-300 flex items-center justify-center gap-3 uppercase ${
@@ -336,10 +327,8 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
           </div>
         </div>
 
-        {/* Dynamic Display Area */}
         <div className="h-[280px] flex items-center justify-center w-full relative">
           <AnimatePresence mode="wait">
-            {/* --- NEW: CINEMATIC REDIRECT / HOLD STATE --- */}
             {isAuthorized && (
               <motion.div
                 key="authorized-view"
@@ -347,7 +336,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full h-full flex flex-col items-center justify-center relative"
               >
-                {/* Spinning Cryptographic Rings */}
                 <div className="relative flex items-center justify-center mb-8">
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -369,7 +357,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
                   </motion.div>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="w-3/4 flex flex-col gap-2">
                   <div className="flex justify-between text-[9px] font-mono text-emerald-400 tracking-widest font-bold">
                     <span>DECRYPTING VAULT</span>
@@ -386,7 +373,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
               </motion.div>
             )}
 
-            {/* FACE MODE */}
             {!isAuthorized && authMode === 'face' && (
               <motion.div
                 key="face-view"
@@ -439,7 +425,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
               </motion.div>
             )}
 
-            {/* PIN MODE */}
             {!isAuthorized && authMode === 'pin' && (
               <motion.div
                 key="pin-view"
@@ -502,7 +487,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
           </AnimatePresence>
         </div>
 
-        {/* Toggle Button (Disappears during authorization hold) */}
         {!isAuthorized && (
           <button
             onClick={() => {
@@ -538,7 +522,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
         />
       </motion.div>
 
-      {/* Footer Status */}
       <div className="absolute bottom-6 flex flex-col items-center gap-1 z-50">
         <span className="text-[9px] font-mono tracking-widest text-zinc-600 uppercase">
           IRIS Kernel Security Engine V3.5
