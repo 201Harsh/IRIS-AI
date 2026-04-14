@@ -156,9 +156,6 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
   autoUpdater.checkForUpdatesAndNotify()
 
-  // ==========================================
-  // 🎙️ MEDIA PERMISSIONS HANDLER (MIC & CAMERA)
-  // ==========================================
 
   // 1. Intercept and approve WebContents permission requests
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
