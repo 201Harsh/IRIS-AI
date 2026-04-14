@@ -305,11 +305,9 @@ export default function DashboardView({
           </div>
         </div>
 
-        {/* --- UPGRADED: DYNAMIC NETWORK TELEMETRY UI --- */}
         <div
           className={`${glassPanel} h-32 shrink-0 p-4 flex flex-col justify-between relative overflow-hidden`}
         >
-          {/* Subtle animated background gradient when active */}
           <div
             className={`absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent transition-opacity duration-1000 ${isSystemActive ? 'opacity-100' : 'opacity-0'}`}
           />
@@ -359,7 +357,6 @@ export default function DashboardView({
             </div>
           </div>
 
-          {/* Fluctuating Dual Progress Bars */}
           <div className="w-full flex flex-col gap-1 mt-3 relative z-10">
             <div className="flex items-center gap-2">
               <span className="text-[7px] font-mono text-zinc-500 w-3">TX</span>
@@ -381,7 +378,6 @@ export default function DashboardView({
             </div>
           </div>
         </div>
-        {/* --- END OF UPGRADED SECTION --- */}
 
         <div className={`${glassPanel} flex-1 p-4 flex flex-col gap-3`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
