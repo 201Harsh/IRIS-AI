@@ -76,11 +76,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-emerald-50 font-sans flex items-center justify-center p-4 lg:p-8 relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-100">
       {/* Ambient Dark Neon Glows */}
-      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-cyan-900/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-5%] w-125 h-125 bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 bg-cyan-900/10 blur-[150px] rounded-full pointer-events-none" />
 
       {/* Cybernetic Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b98105_1px,transparent_1px),linear-gradient(to_bottom,#10b98105_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none mix-blend-screen" />
+      <div className="absolute inset-0 bg-[linear-linear(to_right,#10b98105_1px,transparent_1px),linear-linear(to_bottom,#10b98105_1px,transparent_1px)] bg-size-[40px_40px] pointer-events-none mix-blend-screen" />
 
       <motion.div
         variants={containerVariants}
@@ -91,7 +91,7 @@ export default function LoginPage() {
         {/* LEFT PANEL: Live Terminal (Hidden on small screens) */}
         <motion.div
           variants={panelVariants}
-          className="hidden lg:flex col-span-3 flex-col h-[500px] bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 shadow-2xl relative overflow-hidden"
+          className="hidden lg:flex col-span-3 flex-col h-125 bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 shadow-2xl relative overflow-hidden"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-4">
             <TerminalSquare className="w-5 h-5 text-emerald-500" />
@@ -134,7 +134,7 @@ export default function LoginPage() {
             <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-black border border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.15)] mb-6 overflow-hidden">
               {/* Laser Scan Effect */}
               <motion.div
-                className="absolute left-0 w-full h-[2px] bg-emerald-400 shadow-[0_0_15px_#34d399]"
+                className="absolute left-0 w-full h-0.5 bg-emerald-400 shadow-[0_0_15px_#34d399]"
                 animate={{ top: ['-10%', '110%', '-10%'] }}
                 transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
               />
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
           {/* Login Box */}
           <div className="w-full max-w-md bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-40" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-emerald-500 to-transparent opacity-40" />
 
             <div className="mb-8 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-4">
               <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
@@ -162,7 +162,7 @@ export default function LoginPage() {
             </div>
 
             <div className="w-full relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-cyan-600 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-300" />
+              <div className="absolute -inset-0.5 bg-linear-to-r from-emerald-500 to-cyan-600 rounded-xl opacity-0 group-hover:opacity-100 blur transition duration-300" />
 
               <button
                 onClick={handleGoogleLogin}
@@ -184,7 +184,7 @@ export default function LoginPage() {
         {/* RIGHT PANEL: System Status (Hidden on small screens) */}
         <motion.div
           variants={rightPanelVariants}
-          className="hidden lg:flex col-span-3 flex-col h-[500px] bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 shadow-2xl"
+          className="hidden lg:flex col-span-3 flex-col h-125 bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 shadow-2xl"
         >
           <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
             <Activity className="w-5 h-5 text-emerald-500" />
