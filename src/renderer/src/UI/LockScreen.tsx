@@ -176,6 +176,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       if (value.length === 4) processPin(value)
     }
   }
+  
 
   const processPin = async (currentPin: string) => {
     if (needsPinSetup) {
