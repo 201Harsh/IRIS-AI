@@ -51,6 +51,7 @@ export default function LoginPage() {
             Initialize secure neural link
           </p>
         </motion.div>
+        
 
         <motion.div
           variants={itemVariants}
@@ -80,3 +81,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
