@@ -7,7 +7,8 @@ import {
   globalShortcut,
   screen,
   session,
-  safeStorage
+  safeStorage,
+  systemPreferences // <-- Added for macOS permission handling
 } from 'electron'
 import path, { join } from 'path'
 import fs from 'fs'
@@ -47,7 +48,7 @@ import registerScreenPeeler from './handlers/ScreenPeeler-handler'
 import registerPhantomKeyboard from './handlers/PhantomControl-handler'
 import registerSecurityVault from './security/Security'
 import registerLockSystem from './security/lock-system'
-import { autoUpdater } from 'electron-updater';
+import { autoUpdater } from 'electron-updater'
 
 app.commandLine.appendSwitch('use-fake-ui-for-media-stream')
 
@@ -153,7 +154,40 @@ function toggleOverlayMode() {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdatesAndNotify()
+
+  // ==========================================
+  // 🎙️ MEDIA PERMISSIONS HANDLER (MIC & CAMERA)
+  // ==========================================
+
+  // 1. Intercept and approve WebContents permission requests
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    if (allowedPermissions.includes(permission)) {
+      callback(true) // Auto-approve media requests from the React UI
+    } else {
+      callback(false)
+    }
+  })
+
+  // 2. Override the check handler just in case
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
+    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    return allowedPermissions.includes(permission)
+  })
+
+  // 3. Trigger Native OS Prompts (Crucial for macOS)
+  if (process.platform === 'darwin') {
+    // Ask for Microphone
+    if (systemPreferences.getMediaAccessStatus('microphone') !== 'granted') {
+      systemPreferences.askForMediaAccess('microphone')
+    }
+    // Ask for Camera (Since you use Face-api.js for the vault)
+    if (systemPreferences.getMediaAccessStatus('camera') !== 'granted') {
+      systemPreferences.askForMediaAccess('camera')
+    }
+  }
+  // ==========================================
 
   ipcMain.handle('secure-save-keys', async (_, { groqKey, geminiKey }) => {
     try {
