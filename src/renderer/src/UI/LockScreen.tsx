@@ -94,7 +94,10 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const loadNeuralNets = async (isFaceSetup: boolean) => {
     try {
       setAiStatus('LOADING NEURAL NETS...')
-      const MODEL_URL = '/models'
+
+      // 🟢 THE FIX: Changed from '/models' to './models' so it resolves correctly in the compiled .exe
+      const MODEL_URL = './models'
+
       await Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
