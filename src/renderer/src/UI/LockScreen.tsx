@@ -124,7 +124,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const triggerAccessGranted = () => {
     setIsAuthorized(true)
     setError(false)
-    stopCamera() // Instantly shut off the webcam light
+    stopCamera()
     setAiStatus('IDENTITY VERIFIED. DECRYPTING VAULT...')
 
     let progress = 0
@@ -142,7 +142,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
     setTimeout(() => {
       onUnlock()
-    }, 2800) // 2.8 second cinematic hold
+    }, 3500)
   }
 
   const startScanning = (isFaceSetup: boolean) => {
