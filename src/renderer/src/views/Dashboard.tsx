@@ -13,7 +13,7 @@ import {
   RiPulseLine,
   RiWifiLine,
   RiServerLine,
-  RiEarthLine // Added for the Global indicator
+  RiEarthLine
 } from 'react-icons/ri'
 import { FaMemory } from 'react-icons/fa6'
 import { GiTinker } from 'react-icons/gi'
