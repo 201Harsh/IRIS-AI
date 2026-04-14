@@ -17,7 +17,6 @@ import {
   swipeMobileScreen,
   tapMobileScreen,
   toggleMobileHardware
-  
 } from '@renderer/tools/Mobile-api'
 import { executeRealityHack } from '@renderer/tools/Hacker-api'
 import { closeWormhole, deployWormhole } from '@renderer/tools/wormhole-api'
