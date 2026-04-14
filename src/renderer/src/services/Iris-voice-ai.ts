@@ -1594,7 +1594,10 @@ ${JSON.stringify(history)}
       })
 
       const source = this.audioContext.createMediaStreamSource(this.mediaStream)
-      const inputSampleRate = this.mediaStream.getAudioTracks()[0].getSettings().sampleRate || 48000
+      // CRITICAL FIX: AudioWorklet ALWAYS runs at the AudioContext's true hardware sample rate!
+      // The track's setting might say 16000, but the Worklet will output 48000Hz.
+      // This was causing our system to send 3x stretched audio, creating endless stacking latency.
+      const inputSampleRate = this.audioContext.sampleRate
 
       this.workletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor')
 
@@ -1605,8 +1608,11 @@ ${JSON.stringify(history)}
         this.rawAudioBuffer.push(inputData)
         this.rawAudioBufferLength += inputData.length
 
-        // Buffer approx 128ms of audio (2048 samples at 16kHz) to reduce latency while preventing flooding
-        if (this.rawAudioBufferLength >= 2048) {
+        // We want exactly 4096 samples (256ms) of 16kHz audio sent to Gemini per packet.
+        // Convert that to how many hardware samples we need to wait for before processing.
+        const requiredRawSamples = Math.floor(4096 * (inputSampleRate / 16000))
+
+        if (this.rawAudioBufferLength >= requiredRawSamples) {
           const combined = new Float32Array(this.rawAudioBufferLength)
           let offset = 0
           for (const buf of this.rawAudioBuffer) {
