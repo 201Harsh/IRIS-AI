@@ -66,21 +66,18 @@ export default function DashboardView({
 
   const [modelsLoaded, setModelsLoaded] = useState(false)
 
-  // --- NEW: Dynamic Telemetry State ---
   const [networkStats, setNetworkStats] = useState({ ping: 24, rate: 1.2, tx: 40, rx: 60 })
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chatHistory])
 
-  // --- NEW: Telemetry Fluctuation Engine ---
   useEffect(() => {
     if (!isSystemActive) {
       setNetworkStats({ ping: 0, rate: 0.0, tx: 0, rx: 0 })
       return
     }
 
-    // Fluctuates network data every 800ms to make the UI feel alive
     const interval = setInterval(() => {
       setNetworkStats({
         ping: Math.floor(Math.random() * (45 - 12 + 1)) + 12, // Random ping between 12ms and 45ms
