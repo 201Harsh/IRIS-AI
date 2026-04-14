@@ -8,7 +8,7 @@ import {
   screen,
   session,
   safeStorage,
-  systemPreferences // <-- Added for macOS permission handling
+  systemPreferences
 } from 'electron'
 import path, { join } from 'path'
 import fs from 'fs'
