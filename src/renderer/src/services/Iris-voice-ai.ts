@@ -1224,19 +1224,6 @@ ${JSON.stringify(history)}
 
       this.socket?.send(JSON.stringify(setupMsg))
 
-      const wakeMsg = {
-        clientContent: {
-          turns: [
-            {
-              role: 'user',
-              parts: [{ text: `Hi, I'm Iris. How can I help you today?` }]
-            }
-          ],
-          turnComplete: true
-        }
-      }
-      this.socket?.send(JSON.stringify(wakeMsg))
-
       this.startMicrophone()
       this.startAppWatcher()
     }
