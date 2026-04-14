@@ -38,7 +38,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const scanIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const laserRef = useRef<HTMLDivElement>(null)
 
-  // Top bar clock state
   const [time, setTime] = useState(new Date().toLocaleTimeString())
 
   useEffect(() => {
@@ -221,8 +220,6 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
       className="flex flex-col items-center justify-center w-screen h-screen bg-[#030303] relative overflow-hidden select-none font-sans"
       onClick={() => authMode === 'pin' && inputRef.current?.focus()}
     >
-      {/* --- Premium Background Effects --- */}
-      {/* Ambient Radial Gradient */}
       <div
         className={`absolute inset-0 transition-colors duration-700 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] ${
           error
