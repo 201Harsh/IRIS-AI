@@ -80,12 +80,12 @@ export default function DashboardView({
 
     const interval = setInterval(() => {
       setNetworkStats({
-        ping: Math.floor(Math.random() * (45 - 12 + 1)) + 12, // Random ping between 12ms and 45ms
-        rate: +(Math.random() * 8.5 + 0.5).toFixed(2), // Random transfer rate 0.5 - 9.0 MB/s
-        tx: Math.floor(Math.random() * 100), // TX Bar Width %
-        rx: Math.floor(Math.random() * 100) // RX Bar Width %
+        ping: Math.floor(Math.random() * (45 - 12 + 1)) + 12,
+        rate: +(Math.random() * 8.5 + 0.5).toFixed(2),
+        tx: Math.floor(Math.random() * 100),
+        rx: Math.floor(Math.random() * 100)
       })
-    }, 800)
+    }, 1700)
 
     return () => clearInterval(interval)
   }, [isSystemActive])
