@@ -1,5 +1,5 @@
 import { handleNavigation, handleOpenMap } from '@renderer/tools/Earth-View'
-import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000 } from '../utils/audioUtils'
+import { floatTo16BitPCM, base64ToFloat32, downsampleTo16000, float32ToBase64PCM } from '../utils/audioUtils'
 import { getRunningApps } from './get-apps'
 import { getHistory, retrieveCoreMemory, saveCoreMemory, saveMessage } from './iris-ai-brain'
 import { getAllApps, getSystemStatus } from './system-info'
@@ -1261,10 +1261,11 @@ ${JSON.stringify(history)}
           const functionCalls = data.toolCall.functionCalls
           const functionResponses: any[] = []
 
-          for (const call of functionCalls) {
-            let result
+          await Promise.all(
+            functionCalls.map(async (call: any) => {
+              let result
 
-            if (call.name === 'index_directory') {
+              if (call.name === 'index_directory') {
               result = await runIndexDirectory(call.args.folder_path)
             } else if (call.name === 'smart_file_search') {
               result = await runSmartSearch(call.args.query)
@@ -1506,7 +1507,8 @@ ${JSON.stringify(history)}
               name: call.name,
               response: { result: { output: result } }
             })
-          }
+          })
+          )
 
           const responseMsg = {
             toolResponse: {
@@ -1603,8 +1605,8 @@ ${JSON.stringify(history)}
         this.rawAudioBuffer.push(inputData)
         this.rawAudioBufferLength += inputData.length
 
-        // Buffer approx 250ms of audio (4096 samples at 16kHz) to avoid network flooding
-        if (this.rawAudioBufferLength >= 4096) {
+        // Buffer approx 128ms of audio (2048 samples at 16kHz) to reduce latency while preventing flooding
+        if (this.rawAudioBufferLength >= 2048) {
           const combined = new Float32Array(this.rawAudioBufferLength)
           let offset = 0
           for (const buf of this.rawAudioBuffer) {
@@ -1615,15 +1617,7 @@ ${JSON.stringify(history)}
           this.rawAudioBufferLength = 0
 
           const downsampledData = downsampleTo16000(combined, inputSampleRate)
-          const pcmData: any = floatTo16BitPCM(downsampledData)
-
-          let binary = ''
-          const bytes = new Uint8Array(pcmData.buffer || pcmData)
-          const len = bytes.byteLength
-          for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
-          const base64Audio = btoa(binary)
+          const base64Audio = float32ToBase64PCM(downsampledData)
 
           this.socket.send(
             JSON.stringify({
