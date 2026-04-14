@@ -21,7 +21,7 @@ import DashboardView from '../views/Dashboard'
 import PhoneView from '../views/Phone'
 import { VisionMode } from '@renderer/IndexRoot'
 
-// const AppsView = lazy(() => import('../views/APP'))
+const AppsView = lazy(() => import('../views/APP'))
 const WorkFlowEditorView = lazy(() => import('../views/WorkFlowEditor'))
 const NotesView = lazy(() => import('../views/Notes'))
 const SettingsView = lazy(() => import('../views/Settings'))
@@ -91,6 +91,7 @@ const IRIS = (props: IrisProps) => {
           {[
             { id: 'DASHBOARD', icon: <RiLayoutGridLine /> },
             { id: 'Macros', icon: <RiBrainLine /> },
+            { id: 'Apps', icon: <RiFolderOpenLine /> },
             { id: 'NOTES', icon: <RiFolderOpenLine /> },
             { id: 'GALLERY', icon: <RiImageLine /> },
             { id: 'PHONE', icon: <RiPhoneLine /> },
@@ -110,7 +111,7 @@ const IRIS = (props: IrisProps) => {
           ))}
         </div>
 
-        <div className="flex items-center gap-6 text-[9px] font-mono font-bold opacity-60">
+        <div className="flex items-center gap-6 text-[11px] font-mono font-bold opacity-60">
           <div className="flex items-center gap-2 text-emerald-500">
             <RiWifiLine /> <span>LINKED</span>
           </div>
@@ -139,6 +140,7 @@ const IRIS = (props: IrisProps) => {
 
         <Suspense fallback={<ViewSkeleton />}>
           {activeTab === 'Macros' && <WorkFlowEditorView />}
+          {activeTab === 'Apps' && <AppsView />}
           {activeTab === 'NOTES' && <NotesView glassPanel={glassPanel} />}
           {activeTab === 'SETTINGS' && <SettingsView isSystemActive={props.isSystemActive} />}
           {activeTab === 'GALLERY' && <GalleryView />}

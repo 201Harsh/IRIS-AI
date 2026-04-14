@@ -12,7 +12,8 @@ import {
   RiHistoryLine,
   RiPulseLine,
   RiWifiLine,
-  RiServerLine
+  RiServerLine,
+  RiEarthLine
 } from 'react-icons/ri'
 import { FaMemory } from 'react-icons/fa6'
 import { GiTinker } from 'react-icons/gi'
@@ -65,9 +66,29 @@ export default function DashboardView({
 
   const [modelsLoaded, setModelsLoaded] = useState(false)
 
+  const [networkStats, setNetworkStats] = useState({ ping: 24, rate: 1.2, tx: 40, rx: 60 })
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chatHistory])
+
+  useEffect(() => {
+    if (!isSystemActive) {
+      setNetworkStats({ ping: 0, rate: 0.0, tx: 0, rx: 0 })
+      return
+    }
+
+    const interval = setInterval(() => {
+      setNetworkStats({
+        ping: Math.floor(Math.random() * (45 - 12 + 1)) + 12,
+        rate: +(Math.random() * 8.5 + 0.5).toFixed(2),
+        tx: Math.floor(Math.random() * 100),
+        rx: Math.floor(Math.random() * 100)
+      })
+    }, 1700)
+
+    return () => clearInterval(interval)
+  }, [isSystemActive])
 
   useEffect(() => {
     const loadModels = async () => {
@@ -79,8 +100,7 @@ export default function DashboardView({
           faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
         ])
         setModelsLoaded(true)
-      } catch (e) {
-      }
+      } catch (e) {}
     }
     loadModels()
   }, [])
@@ -127,15 +147,15 @@ export default function DashboardView({
 
             ctx.strokeStyle = '#34d399'
             ctx.lineWidth = 4
-            const l = 25 
+            const l = 25
 
             ctx.beginPath()
             ctx.moveTo(mirroredX, y + l)
             ctx.lineTo(mirroredX, y)
-            ctx.lineTo(mirroredX + l, y) 
+            ctx.lineTo(mirroredX + l, y)
             ctx.moveTo(mirroredX + width - l, y)
             ctx.lineTo(mirroredX + width, y)
-            ctx.lineTo(mirroredX + width, y + l) 
+            ctx.lineTo(mirroredX + width, y + l)
             ctx.moveTo(mirroredX, y + height - l)
             ctx.lineTo(mirroredX, y + height)
             ctx.lineTo(mirroredX + l, y + height)
@@ -163,8 +183,7 @@ export default function DashboardView({
             ctx.font = 'bold 14px monospace'
             ctx.fillText('SCANNING OPTICS...', 20, 30)
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       }, 250)
     } else {
       if (faceScanInterval.current) clearInterval(faceScanInterval.current)
@@ -283,39 +302,77 @@ export default function DashboardView({
           </div>
         </div>
 
-        <div className={`${glassPanel} h-28 shrink-0 p-4 flex flex-col justify-between`}>
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+        <div
+          className={`${glassPanel} h-32 shrink-0 p-4 flex flex-col justify-between relative overflow-hidden`}
+        >
+          <div
+            className={`absolute inset-0 bg-linear-to-r from-emerald-500/5 to-transparent transition-opacity duration-1000 ${isSystemActive ? 'opacity-100' : 'opacity-0'}`}
+          />
+
+          <div className="flex items-center justify-between border-b border-white/10 pb-2 relative z-10">
             <span className="text-[10px] font-bold tracking-widest text-zinc-400 flex items-center gap-1">
               <RiPulseLine className={isSystemActive ? 'text-emerald-500 animate-pulse' : ''} />{' '}
-              NEURAL UPLINK
+              NETWORK TELEMETRY
             </span>
             <span
-              className={`text-[8px] font-mono font-bold ${isSystemActive ? 'text-emerald-500' : 'text-zinc-600'}`}
+              className={`text-[8px] px-2 py-0.5 rounded-full font-mono font-bold border ${isSystemActive ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-zinc-600 border-zinc-800 bg-zinc-900'}`}
             >
-              {isSystemActive ? 'CONNECTED' : 'STANDBY'}
+              {isSystemActive ? 'SECURE UPLINK' : 'STANDBY'}
             </span>
           </div>
-          <div className="flex items-center justify-between mt-2">
+
+          <div className="flex items-center justify-between mt-2 relative z-10">
             <div className="flex flex-col">
-              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">
+              <span className="text-[8px] text-zinc-600 font-mono tracking-widest flex items-center gap-1">
                 WSS LATENCY
               </span>
-              <span className="text-xs font-bold text-zinc-300 flex items-center gap-1">
-                <RiWifiLine className={isSystemActive ? 'text-emerald-500' : 'text-zinc-600'} />
-                {isSystemActive ? '24ms' : '--'}
+              <span className="text-xs font-bold text-emerald-50 font-mono flex items-center gap-1.5 transition-all">
+                <RiWifiLine className={isSystemActive ? 'text-emerald-400' : 'text-zinc-600'} />
+                {isSystemActive ? `${networkStats.ping}ms` : '--'}
               </span>
             </div>
+
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">
+                PACKET RATE
+              </span>
+              <span className="text-xs font-bold text-emerald-50 font-mono transition-all">
+                {isSystemActive ? `${networkStats.rate} MB/s` : '--'}
+              </span>
+            </div>
+
             <div className="flex flex-col items-end">
-              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">HOST NODE</span>
-              <span className="text-xs font-bold text-zinc-300 flex items-center gap-1">
-                {isSystemActive ? 'GEM-V2.5' : 'LOCAL'} <RiServerLine className="text-zinc-500" />
+              <span className="text-[8px] text-zinc-600 font-mono tracking-widest">ROUTING</span>
+              <span className="text-xs font-bold text-emerald-50 font-mono flex items-center gap-1.5">
+                {isSystemActive ? 'GLOBAL' : 'LOCAL'}
+                {isSystemActive ? (
+                  <RiEarthLine className="text-cyan-400" />
+                ) : (
+                  <RiServerLine className="text-zinc-500" />
+                )}
               </span>
             </div>
           </div>
-          <div className="w-full h-1 bg-black/50 rounded-full mt-3 overflow-hidden flex">
-            <div
-              className={`h-full bg-emerald-500/50 transition-all duration-700 ${isSystemActive ? 'w-full animate-pulse' : 'w-0'}`}
-            ></div>
+
+          <div className="w-full flex flex-col gap-1 mt-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <span className="text-[7px] font-mono text-zinc-500 w-3">TX</span>
+              <div className="flex-1 h-1 bg-black/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 shadow-[0_0_8px_#10b981] transition-all duration-300 ease-out"
+                  style={{ width: `${isSystemActive ? networkStats.tx : 0}%` }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[7px] font-mono text-zinc-500 w-3">RX</span>
+              <div className="flex-1 h-1 bg-black/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-cyan-500 shadow-[0_0_8px_#06b6d4] transition-all duration-300 ease-out delay-75"
+                  style={{ width: `${isSystemActive ? networkStats.rx : 0}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 

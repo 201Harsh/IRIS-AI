@@ -1,9 +1,13 @@
+# Docker Ignore FIles
 node_modules
 client/node_modules
 server/node_modules
 npm-debug.log
 client/.next
 server/dist
+# Env files
 .env
+
+
 client/.env
 server/.env

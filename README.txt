@@ -32,6 +32,7 @@ License
 
 OVERVIEW
 
+
 IRIS is not a chatbot.
 
 It is a local-first AI Operating System layer that executes real-world actions
