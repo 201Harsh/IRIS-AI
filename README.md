@@ -272,6 +272,41 @@ npm run dev
 
 ---
 
+## 🔑 System Keys & Configuration
+
+IRIS operates locally, but requires specific API keys to bridge the gap to large language models and search engines. **Your keys are encrypted and stored locally on your machine. They are never sent to our servers.**
+
+### How to Configure
+
+- **Desktop App Users:** Open IRIS, navigate to the **Settings Tab (Command Center) > API Keys**, and paste your keys directly into the vault.
+- **Developers (Running from source):** Rename `.env.example` to `.env` in the root directory and place your keys there for local testing.
+
+### 🔴 Required Keys
+
+The Neural OS requires these core engines to process logic and execute actions.
+
+- **[Google Gemini API](https://aistudio.google.com/app/apikey)** (`GEMINI_API_KEY`)
+  - **Role:** The primary reasoning and generative engine for IRIS.
+  - **Setup:** Sign in to Google AI Studio > Click 'Get API Key' > Create a key.
+
+- **[Groq API](https://console.groq.com/keys)** (`GROQ_API_KEY`)
+  - **Role:** Used for ultra-fast, low-latency agent routing and rapid decision-making.
+  - **Setup:** Log in to Groq Cloud Console > Navigate to 'API Keys' > Create & copy your key.
+
+### 🟡 Optional Keys
+
+These keys unlock advanced, autonomous subsystems.
+
+- **[Tavily Search API](https://app.tavily.com/home)** (`TAVILY_API_KEY`)
+  - **Role:** Powers the Deep Research agent for real-time web crawling and synthesis.
+  - **Setup:** Sign up at the Tavily Portal > Go to Dashboard > Generate a free-tier key.
+
+- **[Hugging Face Token](https://huggingface.co/settings/tokens)** (`HUGGINGFACE_API_KEY`)
+  - **Role:** Required only if you are downloading and running local open-source inference models.
+  - **Setup:** Create a Hugging Face account > Settings > Access Tokens > Create token with 'Read' permissions.
+
+> 💡 **Having trouble finding your keys?** Visit our official [Key Forging Guide](https://irisaiw.vercel.app/guide) for step-by-step instructions.
+
 # 📁 Project Structure
 
 ```text
