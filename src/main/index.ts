@@ -159,7 +159,7 @@ app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
     const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
     if (allowedPermissions.includes(permission)) {
-      callback(true) // Auto-approve media requests from the React UI
+      callback(true)
     } else {
       callback(false)
     }
