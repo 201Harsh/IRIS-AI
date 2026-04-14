@@ -85,13 +85,7 @@ const CustomParticleSphere = ({ count = 3000 }) => {
   return (
     <points ref={mesh}>
       <bufferGeometry>
-        <bufferAttribute
-          name="position"
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
         color="#00F0FF"
@@ -108,8 +102,6 @@ const CustomParticleSphere = ({ count = 3000 }) => {
 
 const Sphere = () => {
   return (
-    // OPTIMIZATION: dpr={[1, 1.5]} caps pixel ratio. High-end screens won't try to render 4k particles.
-    // OPTIMIZATION: frameloop="demand" limits unnecessary repaints if things stop moving.
     <Canvas
       camera={{ position: [0, 0, 4.5] }}
       dpr={[1, 1.5]}
