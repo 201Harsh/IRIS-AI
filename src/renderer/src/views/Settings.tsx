@@ -28,11 +28,9 @@ interface SettingsProps {
   isSystemActive: boolean
 }
 
-// Reordered so 'updates' is front and center
 type TabType = 'updates' | 'general' | 'keys' | 'security'
 
 const SettingsView = ({ isSystemActive }: SettingsProps) => {
-  // Set default tab to updates
   const [activeTab, setActiveTab] = useState<TabType>('updates')
 
   const [voice, setVoice] = useState<'MALE' | 'FEMALE'>(
@@ -57,7 +55,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
   const [enrollStatus, setEnrollStatus] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // --- AUTO-UPDATER STATE ---
   const [appVersion, setAppVersion] = useState('1.0.0')
   const [updateStatus, setUpdateStatus] = useState<
     'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error'
@@ -75,10 +72,8 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
         .invoke('check-vault-status')
         .then((res) => setFaceCount(res?.faceCount || 0))
 
-      // Get current app version on load
       window.electron.ipcRenderer.invoke('get-app-version').then((v) => setAppVersion(v))
 
-      // Listen for Updater Events
       window.electron.ipcRenderer.on('updater-event', (_e, { status, data, error }) => {
         if (status === 'checking') setUpdateStatus('checking')
         if (status === 'available') {
@@ -107,7 +102,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
     }
   }, [])
 
-  // --- UPDATER ACTIONS ---
   const checkForUpdates = () => window.electron.ipcRenderer.invoke('check-for-updates')
   const downloadUpdate = () => window.electron.ipcRenderer.invoke('download-update')
   const installUpdate = () => window.electron.ipcRenderer.invoke('install-update')
@@ -253,7 +247,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
             </div>
           </div>
 
-          {/* Reordered Tabs to put SYSTEM first */}
           <div className="flex bg-[#0a0a0c] p-1 rounded-xl border border-white/10 w-full md:w-fit shadow-lg overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab('updates')}
@@ -284,7 +277,6 @@ const SettingsView = ({ isSystemActive }: SettingsProps) => {
 
         <div className="relative min-h-125 pb-12 mt-2">
           <AnimatePresence mode="wait">
-            {/* --- TAB 1: SYSTEM UPDATES --- */}
             {activeTab === 'updates' && (
               <motion.div
                 key="updates"
