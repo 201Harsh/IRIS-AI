@@ -9,7 +9,7 @@ import {
   session,
   safeStorage,
   systemPreferences,
-  dialog // <-- ADDED DIALOG HERE
+  dialog
 } from 'electron'
 import path, { join } from 'path'
 import fs from 'fs'
@@ -156,6 +156,8 @@ function toggleOverlayMode() {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
   autoUpdater.checkForUpdatesAndNotify()
 
   autoUpdater.on('update-available', (info) => {
@@ -178,16 +180,26 @@ app.whenReady().then(() => {
       .showMessageBox({
         type: 'info',
         title: 'Update Ready',
-        message: 'New version downloaded! The system will now restart to apply the patch.',
+        message: 'New version downloaded! The system will now force reboot to apply the patch.',
         buttons: ['Execute Restart']
       })
       .then(() => {
-        autoUpdater.quitAndInstall()
+        setImmediate(() => {
+          app.removeAllListeners('window-all-closed')
+          autoUpdater.quitAndInstall(false, true)
+        })
       })
   })
 
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    const allowedPermissions = [
+      'media',
+      'audioCapture',
+      'videoCapture',
+      'desktopVideoCapture',
+      'microphone',
+      'camera'
+    ]
     if (allowedPermissions.includes(permission)) {
       callback(true)
     } else {
@@ -196,7 +208,14 @@ app.whenReady().then(() => {
   })
 
   session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
-    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    const allowedPermissions = [
+      'media',
+      'audioCapture',
+      'videoCapture',
+      'desktopVideoCapture',
+      'microphone',
+      'camera'
+    ]
     return allowedPermissions.includes(permission)
   })
 

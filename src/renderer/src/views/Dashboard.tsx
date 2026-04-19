@@ -93,7 +93,7 @@ export default function DashboardView({
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const MODEL_URL = '/models'
+        const MODEL_URL = './models'
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
@@ -226,23 +226,59 @@ export default function DashboardView({
   const systemMetrics = [
     {
       icon: <RiCpuLine />,
+      bgIcon: <RiCpuLine size={140} />,
       label: 'CPU LOAD',
-      val: isSystemActive && stats ? `${stats.cpu}%` : '--'
+      val: isSystemActive && stats ? `${stats.cpu}%` : '--',
+      raw: isSystemActive && stats ? stats.cpu : 0,
+      colorClass: 'text-emerald-400',
+      bgClass: 'bg-emerald-500',
+      glowClass: 'via-emerald-500/50',
+      shadowClass: 'shadow-[0_0_8px_#10b981]',
+      bgGradient: 'from-emerald-950/30 to-black/60',
+      pattern:
+        'bg-[linear-linear(to_right,#10b98108_1px,transparent_1px),linear-linear(to_bottom,#10b98108_1px,transparent_1px)] bg-[size:12px_12px]'
     },
     {
       icon: <FaMemory />,
+      bgIcon: <FaMemory size={140} />,
       label: 'RAM USAGE',
-      val: isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--'
+      val: isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--',
+      raw: isSystemActive && stats ? stats.memory.usedPercentage : 0,
+      colorClass: 'text-cyan-400',
+      bgClass: 'bg-cyan-500',
+      glowClass: 'via-cyan-500/50',
+      shadowClass: 'shadow-[0_0_8px_#06b6d4]',
+      bgGradient: 'from-cyan-950/30 to-black/60',
+      pattern: 'bg-[radial-linear(#06b6d415_1px,transparent_1px)] bg-[size:10px_10px]'
     },
     {
       icon: <GiTinker />,
+      bgIcon: <GiTinker size={140} />,
       label: 'TEMP',
-      val: isSystemActive && stats ? `${stats.temperature}°C` : '--'
+      val: isSystemActive && stats ? `${stats.temperature}°C` : '--',
+      raw: isSystemActive && stats ? Math.min((stats.temperature / 90) * 100, 100) : 0,
+      colorClass: 'text-orange-400',
+      bgClass: 'bg-orange-500',
+      glowClass: 'via-orange-500/50',
+      shadowClass: 'shadow-[0_0_8px_#f97316]',
+      bgGradient: 'from-orange-950/30 to-black/60',
+      pattern:
+        'bg-[radial-linear(ellipse_at_top_right,_var(--tw-linear-stops))] from-orange-900/20 via-transparent to-transparent'
     },
     {
       icon: <HiComputerDesktop />,
+      bgIcon: <HiComputerDesktop size={140} />,
       label: 'OS',
-      val: isSystemActive && stats ? `${stats.os.type}` : '--'
+      val: isSystemActive && stats ? `${stats.os.type}` : '--',
+      raw: 0,
+      colorClass: 'text-purple-400',
+      bgClass: 'bg-purple-500',
+      glowClass: 'via-purple-500/50',
+      shadowClass: '',
+      bgGradient: 'from-purple-950/30 to-black/60',
+      pattern:
+        'bg-[linear-linear(45deg,#a855f708_25%,transparent_25%,transparent_50%,#a855f708_50%,#a855f708_75%,transparent_75%,transparent)] bg-[size:24px_24px]',
+      hideBar: true
     }
   ]
 
@@ -382,17 +418,51 @@ export default function DashboardView({
               <RiLayoutGridLine className="inline mr-1" /> CORE METRICS
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-2 h-full pb-2">
+          <div className="grid grid-cols-2 gap-3 h-full pb-1">
             {systemMetrics.map((m, i) => (
               <div
                 key={i}
-                className="bg-white/5 rounded-lg p-2 flex flex-col justify-between border border-white/5"
+                className={`cursor-pointer relative rounded-xl p-3 flex flex-col justify-between border border-white/5 overflow-hidden group hover:border-white/10 transition-all duration-300 bg-linear-to-br ${m.bgGradient}`}
               >
-                <div className="flex justify-between items-start text-zinc-500">
-                  <span className="text-sm">{m.icon}</span>
-                  <span className="text-[8px] font-mono opacity-50">{m.label}</span>
+                <div
+                  className={`absolute inset-0 ${m.pattern} opacity-30 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none`}
+                />
+
+                <div
+                  className={`absolute -bottom-8 -right-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-500 transform group-hover:scale-110 pointer-events-none ${m.colorClass}`}
+                >
+                  {m.bgIcon}
                 </div>
-                <span className="text-sm font-bold text-emerald-400 text-right">{m.val}</span>
+
+                <div
+                  className={`absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent ${m.glowClass} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                />
+
+                <div className="relative z-10 flex justify-between items-start text-zinc-500">
+                  <span
+                    className={`text-base ${m.colorClass} opacity-70 group-hover:opacity-100 transition-opacity`}
+                  >
+                    {m.icon}
+                  </span>
+                  <span className="text-[8px] font-mono tracking-widest uppercase opacity-70 group-hover:opacity-100 transition-opacity text-zinc-300">
+                    {m.label}
+                  </span>
+                </div>
+
+                <div className="relative z-10 flex flex-col gap-1.5 mt-2">
+                  <span className="text-sm font-bold text-white text-right font-mono tracking-wider drop-shadow-md">
+                    {m.val}
+                  </span>
+
+                  {!m.hideBar && (
+                    <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
+                      <div
+                        className={`h-full ${m.bgClass} ${m.shadowClass} transition-all duration-700 ease-out`}
+                        style={{ width: isSystemActive ? `${m.raw}%` : '0%' }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -481,4 +551,3 @@ export default function DashboardView({
     </div>
   )
 }
-

@@ -5,9 +5,8 @@ server/node_modules
 npm-debug.log
 client/.next
 server/dist
-# Env files
-.env
 
+.env
 
 client/.env
 server/.env

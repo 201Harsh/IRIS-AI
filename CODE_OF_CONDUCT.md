@@ -15,6 +15,9 @@ Examples of behavior that contributes to a positive environment for the IRIS com
 - Giving and gracefully accepting constructive feedback
 - Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
 - Focusing on what is best not just for us as individuals, but for the overall IRIS ecosystem and its users
+- Being Friendly and Professional
+
+## Unacceptable Behavior
 
 Examples of unacceptable behavior include:
 
@@ -64,6 +67,7 @@ Community leaders will follow these Community Impact Guidelines in determining t
 
 ### 4. Permanent Ban
 
+
 **Community Impact**: Demonstrating a pattern of violation of community standards, including sustained inappropriate behavior, harassment of an individual, or aggression toward or disparagement of classes of individuals.
 
 **Consequence**: A permanent ban from any sort of public interaction within the IRIS community.
@@ -77,3 +81,4 @@ Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcem
 [homepage]: https://www.contributor-covenant.org
 
 For answers to common questions about this code of conduct, see the FAQ at https://www.contributor-covenant.org/faq. Translations are available at https://www.contributor-covenant.org/translations.
+
