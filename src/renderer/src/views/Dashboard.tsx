@@ -223,26 +223,48 @@ export default function DashboardView({
     startVision(nextMode)
   }
 
+  // --- UPGRADED CORE METRICS LOGIC ---
   const systemMetrics = [
     {
       icon: <RiCpuLine />,
       label: 'CPU LOAD',
-      val: isSystemActive && stats ? `${stats.cpu}%` : '--'
+      val: isSystemActive && stats ? `${stats.cpu}%` : '--',
+      raw: isSystemActive && stats ? stats.cpu : 0,
+      colorClass: 'text-emerald-400',
+      bgClass: 'bg-emerald-500',
+      glowClass: 'via-emerald-500/50',
+      shadowClass: 'shadow-[0_0_8px_#10b981]'
     },
     {
       icon: <FaMemory />,
       label: 'RAM USAGE',
-      val: isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--'
+      val: isSystemActive && stats ? `${stats.memory.usedPercentage}%` : '--',
+      raw: isSystemActive && stats ? stats.memory.usedPercentage : 0,
+      colorClass: 'text-cyan-400',
+      bgClass: 'bg-cyan-500',
+      glowClass: 'via-cyan-500/50',
+      shadowClass: 'shadow-[0_0_8px_#06b6d4]'
     },
     {
       icon: <GiTinker />,
       label: 'TEMP',
-      val: isSystemActive && stats ? `${stats.temperature}°C` : '--'
+      val: isSystemActive && stats ? `${stats.temperature}°C` : '--',
+      raw: isSystemActive && stats ? Math.min((stats.temperature / 90) * 100, 100) : 0,
+      colorClass: 'text-orange-400',
+      bgClass: 'bg-orange-500',
+      glowClass: 'via-orange-500/50',
+      shadowClass: 'shadow-[0_0_8px_#f97316]'
     },
     {
       icon: <HiComputerDesktop />,
       label: 'OS',
-      val: isSystemActive && stats ? `${stats.os.type}` : '--'
+      val: isSystemActive && stats ? `${stats.os.type}` : '--',
+      raw: 0,
+      colorClass: 'text-purple-400',
+      bgClass: 'bg-purple-500',
+      glowClass: 'via-purple-500/50',
+      shadowClass: '',
+      hideBar: true
     }
   ]
 
@@ -376,27 +398,55 @@ export default function DashboardView({
           </div>
         </div>
 
+        {/* --- UPGRADED CORE METRICS UI --- */}
         <div className={`${glassPanel} flex-1 p-4 flex flex-col gap-3`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <span className="text-[10px] font-bold tracking-widest text-zinc-400">
               <RiLayoutGridLine className="inline mr-1" /> CORE METRICS
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-2 h-full pb-2">
+          <div className="grid grid-cols-2 gap-3 h-full pb-1">
             {systemMetrics.map((m, i) => (
               <div
                 key={i}
-                className="bg-white/5 rounded-lg p-2 flex flex-col justify-between border border-white/5"
+                className="relative bg-black/40 rounded-xl p-3 flex flex-col justify-between border border-white/5 overflow-hidden group hover:border-white/10 transition-all duration-300"
               >
+                {/* Subtle Hover Laser Glow */}
+                <div
+                  className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${m.glowClass} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                />
+
                 <div className="flex justify-between items-start text-zinc-500">
-                  <span className="text-sm">{m.icon}</span>
-                  <span className="text-[8px] font-mono opacity-50">{m.label}</span>
+                  <span
+                    className={`text-base ${m.colorClass} opacity-70 group-hover:opacity-100 transition-opacity`}
+                  >
+                    {m.icon}
+                  </span>
+                  <span className="text-[8px] font-mono tracking-widest uppercase opacity-70">
+                    {m.label}
+                  </span>
                 </div>
-                <span className="text-sm font-bold text-emerald-400 text-right">{m.val}</span>
+
+                <div className="flex flex-col gap-1.5 mt-2">
+                  <span className="text-sm font-bold text-white text-right font-mono tracking-wider drop-shadow-md">
+                    {m.val}
+                  </span>
+
+                  {/* Dynamic Hardware Bar */}
+                  {!m.hideBar && (
+                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${m.bgClass} ${m.shadowClass} transition-all duration-700 ease-out`}
+                        style={{ width: isSystemActive ? `${m.raw}%` : '0%' }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </div>
+        {/* --- END OF UPGRADED SECTION --- */}
       </div>
 
       <div className="col-span-12 lg:col-span-6 relative flex flex-col items-center justify-center">
@@ -481,4 +531,3 @@ export default function DashboardView({
     </div>
   )
 }
-
