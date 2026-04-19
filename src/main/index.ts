@@ -9,7 +9,7 @@ import {
   session,
   safeStorage,
   systemPreferences,
-  dialog // <-- ADDED DIALOG HERE
+  dialog 
 } from 'electron'
 import path, { join } from 'path'
 import fs from 'fs'
