@@ -435,7 +435,7 @@ export default function DashboardView({
                 </div>
 
                 <div
-                  className={`absolute top-0 left-0 w-full h-[1px] bg-linear-to-r from-transparent ${m.glowClass} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                  className={`absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent ${m.glowClass} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
 
                 <div className="relative z-10 flex justify-between items-start text-zinc-500">
