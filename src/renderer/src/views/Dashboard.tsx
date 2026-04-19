@@ -93,7 +93,7 @@ export default function DashboardView({
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const MODEL_URL = './models' // Ensuring the prod fix is here
+        const MODEL_URL = './models' 
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
@@ -223,11 +223,10 @@ export default function DashboardView({
     startVision(nextMode)
   }
 
-  // --- UPGRADED SYSTEM METRICS WITH BACKGROUND DATA ---
   const systemMetrics = [
     {
       icon: <RiCpuLine />,
-      bgIcon: <RiCpuLine size={140} />, // Giant background icon
+      bgIcon: <RiCpuLine size={140} />,
       label: 'CPU LOAD',
       val: isSystemActive && stats ? `${stats.cpu}%` : '--',
       raw: isSystemActive && stats ? stats.cpu : 0,
