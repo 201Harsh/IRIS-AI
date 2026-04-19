@@ -191,7 +191,6 @@ app.whenReady().then(() => {
       })
   })
 
-  // --- UPGRADED HARDWARE PERMISSIONS ---
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
     const allowedPermissions = [
       'media',
