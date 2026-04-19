@@ -34,6 +34,13 @@
       "presentation": {
         "order": 1
       }
+    },
+    {
+      "name": "Debug Main Process",
+      "configurations": ["Debug Main Process"],
+      "presentation": {
+        "order": 2
+      }
     }
   ]
 }
