@@ -156,6 +156,9 @@ function toggleOverlayMode() {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
+  // --- UPGRADED AUTO-UPDATER LOGIC ---
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
   autoUpdater.checkForUpdatesAndNotify()
 
   autoUpdater.on('update-available', (info) => {
@@ -178,16 +181,29 @@ app.whenReady().then(() => {
       .showMessageBox({
         type: 'info',
         title: 'Update Ready',
-        message: 'New version downloaded! The system will now restart to apply the patch.',
+        message: 'New version downloaded! The system will now force reboot to apply the patch.',
         buttons: ['Execute Restart']
       })
       .then(() => {
-        autoUpdater.quitAndInstall()
+        // FORCE KILL: Prevent background tasks from aborting the update install
+        setImmediate(() => {
+          app.removeAllListeners('window-all-closed')
+          autoUpdater.quitAndInstall(false, true)
+        })
       })
   })
+  // -----------------------------------
 
+  // --- UPGRADED HARDWARE PERMISSIONS ---
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    const allowedPermissions = [
+      'media',
+      'audioCapture',
+      'videoCapture',
+      'desktopVideoCapture',
+      'microphone',
+      'camera'
+    ]
     if (allowedPermissions.includes(permission)) {
       callback(true)
     } else {
@@ -196,9 +212,17 @@ app.whenReady().then(() => {
   })
 
   session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
-    const allowedPermissions = ['media', 'audioCapture', 'videoCapture', 'desktopVideoCapture']
+    const allowedPermissions = [
+      'media',
+      'audioCapture',
+      'videoCapture',
+      'desktopVideoCapture',
+      'microphone',
+      'camera'
+    ]
     return allowedPermissions.includes(permission)
   })
+  // -----------------------------------
 
   if (process.platform === 'darwin') {
     if (systemPreferences.getMediaAccessStatus('microphone') !== 'granted') {
