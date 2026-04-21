@@ -28,7 +28,7 @@
     "@gsap/react": "^2.1.2",
     "@huggingface/inference": "^4.13.15",
     "@monaco-editor/react": "^4.7.0",
-    "@notionhq/client": "^5.19.0",
+    "@notionhq/client": "^5.20.0",
     "@nut-tree-fork/nut-js": "^4.2.6",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
@@ -55,7 +55,7 @@
     "node-window-manager": "^2.2.4",
     "pdf-parse": "^2.4.5",
     "prismjs": "^1.30.0",
-    "puppeteer": "^24.41.0",
+    "puppeteer": "^24.42.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "qrcode.react": "^4.2.0",
@@ -80,7 +80,7 @@
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.3",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -98,6 +98,6 @@
     "react-dom": "^19.2.5",
     "tailwindcss": "^4.1.18",
     "typescript": "^6.0.3",
-    "vite": "^8.0.8"
+    "vite": "^8.0.9"
   }
 }
