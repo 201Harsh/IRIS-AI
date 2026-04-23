@@ -32,6 +32,7 @@ nsis:
   createStartMenuShortcut: true
   runAfterFinish: true
 
+
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
