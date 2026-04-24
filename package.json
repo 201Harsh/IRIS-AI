@@ -50,7 +50,7 @@
     "immer": "^11.1.4",
     "leaflet": "^1.9.4",
     "loudness": "^0.4.2",
-    "lucide-react": "^1.8.0",
+    "lucide-react": "^1.9.0",
     "mammoth": "^1.12.0",
     "node-window-manager": "^2.2.4",
     "pdf-parse": "^2.4.5",
@@ -98,6 +98,6 @@
     "react-dom": "^19.2.5",
     "tailwindcss": "^4.1.18",
     "typescript": "^6.0.3",
-    "vite": "^8.0.9"
+    "vite": "^8.0.10"
   }
 }
