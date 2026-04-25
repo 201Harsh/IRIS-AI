@@ -26,3 +26,4 @@ If touching `Sphere.tsx` or related WebGL files:
 - **No Memory Leaks:** NEVER instantiate variables (like `new THREE.Color()`) inside a `useFrame` loop. Pre-instantiate using `useMemo` and mutate them.
 - **Low-End Scaling:** Always cap pixel ratios to prevent melting low-end GPUs: `<Canvas dpr={[1, 1.5]} gl={{ powerPreference: "high-performance" }}>`.
 - Disable depth writing for overlapping transparent particles (`depthWrite={false}`).
+
