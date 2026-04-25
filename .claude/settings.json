@@ -1,0 +1,14 @@
+{
+  "style": {
+    "typescript": {
+      "use_type_hints": true,
+      "require_strict_types": true
+    }
+  },
+  "tests": {
+    "require_for_new_modules": false
+  },
+  "behavior": {
+    "always_review_diffs_before_applying": true
+  }
+}
