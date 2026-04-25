@@ -68,3 +68,4 @@ body:
       description: Extra context, OS constraints (Windows/Mac/Linux specific?), or dependencies not covered above.
       placeholder: 'This would require adding the ollama-node package to the backend dependencies.'
 
+
