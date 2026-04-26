@@ -54,10 +54,6 @@
       "grep": "^add"
     },
     {
-      "title": "➖ Deletions",
-      "grep": "^del"
-    },
-    {
       "title": "🔄 Changes",
       "grep": "^change"
     }
